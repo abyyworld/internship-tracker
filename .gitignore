@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# logs
+watcher.log
+*.log
+
+# python
+__pycache__/
+*.pyc
+
+# GitHub Actions workflow lives here but is added via the web UI
+# (a Personal Access Token needs the 'workflow' scope to push it).
+# Kept on disk for local reference; not pushed from the CLI.
+.github/workflows/
