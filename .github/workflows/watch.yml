@@ -1,0 +1,34 @@
+name: Daily internship watch
+
+on:
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run the watcher
+        run: python3 internship_watcher.py
+      - name: Commit and push if anything changed
+        run: |
+          git config user.name  "internship-watcher-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md tracker.csv manual_checks.md
+          git add new_roles_*.md 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes today."
+          else
+            git commit -m "watcher: update $(date -u +%Y-%m-%d)"
+            git push
+          fi
