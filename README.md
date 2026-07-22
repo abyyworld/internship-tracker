@@ -1,5 +1,5 @@
 # 🎯 Elite Internship Tracker — Summer 2027 + UK Spring Weeks
-> **Auto-updated daily** by GitHub Actions · Last run: **2026-07-21** · **595 live roles** tracked
+> **Auto-updated daily** by GitHub Actions · Last run: **2026-07-22** · **600 live roles** tracked
 
 Curated for **AI/ML · SWE · Quant/HFT · HCI research**. Scrapes 3 community boards + 21 company Greenhouse APIs every day, merges + de-dupes, and flags what newly opened.
 
@@ -8,14 +8,19 @@ Curated for **AI/ML · SWE · Quant/HFT · HCI research**. Scrapes 3 community b
 ## 📊 At a glance
 | Metric | Count |
 |--------|------:|
-| Total live roles | 595 |
-| 🏆 Elite tier | 140 |
+| Total live roles | 600 |
+| 🏆 Elite tier | 141 |
 | ⭐ High tier | 93 |
-| 🆕 New this run | 0 |
+| 🆕 New this run | 23 |
 
-**By region:** US 419 · UK 74 · Other 42 · Canada 23 · Remote 19 · Netherlands 11 · Ireland 7
+**By region:** US 421 · UK 75 · Other 41 · Canada 26 · Remote 19 · Netherlands 11 · Ireland 7
 
-## 🏆 Elite roles — live & auto-scraped (140)
+## 🆕 Newly opened (23)
+| Company | Role | Region | Term |
+|--|--|--|--|
+| **Virtu Financial** | [Internship - Quantitative Trading](https://job-boards.greenhouse.io/virtu/jobs/8624408002) | US | Summer 2027 |
+
+## 🏆 Elite roles — live & auto-scraped (141)
 
 <details><summary><b>UK</b> — 39 roles</summary>
 
@@ -63,7 +68,7 @@ Curated for **AI/ML · SWE · Quant/HFT · HCI research**. Scrapes 3 community b
 
 </details>
 
-<details><summary><b>US</b> — 75 roles</summary>
+<details><summary><b>US</b> — 76 roles</summary>
 
 | Company | Role | Term |
 |--|--|--|
@@ -138,6 +143,7 @@ Curated for **AI/ML · SWE · Quant/HFT · HCI research**. Scrapes 3 community b
 | **Two Sigma** | [AI Research Scientist Intern (MS / PhD)](https://careers.twosigma.com/careers/JobDetail/New-York-New-York-United-States-AI-Research-Scientist-Internship-2027-Summer/14022) | Summer 2027 |
 | **Two Sigma** | [Quantitative Researcher Intern](https://careers.twosigma.com/careers/JobDetail/New-York-New-York-United-States-Quantitative-Researcher-Internship-2027-Summer/13945) | Summer 2027 |
 | **Two Sigma** | [SWE / Quant Research Intern](https://careers.twosigma.com/careers/jobListings) | Summer 2027 |
+| **Virtu Financial** | [Internship - Quantitative Trading](https://job-boards.greenhouse.io/virtu/jobs/8624408002) | Summer 2027 |
 | **Virtu Financial** | [Quant Research Intern (Undergrad)](https://job-boards.greenhouse.io/virtu/jobs/8142539002) | Summer 2027 |
 | **Virtu Financial** | [Internship - Software Engineer](https://job-boards.greenhouse.io/virtu/jobs/8624410002) | Summer 2027 |
 | **Virtu Financial** | [Women's Winternship](https://job-boards.greenhouse.io/virtu/jobs/8445018002) | Summer 2027 |
@@ -234,7 +240,7 @@ First-year/early insight programs that feed directly into summer offers. **These
 | **Cloudflare** | [Brand Social Media Intern (Fall 2026)](https://boards.greenhouse.io/cloudflare/jobs/8054093?gh_jid=8054093) | Other | Summer 2027 |
 | **Cloudflare** | [Full Stack Engineer - Internal Audit](https://boards.greenhouse.io/cloudflare/jobs/8014902?gh_jid=8014902) | Other | Summer 2027 |
 | **Cloudflare** | [Marketing Events and Campaigns Intern (Fall 2026)](https://boards.greenhouse.io/cloudflare/jobs/8053546?gh_jid=8053546) | Other | Summer 2027 |
-| **Cloudflare** | [Network Strategy Intern (Fall 2026)](https://boards.greenhouse.io/cloudflare/jobs/8013562?gh_jid=8013562) | Other | Summer 2027 |
+| **Cloudflare** | [Network Strategy Intern (Fall 2026)](https://boards.greenhouse.io/cloudflare/jobs/8031027?gh_jid=8031027) | Other | Summer 2027 |
 | **Cloudflare** | [Professional Services Intern – Global Customer Services (Fall 2026)](https://boards.greenhouse.io/cloudflare/jobs/7796077?gh_jid=7796077) | Other | Summer 2027 |
 | **Cloudflare** | [Public Policy Intern](https://boards.greenhouse.io/cloudflare/jobs/8053437?gh_jid=8053437) | Other | Summer 2027 |
 | **Cloudflare** | [Sales Project Manager Intern (AI Innovation) (Fall 2026)](https://boards.greenhouse.io/cloudflare/jobs/8020830?gh_jid=8020830) | Other | Summer 2027 |
@@ -280,8 +286,8 @@ First-year/early insight programs that feed directly into summer offers. **These
 | **Databricks** | [Product Management Intern (Summer 2027)](https://job-boards.greenhouse.io/databricks/jobs/6883068002) | US | Summer 2027 |
 | **Databricks** | [PhD GenAI Research Scientist Intern](https://databricks.com/company/careers/open-positions/job?gh_jid=7011263002) | US | Summer 2027 |
 | **Databricks** | [Product Management Intern (Summer 2027)](https://databricks.com/company/careers/open-positions/job?gh_jid=6883068002) | US | Summer 2027 |
-| **Databricks** | [Senior Software Engineer - Database Engine Internals](https://databricks.com/company/careers/open-positions/job?gh_jid=6544383002) | US | Summer 2027 |
 | **Databricks** | [Senior Software Engineer - Database Engine Internals](https://databricks.com/company/careers/open-positions/job?gh_jid=5048461002) | US | Summer 2027 |
+| **Databricks** | [Senior Software Engineer - Database Engine Internals](https://databricks.com/company/careers/open-positions/job?gh_jid=6544383002) | US | Summer 2027 |
 | **Databricks** | [Sr. Staff Software Engineer — Observability, Insights & Governance](https://databricks.com/company/careers/open-positions/job?gh_jid=8575248002) | US | Summer 2027 |
 | **Databricks** | [Staff Software Engineer - Database Engine Internals](https://databricks.com/company/careers/open-positions/job?gh_jid=6544386002) | US | Summer 2027 |
 | **Databricks** | [Staff Software Engineer - Database Engine Internals](https://databricks.com/company/careers/open-positions/job?gh_jid=5646866002) | US | Summer 2027 |
