@@ -47,13 +47,15 @@ jobs:
           python-version: "3.12"
 
       - name: Refresh public tracker
-        run: python internship_watcher.py
+        run: |
+          python internship_watcher.py
+          python dashboard.py
 
       - name: Commit changed public data
         run: |
           git config user.name "internship-watcher[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md tracker.csv manual_checks.md new_roles_*.md
+          git add README.md tracker.csv manual_checks.md new_roles_*.md docs/index.html
           if git diff --cached --quiet; then
             echo "No tracker changes"
           else

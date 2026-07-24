@@ -59,17 +59,28 @@ This is the fastest workflow when Simplify is already installed:
 
 1. Install Tampermonkey.
 2. Open `github-cv-apply.user.js` from the GitHub repository and install it.
-3. In this repository directory, run:
+3. Open the filterable dashboard:
 
    ```bash
-   source .venv/bin/activate
-   python -m autoapply bridge
+   open https://abyyworld.github.io/internship-tracker/
    ```
 
-4. Keep that terminal open and copy its one private bridge token when the
-   userscript asks for it the first time.
-5. Search or browse jobs in the GitHub README and click
+4. The private bridge is installed as a macOS login service. If it is not
+   running, double-click `start-autoapply.command` in the project folder. It
+   starts from its own location, so no virtual-environment activation is needed.
+5. Paste the bridge token when the userscript asks for it the first time.
+   `start-autoapply.command` copies it to the clipboard.
+6. Search or filter jobs on the dashboard and click
    **⚡ Generate CV + Apply** beside a role.
+
+If you deliberately want to start it in Terminal, first change to the repository
+directory. Running `.venv/bin/activate` from `~` will fail because `.venv` is inside
+the project:
+
+```bash
+cd "$HOME/Desktop/internship watcher"
+./start-autoapply.command
+```
 
 The localhost bridge imports the current tracker, resolves the clicked Greenhouse,
 Lever, or Ashby URL, fetches its current description, and creates a fresh PDF. The

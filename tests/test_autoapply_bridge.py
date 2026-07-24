@@ -102,6 +102,8 @@ class BridgeTests(unittest.TestCase):
         self.assertIn("X-Autoapply-Token", script)
         self.assertIn("GM_download", script)
         self.assertIn("Generate CV + Apply", script)
+        self.assertIn("abyyworld.github.io/internship-tracker", script)
+        self.assertIn("data-autoapply-dashboard", script)
         self.assertNotIn("submit(", script)
 
 
