@@ -306,6 +306,18 @@ def prepare(store: Store, home: Path, job_id: str) -> dict[str, Any]:
         store.update_application(job_id, state="needs_evidence", last_error=message)
         store.event(job_id, "needs_evidence", {"reason": message})
         raise RuntimeError(message)
+    tailoring_config = profile.get("tailoring", {})
+    if tailoring_config.get("provider", "deterministic") == "ollama":
+        from .ai_tailoring import rewrite_with_ollama
+
+        tailored = rewrite_with_ollama(
+            tailored,
+            job,
+            model=str(tailoring_config.get("model", "")).strip(),
+            endpoint=str(
+                tailoring_config.get("endpoint", "http://127.0.0.1:11434")
+            ).strip(),
+        )
     output = home / "generated" / _safe_name(job_id) / "resume.pdf"
     resume_hash = render_resume(tailored, output)
     store.update_application(
@@ -323,6 +335,9 @@ def prepare(store: Store, home: Path, job_id: str) -> dict[str, Any]:
         "resume_path": str(output),
         "resume_hash": resume_hash,
         "selected_fact_ids": tailored.selected_fact_ids,
+        "tailoring": tailored.selection_audit.get(
+            "ai_rewrite", {"provider": "verified-concept-ranker"}
+        ),
     }
     store.event(job_id, "prepared", result)
     return result
