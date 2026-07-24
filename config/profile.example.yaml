@@ -1,0 +1,94 @@
+# Copy this file to <AUTOAPPLY_HOME>/profile.yaml.
+# Never commit the completed copy. "unknown" always stops sensitive autofill.
+schema_version: 1
+
+identity:
+  first_name: REPLACE_ME
+  preferred_name: ""
+  last_name: REPLACE_ME
+
+contact:
+  email: REPLACE_ME
+  phone: REPLACE_ME
+  phone_country: REPLACE_ME
+  location: REPLACE_ME
+  linkedin: https://linkedin.com/in/REPLACE_ME
+  github: https://github.com/REPLACE_ME
+  website: https://REPLACE_ME.example
+
+education:
+  institution: REPLACE_ME
+  degree: REPLACE_ME
+  field_of_study: REPLACE_ME
+  level: REPLACE_ME
+  graduation_month: REPLACE_ME
+  graduation_year: REPLACE_ME
+  graduation_date: REPLACE_ME
+
+# Use ISO country codes. These are separate facts: never derive one from the other.
+work_authorization:
+  GB:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  US:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  IE:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  NL:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  CA:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  CH:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  DE:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  FR:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  "NO":
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  SG:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  JP:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  AU:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  CN:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  IN:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  KR:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+  IL:
+    authorized_now: unknown
+    requires_sponsorship_now_or_future: unknown
+
+citizenships: []
+
+preferences:
+  # manual | decline_if_available
+  eeo: manual
+
+# Answers are nested by job ID. Inside that job, use
+# "form_hash :: field_key :: exact prompt" -> answer you personally reviewed.
+# Copy all values from `inspect`; cross-job, old-form, prompt-only, and fuzzy
+# reuse are unsupported.
+# This is the only way to resolve required legal, consent, salary, citizenship,
+# criminal-history, export-control, clearance, signature, or custom questions.
+# Copy the prompt exactly from `inspect`, verify the answer, then inspect again.
+# Protected EEO fields remain blank unless `preferences.eeo` selects a decline
+# option or you explicitly add the exact prompt and your reviewed answer here.
+reviewed_answers: {}
