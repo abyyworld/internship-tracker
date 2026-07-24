@@ -100,7 +100,7 @@ TEMPLATE = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Filter verified internships and robotics roles, generate a tailored CV locally, then apply.">
+<meta name="description" content="Filter verified internships and robotics roles, review targeted MiniMax M3 CV edits locally, then apply.">
 <title>Role Radar · Internship & Robotics Jobs</title>
 <style>
 :root{
@@ -191,17 +191,17 @@ footer a{color:var(--green)}
   <div class="eyebrow"><i class="pulse"></i>verified job intelligence · updated __GENERATED__</div>
   <div class="hero">
     <h1>Find the role.<br><span>Tailor. Apply.</span></h1>
-    <p class="intro">Search live internships worldwide, isolate robotics startups and top technical roles, then generate an evidence-checked CV on your Mac before Simplify fills the application.</p>
+    <p class="intro">Search live internships worldwide, isolate robotics startups and top technical roles, then review targeted MiniMax M3 edits to your full CV before Simplify fills the application.</p>
   </div>
 </header>
 <section class="statusbar" aria-label="Tracker totals">
   <div class="stat"><strong id="totalStat">0</strong><span>verified-open roles</span></div>
   <div class="stat"><strong id="roboticsStat">0</strong><span>robotics / embodied AI</span></div>
   <div class="stat"><strong id="startupStat">0</strong><span>robotics startups / scaleups</span></div>
-  <div class="stat"><strong id="tailorStat">0</strong><span>local CV generation</span></div>
+  <div class="stat"><strong id="tailorStat">0</strong><span>full-CV patch editor</span></div>
 </section>
 <section class="helper">
-  <div><strong>⚡ Local CV helper</strong><p>Every role can generate a private edited CV on your Mac. No CV facts are sent to this website.</p></div>
+  <div><strong>⚡ Local CV Patch Studio</strong><p>Every role opens your complete CV with reviewable M3 suggestions. Accept, reject, directly edit, then export; nothing is silently removed.</p></div>
   <a class="btn primary" href="http://127.0.0.1:8765/connect" target="_blank">Check local connection</a>
 </section>
 <section class="filters" aria-label="Job filters">
@@ -234,7 +234,7 @@ footer a{color:var(--green)}
 </div>
 <main class="cards" id="cards"></main>
 <button class="load" id="loadMore" hidden>Show more roles</button>
-<footer>Public job metadata only. Eligibility remains review-required unless personally verified. CV generation happens locally and never submits an application. <a href="https://github.com/abyyworld/internship-tracker">View source on GitHub</a>.</footer>
+<footer>Public job metadata only. Eligibility remains review-required unless personally verified. CV editing happens through the private localhost helper and never submits an application. <a href="https://github.com/abyyworld/internship-tracker">View source on GitHub</a>.</footer>
 </div>
 <script>
 const JOBS=__JOBS__;
@@ -257,10 +257,10 @@ function card(j){
     `<span class="badge ${isRobotics(j)?"robotics":""}">${esc(j.category)}</span>`,
     j.tier?`<span class="badge ${esc(j.tier)}">${esc(j.tier)}</span>`:"",
     j.new?`<span class="badge new">new</span>`:"",
-    j.tailor?`<span class="badge robotics">local AI CV</span>`:""
+    j.tailor?`<span class="badge robotics">M3 CV editor</span>`:""
   ].join("");
   const focus=j.focus?`<p class="focus">${esc(j.focus.replaceAll(",",", "))}</p>`:"";
-  const localUrl=`http://127.0.0.1:8765/tailor?url=${encodeURIComponent(j.url)}`;
+  const localUrl=`http://127.0.0.1:8765/editor?url=${encodeURIComponent(j.url)}`;
   return `<article class="card">
     <div class="cardhead"><div class="logo">${esc(initials(j.company))}</div><div>
       <div class="company">${esc(j.company)}</div><h2>${esc(j.role)}</h2></div></div>
@@ -272,7 +272,7 @@ function card(j){
       ${j.company_type&&j.company_type!=="unknown"?`<div><b>Company</b><span>${esc(j.company_type)}</span></div>`:""}
     </div>${focus}
     <div class="actions">
-      <a class="btn primary" href="${esc(localUrl)}" target="_blank" rel="noopener">⚡ Tailor CV + Apply</a>
+      <a class="btn primary" href="${esc(localUrl)}" target="_blank" rel="noopener">✦ Edit CV for this job</a>
       <a class="btn secondary job-link" data-no-autoapply="1" href="${esc(j.url)}" target="_blank" rel="noopener">Open only</a>
     </div>
   </article>`;

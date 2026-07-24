@@ -25,10 +25,6 @@ if [[ -f "private/bridge.token" ]]; then
   fi
 fi
 
-if command -v brew >/dev/null 2>&1; then
-  brew services start ollama >/dev/null 2>&1 || true
-fi
-
 echo "Starting the private CV helper…"
 echo "Keep this window open while applying. Press Control-C to stop."
 (sleep 2; [[ -f "private/bridge.token" ]] && BRIDGE_TOKEN="$(<private/bridge.token)" && print -rn -- "$BRIDGE_TOKEN" | pbcopy && open "http://127.0.0.1:8765/connect#$BRIDGE_TOKEN") &

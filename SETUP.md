@@ -1,11 +1,11 @@
 # Setup and Safe Local Workflow
 
-The watcher, cockpit, CV tailoring, and guarded application assistant can all run
-locally without a paid service or API key. The watcher itself uses the Python
-standard library. The application assistant uses free Python packages and an
-installed copy of Microsoft Edge, and requires Python 3.11 or newer.
-“Free” here means no software subscription or paid API is required; your normal
-computer, internet, and any GitHub Actions quota still apply.
+The watcher, cockpit, PDF editor, and guarded application assistant run locally.
+The watcher itself uses the Python standard library. The application assistant
+uses free Python packages and an installed copy of Microsoft Edge, and requires
+Python 3.11 or newer. MiniMax M3 suggestions use your own MiniMax API account;
+browsing, manual editing, accepting/rejecting prior suggestions, PDF export, and
+the job tracker do not consume model credits.
 
 The system deliberately separates discovery from submission:
 
@@ -31,17 +31,12 @@ python -m pip install -r requirements-autoapply.txt
 
 The guarded browser workflow currently expects Microsoft Edge to be installed.
 
-For free local generative CV edits on macOS, install Ollama and one compact model:
-
-```bash
-brew install ollama
-brew services start ollama
-ollama pull qwen3:4b
-```
-
-Ollama runs on the loopback interface. With `tailoring.provider: ollama`, the
-assistant refuses any non-local model endpoint so private CV facts cannot be sent
-to a remote host. The recommended 4B model download is approximately 2.5 GB.
+No local model download is required for the CV Patch Studio. The first time an
+editor opens, paste a MiniMax API key into its private setup card. The bridge
+stores it in `private/minimax.key` with mode 0600 and never exposes it to the
+public dashboard or browser URL. Pressing **Generate suggestions** sends the job
+description and master CV text to MiniMax through that API account; opening the
+editor and exporting locally do not call the model.
 
 The daily watcher and cockpit do not require the extra packages:
 
@@ -69,7 +64,7 @@ This is the fastest workflow when Simplify is already installed:
    running, double-click `start-autoapply.command` in the project folder. It
    starts from its own location, so no virtual-environment activation is needed.
 4. Search or filter jobs on the dashboard and click
-   **⚡ Tailor CV + Apply** beside any role.
+   **✦ Edit CV for this job** beside any role.
 
 If you deliberately want to start it in Terminal, first change to the repository
 directory. Running `.venv/bin/activate` from `~` will fail because `.venv` is inside
@@ -80,12 +75,12 @@ cd "$HOME/Desktop/internship watcher"
 ./start-autoapply.command
 ```
 
-The localhost bridge imports every open HTTPS role in the current tracker. It
-fetches the current description when the employer permits it and otherwise uses
-the public tracker metadata while clearly labelling that fallback. It creates and
-downloads a fresh PDF, then opens the application page. Simplify can autofill the
-form; choose the newly downloaded PDF as the resume and review the whole
-application.
+The localhost bridge imports every open HTTPS role in the current tracker. The
+editor immediately displays the complete master CV without spending API credits.
+Press **Generate suggestions** to fetch the current job description and ask
+MiniMax M3 for a small patch set. Accept, reject, or directly edit each proposal,
+then press **Export accepted PDF**. Simplify can autofill the employer form;
+choose the newly downloaded PDF as the resume and review the whole application.
 
 The bridge does not control or impersonate Simplify, fill legal answers, or click
 Submit. The optional Tampermonkey userscript still enhances links in the GitHub
@@ -93,12 +88,12 @@ README, but the dashboard's native CV button does not depend on Tampermonkey.
 
 ### What the local AI is allowed to edit
 
-The model can rephrase and emphasize selected bullets and the summary for the job.
-Every selected bullet remains linked to an original private fact ID. Generated
-wording is rejected when it adds a new number, named technology/entity, unsupported
-qualification, or loses too much evidence overlap; rejected edits fall back to the
-original verified bullet. The private evidence sidecar records original facts,
-rendered wording, the model, and accepted/rejected edits.
+The model can propose rephrasing a few bullets and the summary for the job. Every
+suggestion remains linked to an original private fact ID. Generated wording is
+rejected when it adds a new number, named technology/entity, unsupported
+qualification, or loses too much evidence overlap. The master document cannot be
+shortened: pending and rejected patches use their exact original text, and every
+master entry remains in the export. Private per-job drafts preserve review status.
 
 This is a draft-generation accelerator, not proof that every sentence is correct.
 Read the downloaded PDF before attaching it. The application approval gate remains
