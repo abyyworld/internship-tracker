@@ -36,12 +36,12 @@ For free local generative CV edits on macOS, install Ollama and one compact mode
 ```bash
 brew install ollama
 brew services start ollama
-ollama pull qwen3:1.7b
+ollama pull qwen3:4b
 ```
 
 Ollama runs on the loopback interface. With `tailoring.provider: ollama`, the
 assistant refuses any non-local model endpoint so private CV facts cannot be sent
-to a remote host. The model download is approximately 1.4 GB.
+to a remote host. The recommended 4B model download is approximately 2.5 GB.
 
 The daily watcher and cockpit do not require the extra packages:
 
@@ -57,21 +57,19 @@ open apply_cockpit.html
 
 This is the fastest workflow when Simplify is already installed:
 
-1. Install Tampermonkey.
-2. Open `github-cv-apply.user.js` from the GitHub repository and install it.
-3. Open the filterable dashboard:
+1. Double-click `start-autoapply.command` in the project folder. It connects the
+   browser to the private local helper and opens the dashboard.
+2. Open the filterable dashboard later at:
 
    ```bash
    open https://abyyworld.github.io/internship-tracker/
    ```
 
-4. The private bridge is installed as a macOS login service. If it is not
+3. The private bridge is installed as a macOS login service. If it is not
    running, double-click `start-autoapply.command` in the project folder. It
    starts from its own location, so no virtual-environment activation is needed.
-5. Paste the bridge token when the userscript asks for it the first time.
-   `start-autoapply.command` copies it to the clipboard.
-6. Search or filter jobs on the dashboard and click
-   **⚡ Generate CV + Apply** beside a role.
+4. Search or filter jobs on the dashboard and click
+   **⚡ Tailor CV + Apply** beside any role.
 
 If you deliberately want to start it in Terminal, first change to the repository
 directory. Running `.venv/bin/activate` from `~` will fail because `.venv` is inside
@@ -82,16 +80,16 @@ cd "$HOME/Desktop/internship watcher"
 ./start-autoapply.command
 ```
 
-The localhost bridge imports the current tracker, resolves the clicked Greenhouse,
-Lever, or Ashby URL, fetches its current description, and creates a fresh PDF. The
-userscript downloads that PDF and opens the application page. Simplify can then
-autofill the form; choose the newly downloaded PDF as the resume and review the
-whole application.
+The localhost bridge imports every open HTTPS role in the current tracker. It
+fetches the current description when the employer permits it and otherwise uses
+the public tracker metadata while clearly labelling that fallback. It creates and
+downloads a fresh PDF, then opens the application page. Simplify can autofill the
+form; choose the newly downloaded PDF as the resume and review the whole
+application.
 
 The bridge does not control or impersonate Simplify, fill legal answers, or click
-Submit. Unsupported employer-hosted links can still be opened normally and handled
-by Simplify, but the local generator currently requires an imported Greenhouse,
-Lever, or Ashby identity.
+Submit. The optional Tampermonkey userscript still enhances links in the GitHub
+README, but the dashboard's native CV button does not depend on Tampermonkey.
 
 ### What the local AI is allowed to edit
 

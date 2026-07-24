@@ -232,8 +232,7 @@ class Store:
                 row = {"id": matches[0]}
         if row is None:
             raise KeyError(
-                "This link is not one of the currently imported Greenhouse, "
-                "Lever, or Ashby postings"
+                "This link is not one of the currently imported open postings"
             )
         job = self.get_job(str(row["id"]))
         if job.source_status != "open":

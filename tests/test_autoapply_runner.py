@@ -96,6 +96,29 @@ class PrepareRunnerTests(unittest.TestCase):
                 self.assertEqual(result["selected_fact_ids"], ["fact-1"])
                 self.assertTrue(Path(result["resume_path"]).is_file())
                 self.assertEqual(store.application(job.id)["state"], "prepared")
+                unknown = Job(
+                    "unknown-job",
+                    "Other Co",
+                    "Robotics Intern",
+                    "https://example.com/jobs/robot",
+                    region="UK",
+                    location="London",
+                    description=(
+                        "Job title: Robotics Intern. Category: Robotics. "
+                        "Technical focus: robot perception."
+                    ),
+                )
+                store.upsert_job(unknown)
+                with patch(
+                    "autoapply.runner.fetch_description", return_value=""
+                ), patch("autoapply.runner.assert_public_https_url"):
+                    fallback_result = prepare(
+                        store, home, unknown.id, resume_only=True
+                    )
+                self.assertEqual(
+                    fallback_result["description_source"],
+                    "public-tracker-metadata-fallback",
+                )
 
     def test_prepare_refuses_to_generate_resume_without_matching_evidence(self):
         with tempfile.TemporaryDirectory() as directory:

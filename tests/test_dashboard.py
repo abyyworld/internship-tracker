@@ -45,10 +45,12 @@ class DashboardTests(unittest.TestCase):
             self.assertIn('id="region"', page)
             self.assertIn('id="startupOnly"', page)
             self.assertIn("data-autoapply-dashboard", page)
+            self.assertIn("127.0.0.1:8765/tailor", page)
+            self.assertIn("⚡ Tailor CV + Apply", page)
             self.assertIn(r"\u003c/script\u003e", page)
             self.assertNotIn("</script><script>alert(1)</script>", page)
 
-    def test_only_supported_https_ats_links_offer_tailoring(self):
+    def test_ats_detection_and_url_safety_are_independent(self):
         self.assertTrue(
             dashboard.ats_supported(
                 "https://jobs.lever.co/company/"
