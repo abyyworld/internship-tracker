@@ -26,13 +26,21 @@ education:
   graduation_date: REPLACE_ME
 
 # Use ISO country codes. These are separate facts: never derive one from the other.
+# authorization_scope: unrestricted | limited | program_specific | unknown
+# A limited or program-specific permission always requires exact job/form review.
 work_authorization:
   GB:
     authorized_now: unknown
+    authorization_scope: unknown
     requires_sponsorship_now_or_future: unknown
+    visa_status: ""
+    limitations: ""
   US:
     authorized_now: unknown
+    authorization_scope: unknown
     requires_sponsorship_now_or_future: unknown
+    visa_status: ""
+    limitations: ""
   IE:
     authorized_now: unknown
     requires_sponsorship_now_or_future: unknown
