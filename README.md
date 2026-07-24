@@ -1,5 +1,5 @@
 # 🎯 Elite Internship Tracker — Summer 2027 + UK Spring Weeks
-> **Auto-updated daily** by GitHub Actions · Last run: **2026-07-23** · **567 live roles** tracked
+> **Auto-updated daily** by GitHub Actions · Last run: **2026-07-24** · **586 live roles** tracked
 
 Curated for **AI/ML · SWE · Quant/HFT · HCI research**. Scrapes 3 community boards + 21 company Greenhouse APIs every day, merges + de-dupes, and flags what newly opened.
 
@@ -8,23 +8,45 @@ Curated for **AI/ML · SWE · Quant/HFT · HCI research**. Scrapes 3 community b
 ## 📊 At a glance
 | Metric | Count |
 |--------|------:|
-| Total live roles | 567 |
-| 🏆 Elite tier | 141 |
-| ⭐ High tier | 88 |
-| 🆕 New this run | 7 |
+| Total live roles | 586 |
+| 🏆 Elite tier | 158 |
+| ⭐ High tier | 95 |
+| 🆕 New this run | 40 |
 
-**By region:** US 399 · UK 74 · Other 40 · Canada 21 · Remote 15 · Netherlands 10 · Ireland 8
+**By region:** US 415 · UK 74 · Other 41 · Canada 22 · Remote 16 · Netherlands 10 · Ireland 8
 
-## 🆕 Newly opened (7)
+## 🆕 Newly opened (40)
 | Company | Role | Region | Term |
 |--|--|--|--|
-| **Anthropic** | [Head of International Order-to-Cash](https://job-boards.greenhouse.io/anthropic/jobs/5197551008) | Ireland | Summer 2027 |
-| **Virtu Financial** | [2027 Internship - Quantitative Researcher (PhD)](https://job-boards.greenhouse.io/virtu/jobs/8624424002) | US | Summer 2027 |
-| **Cloudflare** | [Principal Systems Engineer - Internal GTM Tools](https://boards.greenhouse.io/cloudflare/jobs/8054669?gh_jid=8054669) | Other | Summer 2027 |
+| **Akuna Capital** | [Python Software Engineer Intern 🇺🇸](https://akunacapital.com/careers/job/8018853/?gh_jid=8018853&utm_source=github-vansh-ouckah) 🚫 | US | Summer 2027 |
+| **Hudson River Trading** | [Intern](https://www.hudsonrivertrading.com/hrt-job/algorithm-development-quant-research-internship-summer-2027/?gh_src=&utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Hudson River Trading** | [Software Engineer Intern](https://www.hudsonrivertrading.com/hrt-job/software-engineering-internship-c-or-python-summer-2027/?gh_src=&utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Jane Street** | [Windows Engineer Intern](https://www.janestreet.com/join-jane-street/position/8628843002/?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Jane Street** | [Trading Desk Operations Engineer Intern](https://www.janestreet.com/join-jane-street/position/8621450002/?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Jane Street** | [Tools and Compilers Research and Development Intern](https://www.janestreet.com/join-jane-street/position/5869205002/?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Jane Street** | [Sales and Trading Intern](https://www.janestreet.com/join-jane-street/position/8347385002/?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Jane Street** | [Network Engineer Intern](https://www.janestreet.com/join-jane-street/position/8620793002/?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Jane Street** | [Linux Engineer Intern](https://www.janestreet.com/join-jane-street/position/8626260002/?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Jane Street** | [Hardware Engineer (FPGA/ASIC) Intern](https://www.janestreet.com/join-jane-street/position/8624440002/?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Jane Street** | [Fundamental Research Analyst Intern](https://www.janestreet.com/join-jane-street/position/8347286002/?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Jane Street** | [Data Engineer Intern](https://www.janestreet.com/join-jane-street/position/8631973002/?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Jane Street** | [Cybersecurity Analyst Intern](https://www.janestreet.com/join-jane-street/position/8632723002/?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Jane Street** | [Machine Learning Researcher Intern](https://www.janestreet.com/join-jane-street/position/8384490002/?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Jane Street** | [Machine Learning Engineer Intern](https://www.janestreet.com/join-jane-street/position/8611307002/?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Jane Street** | [Quantitative Researcher Intern](https://www.janestreet.com/join-jane-street/position/8498547002/?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Jane Street** | [Quantitative Trader Intern](https://www.janestreet.com/join-jane-street/position/8617344002/?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Cloudflare** | [Vice President, Internal Audit](https://boards.greenhouse.io/cloudflare/jobs/8080851?gh_jid=8080851) | Other | Summer 2027 |
+| **Google** | [Software Engineering Intern](https://www.google.com/about/careers/applications/jobs/results/85564713261245126-software-engineering-intern-bs-summer-2027?utm_source=github-vansh-ouckah) | UK | Summer 2027 |
+| **Palantir Technologies** | [Software Engineer Intern, Production Infrastructure](https://jobs.lever.co/palantir/373367a9-3160-49d8-b7af-2efec062fad1?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Palantir Technologies** | [Software Engineer Intern, Infrastructure](https://jobs.lever.co/palantir/b229baac-494b-4a0d-9a13-2e38806e06f3?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Palantir Technologies** | [Software Engineer Intern](https://jobs.lever.co/palantir/7d69cf8a-06fd-4f05-bd84-27149db29c4d?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Palantir Technologies** | [Software Engineer Intern](https://jobs.lever.co/palantir/bdcfb29f-4f27-42de-933f-7f83a359b9f0?utm_source=github-vansh-ouckah) | Other | Summer 2027 |
+| **Palantir Technologies** | [Software Engineer Intern](https://jobs.lever.co/palantir/e27af7ab-41fc-40c9-b31d-02c6cb1c505c?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Stripe** | [Internal Audit - Treasury](https://stripe.com/jobs/search?gh_jid=7678541) | UK | Summer 2027 |
 
-## 🏆 Elite roles — live & auto-scraped (141)
+## 🏆 Elite roles — live & auto-scraped (158)
 
-<details><summary><b>UK</b> — 39 roles</summary>
+<details><summary><b>UK</b> — 38 roles</summary>
 
 | Company | Role | Term |
 |--|--|--|
@@ -46,7 +68,6 @@ Curated for **AI/ML · SWE · Quant/HFT · HCI research**. Scrapes 3 community b
 | **Google DeepMind** | [Research Intern (AI/ML)](https://deepmind.google/careers/) | Summer 2027 |
 | **Hudson River Trading** | [SWE / Algo Dev Intern](https://www.hudsonrivertrading.com/careers/) | Summer 2027 |
 | **Hudson River Trading** | [Insight Day / Campus Event [deadline: Rolling]](https://www.hudsonrivertrading.com/careers/) | Spring Week 2027 |
-| **Jane Street** | [Software Engineer Intern](https://www.janestreet.com/join-jane-street/open-roles/) | Summer 2027 |
 | **Jane Street** | [Quantitative Trading Intern](https://www.janestreet.com/join-jane-street/open-roles/) | Summer 2027 |
 | **Jane Street** | [FOCUS (First-Year Insight) [deadline: Oct–Nov 2026]](https://www.janestreet.com/join-jane-street/open-roles/) | Spring Week 2027 |
 | **Jump Trading** | [Campus Software Engineer Intern](https://boards.greenhouse.io/embed/job_app?token=7975026&utm_source=Simplify&ref=Simplify) | Summer 2026 |
@@ -70,19 +91,20 @@ Curated for **AI/ML · SWE · Quant/HFT · HCI research**. Scrapes 3 community b
 
 </details>
 
-<details><summary><b>US</b> — 77 roles</summary>
+<details><summary><b>US</b> — 95 roles</summary>
 
 | Company | Role | Term |
 |--|--|--|
+| **Akuna Capital** | [Python Software Engineer Intern 🇺🇸](https://akunacapital.com/careers/job/8018853/?gh_jid=8018853&utm_source=github-vansh-ouckah) 🚫 | Summer 2027 |
+| **Akuna Capital** | [Quantitative Research Intern 🇺🇸](https://akunacapital.com/careers/job/8036614/?gh_jid=8036614&utm_source=github-vansh-ouckah) 🚫 | Summer 2027 |
+| **Akuna Capital** | [Quantitative Development & Strategy Intern 🇺🇸](https://akunacapital.com/careers/job/8021481/?gh_jid=8021481&utm_source=github-vansh-ouckah) 🚫 | Summer 2027 |
+| **Akuna Capital** | [Software Engineer Intern, C# .NET Desktop](https://akunacapital.com/careers/job/8018886/?gh_jid=8018886&utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Akuna Capital** | [Software Engineer Intern, Full Stack Web 🇺🇸](https://akunacapital.com/careers/job/8018893/?gh_jid=8018893&utm_source=github-vansh-ouckah) 🚫 | Summer 2027 |
+| **Akuna Capital** | [Hardware Engineer Intern 🇺🇸](https://akunacapital.com/careers/job/8018880/?gh_jid=8018880&utm_source=github-vansh-ouckah) 🚫 | Summer 2027 |
+| **Akuna Capital** | [Platform Engineer Intern 🇺🇸](https://akunacapital.com/careers/job/8018856/?gh_jid=8018856&utm_source=github-vansh-ouckah) 🚫 | Summer 2027 |
+| **Akuna Capital** | [Software Engineer Intern, C++ 🇺🇸](https://akunacapital.com/careers/job/8018847/?gh_jid=8018847&utm_source=github-vansh-ouckah) 🚫 | Summer 2027 |
 | **Akuna Capital** | [Software Engineer Intern (Summer 2027, Python / C++ / Full Stack / C# .NET)](https://akunacapital.com/careers/job/8018847/) | Summer 2027 |
 | **Akuna Capital** | [Expression of Interest: 2027 Trading Sneak Peek Weeks](https://www.akunacapital.com/careers/job/7986086/?gh_jid=7986086) | Summer 2027 |
-| **Akuna Capital** | [Hardware Engineer Intern, Summer 2027](https://www.akunacapital.com/careers/job/8018880/?gh_jid=8018880) | Summer 2027 |
-| **Akuna Capital** | [Platform Engineer Intern, Summer 2027](https://www.akunacapital.com/careers/job/8018856/?gh_jid=8018856) | Summer 2027 |
-| **Akuna Capital** | [Quantitative Development & Strategy Intern, Summer 2027](https://www.akunacapital.com/careers/job/8021481/?gh_jid=8021481) | Summer 2027 |
-| **Akuna Capital** | [Quantitative Research Intern, Summer 2027](https://www.akunacapital.com/careers/job/8036614/?gh_jid=8036614) | Summer 2027 |
-| **Akuna Capital** | [Software Engineer Intern - C# .NET Desktop, Summer 2027](https://www.akunacapital.com/careers/job/8018886/?gh_jid=8018886) | Summer 2027 |
-| **Akuna Capital** | [Software Engineer Intern - C++, Summer 2027](https://www.akunacapital.com/careers/job/8018847/?gh_jid=8018847) | Summer 2027 |
-| **Akuna Capital** | [Software Engineer Intern - Full Stack Web, Summer 2027](https://www.akunacapital.com/careers/job/8018893/?gh_jid=8018893) | Summer 2027 |
 | **Akuna Capital** | [Software Engineer Intern - Python, Summer 2027](https://www.akunacapital.com/careers/job/8018853/?gh_jid=8018853) | Summer 2027 |
 | **Anthropic** | [Research Engineer, Discovery](https://job-boards.greenhouse.io/anthropic/jobs/4669581008) | Summer 2027 |
 | **Anthropic** | [Research Operations, Discovery](https://job-boards.greenhouse.io/anthropic/jobs/5188237008) | Summer 2027 |
@@ -99,10 +121,12 @@ Curated for **AI/ML · SWE · Quant/HFT · HCI research**. Scrapes 3 community b
 | **Citadel Securities** | [Quantitative Researcher PhD Intern 🎓](https://www.citadelsecurities.com/careers/details/quantitative-researcher-phd-intern-us/?utm_source=Simplify&ref=Simplify) | Summer 2026 |
 | **DE Shaw** | [Software Developer Intern](https://www.deshaw.com/careers/software-developer-intern-new-york-summer-2027-5894?utm_source=github-vansh-ouckah) | Summer 2027 |
 | **DeepMind** | [Staff AI Product Designer, Growth & Discovery, GeminiApp](https://job-boards.greenhouse.io/deepmind/jobs/7728122) | Summer 2027 |
-| **Five Rings** | [Software Developer Intern (Summer 2027)](https://job-boards.greenhouse.io/fiveringsllc/jobs/5349707008) | Summer 2027 |
+| **Five Rings** | [Software Developer Intern 🇺🇸](https://job-boards.greenhouse.io/fiveringsllc/jobs/5349707008?utm_source=github-vansh-ouckah) 🚫 | Summer 2027 |
 | **Five Rings** | [Quantitative Trader Intern (Summer 2027)](https://job-boards.greenhouse.io/fiveringsllc/jobs/5139668008) | Summer 2027 |
 | **Five Rings** | [Software / Quant Research Intern](https://fiverings.com/careers/) | Summer 2027 |
 | **Five Rings** | [Summer Smash / Insight Event [deadline: Rolling]](https://fiverings.com/careers/) | Spring Week 2027 |
+| **Hudson River Trading** | [Intern](https://www.hudsonrivertrading.com/hrt-job/algorithm-development-quant-research-internship-summer-2027/?gh_src=&utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Hudson River Trading** | [Software Engineer Intern](https://www.hudsonrivertrading.com/hrt-job/software-engineering-internship-c-or-python-summer-2027/?gh_src=&utm_source=github-vansh-ouckah) | Summer 2027 |
 | **Hudson River Trading** | [Software Engineering Intern (Summer 2027, C++ / Python)](https://www.hudsonrivertrading.com/hrt-job/software-engineering-internship-c-or-python-summer-2027/) | Summer 2027 |
 | **IMC** | [Software Engineer Intern](https://www.imc.com/us/careers/jobs/4823924101?utm_source=github-vansh-ouckah) | Summer 2027 |
 | **IMC Trading** | [Software Engineer Intern](https://job-boards.eu.greenhouse.io/imc/jobs/4823924101) | Summer 2027 |
@@ -112,6 +136,21 @@ Curated for **AI/ML · SWE · Quant/HFT · HCI research**. Scrapes 3 community b
 | **IMC Trading** | [Quantitative Trader Intern](https://job-boards.eu.greenhouse.io/imc/jobs/4823923101) | Summer 2027 |
 | **IMC Trading** | [Hardware Machine Learning PhD Research Internship](https://job-boards.eu.greenhouse.io/imc/jobs/4829785101) | Summer 2027 |
 | **IMC Trading** | [Machine Learning Research Intern - Summer 2027 - Chicago](https://job-boards.eu.greenhouse.io/imc/jobs/4907430101) | Summer 2027 |
+| **Jane Street** | [Windows Engineer Intern](https://www.janestreet.com/join-jane-street/position/8628843002/?utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Jane Street** | [Trading Desk Operations Engineer Intern](https://www.janestreet.com/join-jane-street/position/8621450002/?utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Jane Street** | [Tools and Compilers Research and Development Intern](https://www.janestreet.com/join-jane-street/position/5869205002/?utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Jane Street** | [Sales and Trading Intern](https://www.janestreet.com/join-jane-street/position/8347385002/?utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Jane Street** | [Network Engineer Intern](https://www.janestreet.com/join-jane-street/position/8620793002/?utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Jane Street** | [Linux Engineer Intern](https://www.janestreet.com/join-jane-street/position/8626260002/?utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Jane Street** | [Hardware Engineer (FPGA/ASIC) Intern](https://www.janestreet.com/join-jane-street/position/8624440002/?utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Jane Street** | [Fundamental Research Analyst Intern](https://www.janestreet.com/join-jane-street/position/8347286002/?utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Jane Street** | [Data Engineer Intern](https://www.janestreet.com/join-jane-street/position/8631973002/?utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Jane Street** | [Cybersecurity Analyst Intern](https://www.janestreet.com/join-jane-street/position/8632723002/?utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Jane Street** | [Machine Learning Researcher Intern](https://www.janestreet.com/join-jane-street/position/8384490002/?utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Jane Street** | [Machine Learning Engineer Intern](https://www.janestreet.com/join-jane-street/position/8611307002/?utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Jane Street** | [Quantitative Researcher Intern](https://www.janestreet.com/join-jane-street/position/8498547002/?utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Jane Street** | [Quantitative Trader Intern](https://www.janestreet.com/join-jane-street/position/8617344002/?utm_source=github-vansh-ouckah) | Summer 2027 |
+| **Jane Street** | [Software Engineer Intern](https://www.janestreet.com/join-jane-street/position/8599644002/?utm_source=github-vansh-ouckah) | Summer 2027 |
 | **Jane Street** | [Campus Recruiter, Early Careers Partnerships & Initiatives](https://job-boards.greenhouse.io/janestreet/jobs/8448713002) | Summer 2027 |
 | **Jane Street** | [Campus Recruiter, Machine Learning and Quantitative Research](https://job-boards.greenhouse.io/janestreet/jobs/8229056002) | Summer 2027 |
 | **Jane Street** | [Campus Recruiter, Technology](https://job-boards.greenhouse.io/janestreet/jobs/8345570002) | Summer 2027 |
@@ -145,10 +184,10 @@ Curated for **AI/ML · SWE · Quant/HFT · HCI research**. Scrapes 3 community b
 | **Two Sigma** | [AI Research Scientist Intern (MS / PhD)](https://careers.twosigma.com/careers/JobDetail/New-York-New-York-United-States-AI-Research-Scientist-Internship-2027-Summer/14022) | Summer 2027 |
 | **Two Sigma** | [Quantitative Researcher Intern](https://careers.twosigma.com/careers/JobDetail/New-York-New-York-United-States-Quantitative-Researcher-Internship-2027-Summer/13945) | Summer 2027 |
 | **Two Sigma** | [SWE / Quant Research Intern](https://careers.twosigma.com/careers/jobListings) | Summer 2027 |
-| **Virtu Financial** | [2027 Internship - Quantitative Researcher (PhD)](https://job-boards.greenhouse.io/virtu/jobs/8624424002) | Summer 2027 |
 | **Virtu Financial** | [Quant Research Intern (Undergrad)](https://job-boards.greenhouse.io/virtu/jobs/8142539002) | Summer 2027 |
+| **Virtu Financial** | [2027 Internship - Quantitative Researcher (PhD)](https://job-boards.greenhouse.io/virtu/jobs/8624424002) | Summer 2027 |
+| **Virtu Financial** | [2027 Internship - Software Engineer](https://job-boards.greenhouse.io/virtu/jobs/8624410002) | Summer 2027 |
 | **Virtu Financial** | [Internship - Quantitative Trading](https://job-boards.greenhouse.io/virtu/jobs/8624408002) | Summer 2027 |
-| **Virtu Financial** | [Internship - Software Engineer](https://job-boards.greenhouse.io/virtu/jobs/8624410002) | Summer 2027 |
 | **Virtu Financial** | [Women's Winternship](https://job-boards.greenhouse.io/virtu/jobs/8445018002) | Summer 2027 |
 | **xAI** | [Software Engineer - Internal Tools](https://job-boards.greenhouse.io/xai/jobs/5052038007) | Summer 2027 |
 
@@ -225,7 +264,7 @@ First-year/early insight programs that feed directly into summer offers. **These
 | **Susquehanna (SIG)** | Quant Finance Insight Days [deadline: Rolling] | Dublin | [Apply](https://careers.sig.com/) |
 | **Two Sigma** | Discovery Program [deadline: Oct–Jan 2027] | London/NY | [Apply](https://careers.twosigma.com/careers/jobListings) |
 
-## ⭐ High-tier roles (88)
+## ⭐ High-tier roles (95)
 <details><summary>Show all</summary>
 
 | Company | Role | Region | Term |
@@ -238,12 +277,13 @@ First-year/early insight programs that feed directly into summer offers. **These
 | **Apple** | [Machine Learning & AI Undergrad Internship](https://jobs.apple.com/en-us/details/200664780-3810/machine-learning-and-artificial-intelligence-undergrad-internships) | Other | Summer 2027 |
 | **Apple** | [Hardware Undergrad Engineering Internship](https://jobs.apple.com/en-us/details/200663981-3810/hardware-undergrad-engineering-internships) | Other | Summer 2027 |
 | **Brex** | [Brex Internship Program](https://www.brex.com/careers/8578067002?gh_jid=8578067002) | Other | Summer 2027 |
-| **Cloudflare** | [Principal Systems Engineer - Internal GTM Tools](https://boards.greenhouse.io/cloudflare/jobs/8054669?gh_jid=8054669) | Other | Summer 2027 |
+| **Cloudflare** | [Vice President, Internal Audit](https://boards.greenhouse.io/cloudflare/jobs/8080851?gh_jid=8080851) | Other | Summer 2027 |
 | **Cloudflare** | [AI Transformation Intern – Global Customer Engineering, Service Sales (Fall 2026)](https://boards.greenhouse.io/cloudflare/jobs/8044395?gh_jid=8044395) | Other | Summer 2027 |
 | **Cloudflare** | [Brand Social Media Intern (Fall 2026)](https://boards.greenhouse.io/cloudflare/jobs/8054093?gh_jid=8054093) | Other | Summer 2027 |
 | **Cloudflare** | [Full Stack Engineer - Internal Audit](https://boards.greenhouse.io/cloudflare/jobs/8014902?gh_jid=8014902) | Other | Summer 2027 |
 | **Cloudflare** | [Marketing Events and Campaigns Intern (Fall 2026)](https://boards.greenhouse.io/cloudflare/jobs/8053546?gh_jid=8053546) | Other | Summer 2027 |
 | **Cloudflare** | [Network Strategy Intern (Fall 2026)](https://boards.greenhouse.io/cloudflare/jobs/8031027?gh_jid=8031027) | Other | Summer 2027 |
+| **Cloudflare** | [Principal Systems Engineer - Internal GTM Tools](https://boards.greenhouse.io/cloudflare/jobs/8054669?gh_jid=8054669) | Other | Summer 2027 |
 | **Cloudflare** | [Professional Services Intern – Global Customer Services (Fall 2026)](https://boards.greenhouse.io/cloudflare/jobs/7796077?gh_jid=7796077) | Other | Summer 2027 |
 | **Cloudflare** | [Sales Project Manager Intern (AI Innovation) (Fall 2026)](https://boards.greenhouse.io/cloudflare/jobs/8020830?gh_jid=8020830) | Other | Summer 2027 |
 | **Cloudflare** | [Software Engineer Intern (Fall 2026) - Austin, TX](https://boards.greenhouse.io/cloudflare/jobs/8052785?gh_jid=8052785) | Other | Summer 2027 |
@@ -254,6 +294,7 @@ First-year/early insight programs that feed directly into summer offers. **These
 | **Databricks** | [Software Engineer - Database Engine Internals](https://databricks.com/company/careers/open-positions/job?gh_jid=8012658002) | Other | Summer 2027 |
 | **Databricks** | [Staff Software Engineer - Database Engine Internals](https://databricks.com/company/careers/open-positions/job?gh_jid=8012818002) | Other | Summer 2027 |
 | **Figma** | [Senior Manager, Payroll Compliance & International Operations (Sydney, Australia)](https://boards.greenhouse.io/figma/jobs/6013144004?gh_jid=6013144004) | Other | Summer 2027 |
+| **Palantir Technologies** | [Software Engineer Intern](https://jobs.lever.co/palantir/bdcfb29f-4f27-42de-933f-7f83a359b9f0?utm_source=github-vansh-ouckah) | Other | Summer 2027 |
 | **Stripe** | [Internal Auditor - APAC Regulatory & Financial Operations](https://stripe.com/jobs/search?gh_jid=8036233) | Other | Summer 2027 |
 | **Stripe** | [Product Accounting Data Insights](https://stripe.com/jobs/search?gh_jid=7813945) | Other | Summer 2027 |
 | **Stripe** | [Software Engineer, Intern](https://stripe.com/jobs/search?gh_jid=8031833) | Other | Summer 2027 |
@@ -263,13 +304,14 @@ First-year/early insight programs that feed directly into summer offers. **These
 | **DRW** | [Software Developer Intern](https://job-boards.greenhouse.io/drweng/jobs/7942281?utm_source=Simplify&ref=Simplify) | UK | Summer 2026 |
 | **Databricks** | [Director, International Communications](https://databricks.com/company/careers/open-positions/job?gh_jid=8632282002) | UK | Summer 2027 |
 | **Goldman Sachs** | [Engineering Spring Insight (UK) [deadline: Oct–Dec 2026]](https://www.goldmansachs.com/careers/) | UK | Spring Week 2027 |
+| **Google** | [Software Engineering Intern](https://www.google.com/about/careers/applications/jobs/results/85564713261245126-software-engineering-intern-bs-summer-2027?utm_source=github-vansh-ouckah) | UK | Summer 2027 |
 | **Graphcore** | [ML / SWE Intern](https://www.graphcore.ai/careers) | UK | Summer 2027 |
 | **Isomorphic Labs** | [Research Intern](https://www.isomorphiclabs.com/join) | UK | Summer 2027 |
 | **JP Morgan** | [Technology Spring Week (UK) [deadline: Oct–Nov 2026]](https://careers.jpmorgan.com/) | UK | Spring Week 2027 |
 | **Morgan Stanley** | [Technology Spring Insight (UK) [deadline: Oct–Dec 2026]](https://www.morganstanley.com/people-opportunities/) | UK | Spring Week 2027 |
 | **Palantir** | [Forward Deployed SWE Intern](https://www.palantir.com/careers/) | UK | Summer 2027 |
 | **Scale AI** | [Head of International Security](https://job-boards.greenhouse.io/scaleai/jobs/4712321005) | UK | Summer 2027 |
-| **Stripe** | [Internal Audit Lead - Treasury, Finance & Operations](https://stripe.com/jobs/search?gh_jid=7678541) | UK | Summer 2027 |
+| **Stripe** | [Internal Audit - Treasury](https://stripe.com/jobs/search?gh_jid=7678541) | UK | Summer 2027 |
 | **Stripe** | [International Regulatory Exam Lead](https://stripe.com/jobs/search?gh_jid=7942650) | UK | Summer 2027 |
 | **Stripe** | [International Tax Reporting Lead](https://stripe.com/jobs/search?gh_jid=7931101) | UK | Summer 2027 |
 | **Waymo** | [International Brand Media & Analytics Manager](https://careers.withwaymo.com/jobs?gh_jid=8042090) | UK | Summer 2027 |
@@ -300,6 +342,10 @@ First-year/early insight programs that feed directly into summer offers. **These
 | **Palantir** | [Software Engineer Intern, Defense Tech](https://jobs.lever.co/palantir/f17e98d0-046a-4e6e-9d65-ed0b12dd0ff7) | US | Summer 2027 |
 | **Palantir** | [Forward Deployed Software Engineer Intern, Commercial](https://jobs.lever.co/palantir/d5486403-c050-4920-b2e0-91b69b61ebb2) | US | Summer 2027 |
 | **Palantir** | [Year at Palantir, Forward Deployed Software Engineer Intern](https://jobs.lever.co/palantir/75cc1c09-8ebd-44c8-b3bc-d122cd1fecb3) | US | Summer 2027 |
+| **Palantir Technologies** | [Software Engineer Intern, Production Infrastructure](https://jobs.lever.co/palantir/373367a9-3160-49d8-b7af-2efec062fad1?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Palantir Technologies** | [Software Engineer Intern, Infrastructure](https://jobs.lever.co/palantir/b229baac-494b-4a0d-9a13-2e38806e06f3?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Palantir Technologies** | [Software Engineer Intern](https://jobs.lever.co/palantir/7d69cf8a-06fd-4f05-bd84-27149db29c4d?utm_source=github-vansh-ouckah) | US | Summer 2027 |
+| **Palantir Technologies** | [Software Engineer Intern](https://jobs.lever.co/palantir/e27af7ab-41fc-40c9-b31d-02c6cb1c505c?utm_source=github-vansh-ouckah) | US | Summer 2027 |
 | **Scale AI** | [AI Builder Intern](https://job-boards.greenhouse.io/scaleai/jobs/4703343005?utm_source=Simplify&ref=Simplify) | US | Summer 2026 |
 | **Scale AI** | [AI Builder Intern](https://job-boards.greenhouse.io/scaleai/jobs/4703343005) | US | Summer 2027 |
 | **Scale AI** | [Technical Advisor Specialist (Part-Time Internship)](https://job-boards.greenhouse.io/scaleai/jobs/4611533005) | US | Summer 2027 |
