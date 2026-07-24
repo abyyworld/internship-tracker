@@ -69,7 +69,8 @@ def load_jobs() -> list[dict[str, object]]:
                 "last_seen": row.get("last_seen", ""),
                 "new": row.get("discovered_new", "").upper() == "YES",
                 "url": url,
-                "tailor": bool(url and ats_supported(url)),
+                "tailor": bool(url),
+                "official_ats": bool(url and ats_supported(url)),
             }
         )
     return jobs
@@ -197,11 +198,11 @@ footer a{color:var(--green)}
   <div class="stat"><strong id="totalStat">0</strong><span>verified-open roles</span></div>
   <div class="stat"><strong id="roboticsStat">0</strong><span>robotics / embodied AI</span></div>
   <div class="stat"><strong id="startupStat">0</strong><span>robotics startups / scaleups</span></div>
-  <div class="stat"><strong id="tailorStat">0</strong><span>one-click CV supported</span></div>
+  <div class="stat"><strong id="tailorStat">0</strong><span>local CV generation</span></div>
 </section>
 <section class="helper">
-  <div><strong>⚡ Local CV helper</strong><p>The private bridge runs on your Mac. The site receives no CV facts. Install the helper once to reveal CV buttons.</p></div>
-  <a class="btn primary" href="https://github.com/abyyworld/internship-tracker/raw/refs/heads/main/github-cv-apply.user.js">Install CV helper</a>
+  <div><strong>⚡ Local CV helper</strong><p>Every role can generate a private edited CV on your Mac. No CV facts are sent to this website.</p></div>
+  <a class="btn primary" href="http://127.0.0.1:8765/connect" target="_blank">Check local connection</a>
 </section>
 <section class="filters" aria-label="Job filters">
   <div class="searchrow">
@@ -215,7 +216,7 @@ footer a{color:var(--green)}
   <div class="quick" id="categoryChips"></div>
   <div class="quick">
     <label class="toggle"><input id="newOnly" type="checkbox"> New roles</label>
-    <label class="toggle"><input id="tailorOnly" type="checkbox"> CV button available</label>
+    <label class="toggle"><input id="officialOnly" type="checkbox"> Official ATS feed</label>
     <label class="toggle"><input id="remoteOnly" type="checkbox"> Remote</label>
     <label class="toggle"><input id="startupOnly" type="checkbox"> Robotics startups</label>
     <span class="spacer"></span>
@@ -259,6 +260,7 @@ function card(j){
     j.tailor?`<span class="badge robotics">local AI CV</span>`:""
   ].join("");
   const focus=j.focus?`<p class="focus">${esc(j.focus.replaceAll(",",", "))}</p>`:"";
+  const localUrl=`http://127.0.0.1:8765/tailor?url=${encodeURIComponent(j.url)}`;
   return `<article class="card">
     <div class="cardhead"><div class="logo">${esc(initials(j.company))}</div><div>
       <div class="company">${esc(j.company)}</div><h2>${esc(j.role)}</h2></div></div>
@@ -269,13 +271,16 @@ function card(j){
       <div><b>Degree</b><span>${esc(j.level||"Unknown")}</span></div>
       ${j.company_type&&j.company_type!=="unknown"?`<div><b>Company</b><span>${esc(j.company_type)}</span></div>`:""}
     </div>${focus}
-    <div class="actions"><a class="btn ${j.tailor?"secondary":"primary"} job-link" href="${esc(j.url)}" target="_blank" rel="noopener">Open application</a></div>
+    <div class="actions">
+      <a class="btn primary" href="${esc(localUrl)}" target="_blank" rel="noopener">⚡ Tailor CV + Apply</a>
+      <a class="btn secondary job-link" data-no-autoapply="1" href="${esc(j.url)}" target="_blank" rel="noopener">Open only</a>
+    </div>
   </article>`;
 }
 function state(){
   return {q:$("search").value.trim(),region:$("region").value,term:$("term").value,
     level:$("level").value,tier:$("tier").value,companyType:$("companyType").value,
-    newOnly:$("newOnly").checked,tailorOnly:$("tailorOnly").checked,
+    newOnly:$("newOnly").checked,officialOnly:$("officialOnly").checked,
     remoteOnly:$("remoteOnly").checked,startupOnly:$("startupOnly").checked,
     sort:$("sort").value,category};
 }
@@ -286,7 +291,7 @@ function matches(j,s){
     (!s.companyType||j.company_type===s.companyType)&&
     (!s.tier||(s.tier==="standard"?!j.tier:j.tier===s.tier))&&
     (s.category==="All"||j.category===s.category)&&(!s.newOnly||j.new)&&
-    (!s.tailorOnly||j.tailor)&&(!s.remoteOnly||j.work_mode==="remote")&&
+    (!s.officialOnly||j.official_ats)&&(!s.remoteOnly||j.work_mode==="remote")&&
     (!s.startupOnly||isStartup(j));
 }
 function sorted(list,mode){
@@ -314,7 +319,7 @@ function render(){
 function restore(){
   const p=new URLSearchParams(location.search);
   ["search","region","term","level","tier","companyType","sort"].forEach(id=>{const v=p.get(id==="search"?"q":id);if(v)$(id).value=v});
-  ["newOnly","tailorOnly","remoteOnly","startupOnly"].forEach(id=>$(id).checked=p.get(id)==="true");
+  ["newOnly","officialOnly","remoteOnly","startupOnly"].forEach(id=>$(id).checked=p.get(id)==="true");
   if(CATEGORY_ORDER.includes(p.get("category")))category=p.get("category");
 }
 $("totalStat").textContent=JOBS.length;

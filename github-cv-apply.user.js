@@ -127,7 +127,11 @@
   }
 
   function eligibleLink(anchor) {
-    if (!anchor.href || anchor.dataset.autoapplyEnhanced === "1") return false;
+    if (
+      !anchor.href ||
+      anchor.dataset.autoapplyEnhanced === "1" ||
+      anchor.dataset.noAutoapply === "1"
+    ) return false;
     let parsed;
     try { parsed = new URL(anchor.href); } catch (_error) { return false; }
     if (

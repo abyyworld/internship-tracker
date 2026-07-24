@@ -9,7 +9,7 @@ from .adapters import get_adapter
 from .browser import BrowserSession, assert_allowed_url, detect_captcha
 from .config import facts_path, load_yaml, profile_path, reject_placeholders
 from .eligibility import assess_eligibility
-from .jobs import fetch_description
+from .jobs import assert_public_https_url, fetch_description
 from .models import (
     FillAction,
     FillPlan,
@@ -41,6 +41,19 @@ def _fetch_required_description(job: Job) -> str:
             "Could not fetch a non-empty job description; approval is fail-closed"
         )
     return description
+
+
+def _fetch_resume_description(job: Job) -> tuple[str, str]:
+    fetched = (fetch_description(job) or "").strip()
+    if fetched:
+        return fetched, "live-job-page"
+    fallback = (job.description or "").strip()
+    if fallback:
+        return fallback, "public-tracker-metadata-fallback"
+    raise RuntimeError(
+        "Could not read this job page or its public tracker metadata; "
+        "the CV was not generated"
+    )
 
 
 def _verify_latest_description(store: Store, job: Job) -> None:
@@ -279,15 +292,26 @@ def _ensure_not_terminal(store: Store, job_id: str) -> None:
         )
 
 
-def prepare(store: Store, home: Path, job_id: str) -> dict[str, Any]:
+def prepare(
+    store: Store,
+    home: Path,
+    job_id: str,
+    *,
+    resume_only: bool = False,
+) -> dict[str, Any]:
     profile = load_yaml(profile_path(home))
     facts = load_yaml(facts_path(home))
     reject_placeholders(profile)
     reject_placeholders(facts)
     job = store.get_job(job_id)
     _ensure_not_terminal(store, job_id)
-    assert_allowed_url(job.url, job.ats)
-    description = _fetch_required_description(job)
+    if resume_only:
+        assert_public_https_url(job.url)
+        description, description_source = _fetch_resume_description(job)
+    else:
+        assert_allowed_url(job.url, job.ats)
+        description = _fetch_required_description(job)
+        description_source = "live-ats-description"
     if description != job.description:
         store.update_description(job_id, description)
         job.description = description
@@ -330,6 +354,7 @@ def prepare(store: Store, home: Path, job_id: str) -> dict[str, Any]:
     result = {
         "job_id": job_id,
         "description_available": bool(job.description),
+        "description_source": description_source,
         "eligibility": eligibility.status,
         "eligibility_notes": eligibility.reasons,
         "resume_path": str(output),

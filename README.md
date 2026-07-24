@@ -8,16 +8,16 @@ This tracker watches community internship boards and official Greenhouse, Ashby,
 
 [Open the filterable Role Radar dashboard](https://abyyworld.github.io/internship-tracker/) for search, category, region, term, degree, company-type, robotics-startup, and CV-support filters.
 
-Install [github-cv-apply.user.js](https://github.com/abyyworld/internship-tracker/raw/refs/heads/main/github-cv-apply.user.js) in Tampermonkey. The private helper is configured to start automatically on the owner's Mac. If it is stopped, double-click `start-autoapply.command`, or run this from any terminal:
+The private helper is configured to start automatically on the owner's Mac. Double-click `start-autoapply.command` once to connect the browser, or run this from any terminal:
 
 ```bash
 cd "$HOME/Desktop/internship watcher"
 ./start-autoapply.command
 ```
 
-Supported job links on the dashboard and README gain a **⚡ Generate CV + Apply** button. One click fetches the current job description, generates evidence-checked wording edits with the configured local Ollama model, downloads a job-specific PDF, and opens the employer application page where Simplify can autofill.
+Every dashboard card has a native **⚡ Tailor CV + Apply** button; Tampermonkey is not required for the dashboard. It reads the live job page when possible, generates evidence-checked wording edits with the local Ollama model, downloads a job-specific PDF, and opens the employer application page where Simplify can autofill. If an employer blocks live page reading, the screen explicitly says that public tracker metadata was used as the fallback.
 
-The GitHub repository and userscript never receive the private profile or fact bank. The CV is generated on `127.0.0.1`, remains a draft requiring review, and is never submitted by the bridge.
+The GitHub repository never receives the private profile or fact bank. The CV is generated on `127.0.0.1`, remains a draft requiring review, and is never submitted by the bridge.
 
 ## At a glance
 

@@ -2062,20 +2062,21 @@ def build_dashboard(rows_out, new_ids, current):
         "\n[Open the filterable Role Radar dashboard]"
         "(https://abyyworld.github.io/internship-tracker/) for search, category, "
         "region, term, degree, company-type, robotics-startup, and CV-support filters.\n",
-        "\nInstall [github-cv-apply.user.js](https://github.com/abyyworld/internship-tracker/raw/refs/heads/main/github-cv-apply.user.js) in "
-        "Tampermonkey. The private helper is configured to start automatically on "
-        "the owner's Mac. If it is stopped, double-click `start-autoapply.command`, "
+        "\nThe private helper is configured to start automatically on the owner's "
+        "Mac. Double-click `start-autoapply.command` once to connect the browser, "
         "or run:\n",
         "\n```bash\ncd \"$HOME/Desktop/internship watcher\"\n"
         "./start-autoapply.command\n```\n",
-        "\nSupported job links on the dashboard and README gain a "
-        "**⚡ Generate CV + Apply** button. One click fetches the current job "
-        "description, generates evidence-checked wording edits with the configured "
-        "local Ollama model, downloads a job-specific PDF, and opens the employer "
-        "application page where Simplify can autofill.\n",
-        "\nThe GitHub repository and userscript never receive the private profile "
-        "or fact bank. The CV is generated on `127.0.0.1`, remains a draft "
-        "requiring review, and is never submitted by the bridge.\n",
+        "\nEvery dashboard card has a native **⚡ Tailor CV + Apply** button; "
+        "Tampermonkey is not required for the dashboard. It reads the live job page "
+        "when possible, generates evidence-checked wording edits with the local "
+        "Ollama model, downloads a job-specific PDF, and opens the employer "
+        "application page where Simplify can autofill. If an employer blocks live "
+        "page reading, the screen explicitly says that public tracker metadata was "
+        "used as the fallback.\n",
+        "\nThe GitHub repository never receives the private profile or fact bank. "
+        "The CV is generated on `127.0.0.1`, remains a draft requiring review, and "
+        "is never submitted by the bridge.\n",
     ]
     if stale_error:
         lines.append(

@@ -3,10 +3,12 @@ from __future__ import annotations
 import csv
 from html import unescape
 from html.parser import HTMLParser
+import ipaddress
 import re
+import socket
 from pathlib import Path
 from typing import Any
-from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
+from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
 
 import requests
 
@@ -96,7 +98,21 @@ def external_id(url: str, ats: str | None = None) -> str:
     return ""
 
 
-def jobs_from_tracker(path: Path) -> list[Job]:
+def _tracker_description(row: dict[str, str]) -> str:
+    details = [
+        f"Job title: {row.get('role', '')}",
+        f"Company: {row.get('company', '')}",
+        f"Category: {row.get('category', '')}",
+        f"Location: {row.get('location', '') or row.get('region', '')}",
+        f"Term: {row.get('term', '')}",
+        f"Degree evidence: {row.get('level', '')}",
+        f"Technical focus: {row.get('robotics_focus', '') or row.get('focus_tags', '')}",
+        f"Company type: {row.get('company_type', '')}",
+    ]
+    return ". ".join(value for value in details if not value.endswith(": ")) + "."
+
+
+def jobs_from_tracker(path: Path, *, include_unknown: bool = False) -> list[Job]:
     with path.open(newline="", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
     jobs: list[Job] = []
@@ -109,7 +125,10 @@ def jobs_from_tracker(path: Path) -> list[Job]:
         if not url:
             continue
         ats = detect_ats(url)
-        if ats == "unknown" or urlparse(url).scheme.lower() != "https":
+        if (
+            urlparse(url).scheme.lower() != "https"
+            or (ats == "unknown" and not include_unknown)
+        ):
             continue
         job_id = row.get("id") or digest(
             [row.get("company", ""), row.get("role", ""), url]
@@ -124,6 +143,7 @@ def jobs_from_tracker(path: Path) -> list[Job]:
                 external_id=external_id(url, ats),
                 location=row.get("location", ""),
                 region=row.get("region", ""),
+                description=_tracker_description(row) if include_unknown else "",
                 source_status=row.get("source_status", "open"),
             )
         )
@@ -141,6 +161,57 @@ def _get(url: str, as_json: bool = False) -> Any:
     )
     response.raise_for_status()
     return response.json() if as_json else response.text
+
+
+def assert_public_https_url(url: str) -> None:
+    parsed = urlparse(url)
+    if (
+        parsed.scheme != "https"
+        or not parsed.hostname
+        or parsed.username
+        or parsed.password
+        or parsed.port not in (None, 443)
+    ):
+        raise ValueError("Job URL must be a public HTTPS address")
+    try:
+        addresses = {
+            item[4][0]
+            for item in socket.getaddrinfo(
+                parsed.hostname, 443, type=socket.SOCK_STREAM
+            )
+        }
+    except socket.gaierror as exc:
+        raise ValueError("Job hostname could not be resolved") from exc
+    if not addresses or any(
+        not ipaddress.ip_address(address).is_global for address in addresses
+    ):
+        raise ValueError("Job URL must not resolve to a private or local address")
+
+
+def _get_public_page(url: str) -> str:
+    current = url
+    for _redirect in range(6):
+        assert_public_https_url(current)
+        response = requests.get(
+            current,
+            headers={
+                "Accept": "text/html,application/xhtml+xml",
+                "User-Agent": "Mozilla/5.0 internship-watcher-resume-tailor/1.0",
+            },
+            timeout=20,
+            allow_redirects=False,
+        )
+        if response.status_code in {301, 302, 303, 307, 308}:
+            destination = response.headers.get("Location", "")
+            if not destination:
+                return ""
+            current = urljoin(current, destination)
+            continue
+        response.raise_for_status()
+        if "html" not in response.headers.get("Content-Type", "").lower():
+            return ""
+        return response.text[:2_000_000]
+    return ""
 
 
 def _greenhouse_board_and_id(url: str) -> tuple[str, str]:
@@ -197,6 +268,7 @@ def fetch_description(job: Job) -> str:
         # A best-effort fallback for supported ATS pages whose public API shape changed.
         if job.ats != "unknown":
             return html_to_text(_get(job.url))
+        return html_to_text(_get_public_page(job.url))
     except Exception:
         return ""
     return ""

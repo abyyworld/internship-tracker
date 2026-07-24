@@ -94,7 +94,7 @@ preferences:
 # loopback Ollama service. The generated PDF remains a draft requiring review.
 tailoring:
   provider: deterministic  # deterministic | ollama
-  model: ""
+  model: "qwen3:4b"
   endpoint: http://127.0.0.1:11434
 
 # Answers are nested by job ID. Inside that job, use

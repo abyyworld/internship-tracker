@@ -6,6 +6,7 @@ import tempfile
 import threading
 import unittest
 from unittest.mock import patch
+from urllib.parse import quote
 
 from autoapply.bridge import BridgeServer, load_or_create_bridge_token
 from autoapply.models import Job
@@ -55,6 +56,19 @@ class BridgeTests(unittest.TestCase):
             thread.start()
             port = server.server_address[1]
             try:
+                connection = http.client.HTTPConnection("127.0.0.1", port)
+                connection.request("GET", "/connect")
+                connect_page = connection.getresponse()
+                self.assertEqual(connect_page.status, 200)
+                self.assertIn(
+                    b"autoapply_bridge_token_v1", connect_page.read()
+                )
+                connection.request(
+                    "GET", f"/tailor?url={quote(job.url, safe='')}"
+                )
+                tailor_page = connection.getresponse()
+                self.assertEqual(tailor_page.status, 200)
+                self.assertIn(b"Local Qwen CV editor", tailor_page.read())
                 result = {
                     "resume_path": str(pdf),
                     "resume_hash": "hash",
@@ -62,7 +76,6 @@ class BridgeTests(unittest.TestCase):
                     "tailoring": {"provider": "ollama-local"},
                 }
                 with patch("autoapply.bridge.prepare", return_value=result):
-                    connection = http.client.HTTPConnection("127.0.0.1", port)
                     connection.request(
                         "POST",
                         "/prepare",
@@ -80,6 +93,9 @@ class BridgeTests(unittest.TestCase):
                     )
                     self.assertEqual(
                         payload["tailoring"]["provider"], "ollama-local"
+                    )
+                    self.assertEqual(
+                        payload["description_source"], ""
                     )
                     path = payload["resume_download_url"].split(str(port), 1)[1]
                     connection.request("GET", path)

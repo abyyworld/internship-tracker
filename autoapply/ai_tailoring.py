@@ -96,6 +96,28 @@ def _validate_rewrite(original: str, candidate: str) -> str:
     return value
 
 
+def _validate_summary(evidence: str, candidate: str) -> str:
+    value = re.sub(r"\s+", " ", candidate or "").strip().lstrip("•- ").strip()
+    if not 40 <= len(value) <= 420:
+        raise ValueError("length")
+    if _number_tokens(value) - _number_tokens(evidence):
+        raise ValueError("new_numeric_claim")
+    if _named_tokens(value) - _named_tokens(evidence):
+        raise ValueError("new_named_technology_or_entity")
+    evidence_lower = evidence.casefold()
+    for phrase in RISKY_CLAIMS:
+        if phrase in value.casefold() and phrase not in evidence_lower:
+            raise ValueError("new_unsupported_qualification")
+    evidence_terms = concepts(evidence)
+    candidate_terms = concepts(value)
+    if (
+        candidate_terms
+        and len(evidence_terms & candidate_terms) / len(candidate_terms) < 0.7
+    ):
+        raise ValueError("insufficient_evidence_coverage")
+    return value
+
+
 def _prompt(job: Job, resume: TailoredResume) -> tuple[str, str]:
     facts = [
         {"id": link.fact_id, "verified_text": link.text}
@@ -222,10 +244,9 @@ def rewrite_with_ollama(
         all_evidence = " ".join(original_by_id.values())
         combined_original = f"{resume.summary} {all_evidence}".strip()
         try:
-            candidate_summary = _validate_rewrite(combined_original, summary)
-            if len(candidate_summary) <= 420:
-                result.summary = candidate_summary
-                summary_status = "accepted"
+            candidate_summary = _validate_summary(combined_original, summary)
+            result.summary = candidate_summary
+            summary_status = "accepted"
         except ValueError:
             summary_status = "rejected"
 

@@ -95,6 +95,7 @@ class LocalAiTailoringTests(unittest.TestCase):
         audit = tailored.selection_audit["ai_rewrite"]
         self.assertEqual(audit["accepted_fact_ids"], ["robot"])
         self.assertEqual(audit["rejected_fact_ids"]["vision"], "new_numeric_claim")
+        self.assertEqual(audit["summary"], "accepted")
         self.assertTrue(audit["review_required"])
 
     def test_private_facts_cannot_be_sent_to_remote_endpoint(self):

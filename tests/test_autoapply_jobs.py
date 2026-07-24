@@ -117,6 +117,11 @@ class JobImportTests(unittest.TestCase):
                 )
             jobs = jobs_from_tracker(path)
             self.assertEqual([job.id for job in jobs], ["open"])
+            tailoring_jobs = jobs_from_tracker(path, include_unknown=True)
+            self.assertEqual(
+                [job.id for job in tailoring_jobs], ["open", "unsupported"]
+            )
+            self.assertIn("Job title: Intern", tailoring_jobs[1].description)
 
     def test_browser_host_allowlist_is_exact(self):
         assert_allowed_url(
