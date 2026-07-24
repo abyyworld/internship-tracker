@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Internship Tracker: Generate CV + Apply
 // @namespace    internship-watcher.local
-// @version      1.0.0
+// @version      1.1.0
 // @description  Generate a private role-specific CV locally, then open the employer page for Simplify.
 // @match        https://github.com/*/internship-tracker*
+// @match        https://abyyworld.github.io/internship-tracker/*
 // @grant        GM_download
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -43,7 +44,8 @@
     let token = force ? "" : await GM_getValue(TOKEN_KEY, "");
     if (!token) {
       token = window.prompt(
-        "Start `python -m autoapply bridge`, then paste its private bridge token:"
+        "Paste the private bridge token from private/bridge.token. " +
+        "The background helper should already be running:"
       ) || "";
       token = token.trim();
       if (token) await GM_setValue(TOKEN_KEY, token);
@@ -75,7 +77,10 @@
           resolve(value);
         },
         onerror() {
-          reject(new Error("Local CV bridge is not running. Start `python -m autoapply bridge`."));
+          reject(new Error(
+            "Local CV helper is not reachable. Open start-autoapply.command " +
+            "from the internship watcher folder."
+          ));
         },
         ontimeout() {
           reject(new Error("CV generation timed out. Check the bridge terminal."));
@@ -131,7 +136,11 @@
         suffix => parsed.hostname === suffix || parsed.hostname.endsWith(`.${suffix}`)
       )
     ) return false;
-    return Boolean(anchor.closest("article.markdown-body, [data-testid='readme']"));
+    return Boolean(
+      anchor.closest(
+        "article.markdown-body, [data-testid='readme'], [data-autoapply-dashboard]"
+      )
+    );
   }
 
   function enhance() {
