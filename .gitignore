@@ -8,8 +8,14 @@ watcher.log
 # python
 __pycache__/
 *.pyc
+.venv/
+.pytest_cache/
 
-# GitHub Actions workflow lives here but is added via the web UI
-# (a Personal Access Token needs the 'workflow' scope to push it).
-# Kept on disk for local reference; not pushed from the CLI.
-.github/workflows/
+# generated personal apply triage (run copilot.py to regenerate locally)
+apply_cockpit.html
+
+# Private application state and generated CVs must never be committed.
+private/
+.private/
+*.sqlite3
+autofill.local.user.js

@@ -1,0 +1,35 @@
+# Copy this file to <AUTOAPPLY_HOME>/resume_facts.yaml.
+# Every bullet is an evidence-backed fact. The tailor only selects and reorders it.
+schema_version: 1
+summary: REPLACE_ME
+
+skills:
+  - REPLACE_ME
+
+education:
+  - institution: REPLACE_ME
+    degree: REPLACE_ME
+    location: REPLACE_ME
+    dates: REPLACE_ME
+
+sections:
+  - name: Experience
+    entries:
+      - title: REPLACE_ME
+        organization: REPLACE_ME
+        location: REPLACE_ME
+        dates: REPLACE_ME
+        bullets:
+          - id: experience_fact_1
+            text: REPLACE_ME
+            tags: [REPLACE_ME]
+  - name: Projects
+    entries:
+      - title: REPLACE_ME
+        organization: ""
+        location: ""
+        dates: REPLACE_ME
+        bullets:
+          - id: project_fact_1
+            text: REPLACE_ME
+            tags: [REPLACE_ME]

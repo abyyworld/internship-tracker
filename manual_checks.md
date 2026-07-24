@@ -1,37 +1,71 @@
 # Manual Check List — 2026-07-24
-These companies use JS-heavy or private ATS — check their career pages directly.
-Set `my_status` in tracker.csv once you've applied or decided to skip.
+These are career hubs, not confirmed open jobs. Check the official page directly.
+Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
-## Elite Manual Checks
-| Company | Role | Location | Term | Link |
-|---------|------|----------|------|------|
-| Jane Street | Software Engineer Intern | New York / London | Summer 2027 | [Apply](https://www.janestreet.com/join-jane-street/open-roles/) |
-| Jane Street | Quantitative Trading Intern | New York / London | Summer 2027 | [Apply](https://www.janestreet.com/join-jane-street/open-roles/) |
-| DE Shaw | SWE / Quant Research Intern | New York / London | Summer 2027 | [Apply](https://www.deshaw.com/careers/internships) |
-| Two Sigma | SWE / Quant Research Intern | New York | Summer 2027 | [Apply](https://careers.twosigma.com/careers/jobListings) |
-| Citadel | SWE / Quant Research Intern | Chicago / London / NY | Summer 2027 | [Apply](https://www.citadel.com/careers/) |
-| Citadel Securities | SWE / Trading Intern | Chicago / London / NY | Summer 2027 | [Apply](https://www.citadelsecurities.com/careers/) |
-| Optiver | Software Engineer Intern | Amsterdam/Chicago | Summer 2027 | [Apply](https://optiver.com/working-at-optiver/career-opportunities/) |
-| Optiver | Trader Intern | Amsterdam/Chicago | Summer 2027 | [Apply](https://optiver.com/working-at-optiver/career-opportunities/) |
-| Hudson River Trading | SWE / Algo Dev Intern | New York / London | Summer 2027 | [Apply](https://www.hudsonrivertrading.com/careers/) |
-| Five Rings | Software / Quant Research Intern | New York | Summer 2027 | [Apply](https://fiverings.com/careers/) |
-| Susquehanna (SIG) | Technology / Quant Intern | Philadelphia / Dublin | Summer 2027 | [Apply](https://careers.sig.com/) |
-| Google | Software Engineering Intern | Global (incl London) | Summer 2027 | [Apply](https://careers.google.com/) |
-| Google DeepMind | Research Intern (AI/ML) | London / Mountain View | Summer 2027 | [Apply](https://deepmind.google/careers/) |
-| Meta | SWE Intern / Research Intern | Global (incl London) | Summer 2027 | [Apply](https://www.metacareers.com/) |
-| Meta AI (FAIR) | Research Intern | London / Menlo Park | Summer 2027 | [Apply](https://ai.meta.com/join-us/) |
-| Apple | SWE / ML Research Intern | Cupertino / Cambridge | Summer 2027 | [Apply](https://jobs.apple.com/) |
-| Microsoft Research | Research Intern | Cambridge UK / Redmond | Summer 2027 | [Apply](https://www.microsoft.com/en-us/research/careers/) |
-| Amazon | SDE Intern / Applied Sci Intern | Global (incl London) | Summer 2027 | [Apply](https://www.amazon.jobs/) |
-| Netflix | SWE Intern | Los Gatos / Remote | Summer 2027 | [Apply](https://jobs.netflix.com/) |
-| OpenAI | SWE / Research Intern | San Francisco | Summer 2027 | [Apply](https://openai.com/careers/) |
-| Palantir | Forward Deployed SWE Intern | London / New York | Summer 2027 | [Apply](https://www.palantir.com/careers/) |
-| ARM | SWE / ML Intern | Cambridge, UK | Summer 2027 | [Apply](https://careers.arm.com/) |
-| DRW | SWE / Quant Research Intern | Chicago / London | Summer 2027 | [Apply](https://drw.com/work-at-drw/) |
-| Graphcore | ML / SWE Intern | Bristol, UK | Summer 2027 | [Apply](https://www.graphcore.ai/careers) |
-| Isomorphic Labs | Research Intern | London, UK | Summer 2027 | [Apply](https://www.isomorphiclabs.com/join) |
+## Elite Manual Checks (own ATS — go straight to their intern page)
+| Company | Section | Location | Link |
+|---------|---------|----------|------|
+| Jane Street | → Internships (SWE / Quant / ML) | New York / London | [Open](https://www.janestreet.com/join-jane-street/internships/) |
+| DE Shaw | → Internships (SWE / Quant) | New York / London | [Open](https://www.deshaw.com/careers/internships) |
+| Two Sigma | → Students & Grads | New York / London | [Open](https://careers.twosigma.com/careers/students) |
+| Citadel | → Students & Graduates | Chicago / London / NY | [Open](https://www.citadel.com/careers/students-and-graduates/) |
+| Citadel Securities | → Students & Graduates | Chicago / London / NY | [Open](https://www.citadelsecurities.com/careers/students-and-graduates/) |
+| Optiver | → Early Careers (SWE / Trader) | Amsterdam / Chicago | [Open](https://optiver.com/working-at-optiver/early-careers/) |
+| Hudson River Trading | → Campus (SWE / Algo) | New York / London | [Open](https://www.hudsonrivertrading.com/campus/) |
+| Five Rings | → Campus (SWE / Quant) | New York | [Open](https://fiverings.com/campus/) |
+| Susquehanna (SIG) | → Students (Tech / Quant) | Philadelphia / Dublin | [Open](https://careers.sig.com/students-graduates) |
+| DRW | → Campus (SWE / Quant) | Chicago / London | [Open](https://drw.com/work-at-drw/campus/) |
+| Point72 / Cubist | → Academy & Internships | New York / London | [Open](https://careers.point72.com/CSJoinTypesInternships) |
+| G-Research | → Students & Graduates | London | [Open](https://www.gresearch.com/careers/?filter_category=students-graduates) |
+| XTX Markets | → Early Careers | London | [Open](https://www.xtxmarkets.com/careers/) |
+| Marshall Wace | → Graduates & Interns | London | [Open](https://www.mwam.com/graduates-interns/) |
+| Man Group | → Early Careers | London / Oxford | [Open](https://www.man.com/early-careers) |
+| Google | → Internships (filter: intern) | Global (incl London) | [Open](https://www.google.com/about/careers/applications/jobs/results/?target_level=INTERN_AND_APPRENTICESHIP&employment_type=INTERN) |
+| Google DeepMind | → Careers (Student / Research) | London / Mountain View | [Open](https://deepmind.google/about/careers/) |
+| Meta | → Internships | Global (incl London) | [Open](https://www.metacareers.com/jobs/?roles[0]=Internships) |
+| Meta (FAIR / AI) | → AI Research careers | London / Menlo Park | [Open](https://ai.meta.com/careers/) |
+| Apple | → Internships | Cupertino / Cambridge | [Open](https://jobs.apple.com/en-us/search?team=internships-STDNT-INTRN) |
+| Microsoft Research | → Internships | Cambridge UK / Redmond | [Open](https://jobs.careers.microsoft.com/global/en/search?lc=United%20Kingdom&exp=Students%20and%20graduates) |
+| Amazon | → Student Programs (SDE / Applied) | Global (incl London) | [Open](https://www.amazon.jobs/content/en/career-programs/student-programs) |
+| NVIDIA | → University Recruiting | Global (incl UK) | [Open](https://www.nvidia.com/en-us/about-nvidia/careers/university-recruiting/) |
+| Netflix | → Students | Los Gatos / Remote | [Open](https://explore.jobs.netflix.net/careers?query=intern) |
+| ARM | → Early Careers | Cambridge, UK | [Open](https://careers.arm.com/early-careers) |
 
-## UK Spring Weeks (apply NOW — deadlines Oct–Jan)
+## Global Robotics Watchlist
+| Company | Focus | Location | Link |
+|---------|-------|----------|------|
+| Boston Dynamics | Robotics careers | US | [Careers](https://bostondynamics.com/careers/) |
+| Tesla Optimus | AI & Robotics careers | Global | [Careers](https://www.tesla.com/careers/search/?query=robotics) |
+| NVIDIA Robotics | Robotics / embodied AI roles | Global | [Careers](https://www.nvidia.com/en-us/about-nvidia/careers/) |
+| Intrinsic | Industrial robotics roles | US / Germany | [Careers](https://www.intrinsic.ai/careers) |
+| Skild AI | Robot foundation-model roles | US | [Careers](https://www.skild.ai/careers) |
+| Field AI | Field robotics roles | US | [Careers](https://www.fieldai.com/careers) |
+| RIVR | Last-mile robotics roles | Switzerland / UK | [Careers](https://rivr.ai/careers) |
+| NEURA Robotics | Cognitive robotics roles | Germany | [Careers](https://neura-robotics.com/career) |
+| Wandercraft | Mobility robotics roles | France / US | [Careers](https://www.wandercraft.eu/careers) |
+| Exotec | Warehouse robotics roles | Europe / Global | [Careers](https://www.exotec.com/careers/) |
+| Unitree | Humanoid / quadruped roles | China | [Careers](https://www.unitree.com/career) |
+| DJI | Drones / autonomy roles | China / Global | [Careers](https://we.dji.com/jobs) |
+| Zipline | Autonomous delivery roles | US / Africa / Global | [Careers](https://www.flyzipline.com/careers) |
+| Sanctuary AI | Humanoid robotics roles | Canada | [Careers](https://careers.kula.ai/sanctuary-ai) |
+| Mentee Robotics | Humanoid robotics roles | Israel | [Careers](https://www.comeet.com/jobs/mentee_robotics/6A.002) |
+| Starship | Delivery robotics roles | Europe / US | [Careers](https://starship.teamtailor.com/jobs) |
+| Agile Robots | Industrial robotics roles | Germany / Global | [Careers](https://www.agile-robots.com/en/career/) |
+| Enchanted Tools | Humanoid robotics roles | France | [Careers](https://enchanted.tools/jobs/) |
+| Oxa | Autonomous vehicle roles | UK / US | [Careers](https://oxa.tech/careers/) |
+| Opteran | Nature-inspired autonomy | UK / US | [Careers](https://opteran.com/careers) |
+| RLWRLD | Robot foundation-model roles | Korea / US / Japan | [Careers](https://www.rlwrld.ai/en/careers) |
+| LimX Dynamics | Humanoid robotics roles | China | [Careers](https://ai.limxdynamics.com/en/join-us/) |
+| Fourier | Humanoid robotics roles | Singapore / China | [Careers](https://www.fftai.com/career) |
+| AgiBot | Humanoid robotics roles | China | [Careers](https://finch.agibot.com/join-us) |
+| Skydio | Autonomous drone roles | US | [Careers](https://www.skydio.com/careers) |
+| Cartken | Delivery robotics roles | US / Germany | [Careers](https://www.cartken.com/careers/careers) |
+| Turing | Autonomous vehicle roles | Japan | [Careers](https://jobs.tur.ing/en/) |
+| Crest Robotics | Field robotics roles | Australia | [Careers](https://crestrobotics.com.au/jobs.html) |
+| Reach Robotics | Underwater robotics roles | Australia | [Careers](https://reachrobotics.com/careers/) |
+| Rapyuta Robotics | Warehouse robotics roles | Japan / India | [Careers](https://www.rapyuta-robotics.com/careers/) |
+
+## UK Spring Weeks (planned windows — verify before applying)
 | Company | Program | Location | Deadline | Link |
 |---------|---------|----------|----------|------|
 | Jane Street | FOCUS (First-Year Insight) | London/NY | Oct–Nov 2026 | [Apply](https://www.janestreet.com/join-jane-street/open-roles/) |
@@ -48,4 +82,6 @@ Set `my_status` in tracker.csv once you've applied or decided to skip.
 | Five Rings | Summer Smash / Insight Event | New York | Rolling | [Apply](https://fiverings.com/careers/) |
 
 ## Sources that failed this run
+Roles previously seen only in these sources remain stale; they are not marked closed.
+
 - **Simplify2027**: HTTP Error 404: Not Found
