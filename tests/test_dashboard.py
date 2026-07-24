@@ -45,8 +45,8 @@ class DashboardTests(unittest.TestCase):
             self.assertIn('id="region"', page)
             self.assertIn('id="startupOnly"', page)
             self.assertIn("data-autoapply-dashboard", page)
-            self.assertIn("127.0.0.1:8765/tailor", page)
-            self.assertIn("⚡ Tailor CV + Apply", page)
+            self.assertIn("127.0.0.1:8765/editor", page)
+            self.assertIn("✦ Edit CV for this job", page)
             self.assertIn(r"\u003c/script\u003e", page)
             self.assertNotIn("</script><script>alert(1)</script>", page)
 

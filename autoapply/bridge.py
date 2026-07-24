@@ -12,13 +12,33 @@ import secrets
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
-from .config import database_path
+from .config import (
+    database_path,
+    facts_path,
+    load_yaml,
+    profile_path,
+    reject_placeholders,
+)
+from .cv_editor import (
+    load_draft,
+    master_document,
+    resume_from_document,
+    save_draft,
+)
+from .editor_ui import EDITOR_PAGE
 from .jobs import jobs_from_tracker
+from .minimax_tailoring import (
+    generate_suggestions,
+    load_minimax_key,
+    minimax_key_configured,
+    save_minimax_key,
+)
+from .resume import render_resume
 from .runner import prepare
 from .store import Store
 
 
-MAX_REQUEST_BYTES = 8192
+MAX_REQUEST_BYTES = 262144
 DOWNLOAD_TTL = timedelta(minutes=5)
 
 
@@ -152,6 +172,36 @@ class BridgeHandler(BaseHTTPRequestHandler):
         supplied = self.headers.get("X-Autoapply-Token", "")
         return bool(supplied) and secrets.compare_digest(supplied, self.server.token)
 
+    def _payload(self) -> dict[str, Any]:
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            length = 0
+        if length <= 0 or length > MAX_REQUEST_BYTES:
+            raise ValueError("Invalid request size")
+        try:
+            value = json.loads(self.rfile.read(length))
+        except json.JSONDecodeError as exc:
+            raise ValueError("Expected a JSON request") from exc
+        if not isinstance(value, dict):
+            raise ValueError("Expected a JSON object")
+        return value
+
+    @staticmethod
+    def _job_url(value: Any) -> str:
+        url = str(value or "").strip()
+        parsed = urlparse(url)
+        if parsed.scheme != "https" or not parsed.hostname or len(url) > 2048:
+            raise ValueError("Only absolute HTTPS job URLs are accepted")
+        return url
+
+    def _document(self) -> tuple[dict[str, Any], dict[str, Any]]:
+        profile = load_yaml(profile_path(self.server.home))
+        facts = load_yaml(facts_path(self.server.home))
+        reject_placeholders(profile)
+        reject_placeholders(facts)
+        return master_document(profile, facts), profile
+
     def do_GET(self) -> None:
         parsed_request = urlparse(self.path)
         if parsed_request.path == "/health":
@@ -162,6 +212,51 @@ class BridgeHandler(BaseHTTPRequestHandler):
             return
         if parsed_request.path == "/connect":
             self._html(200, CONNECT_PAGE)
+            return
+        if parsed_request.path == "/editor":
+            query = parse_qs(parsed_request.query)
+            try:
+                self._job_url(query.get("url", [""])[0])
+            except ValueError as exc:
+                self._html(
+                    400,
+                    LOCAL_PAGE_ERROR.replace("__ERROR__", str(exc)),
+                )
+                return
+            self._html(200, EDITOR_PAGE)
+            return
+        if parsed_request.path == "/api/editor":
+            if not self._authorized():
+                self._json(401, {"error": "Bridge token required"})
+                return
+            try:
+                query = parse_qs(parsed_request.query)
+                url = self._job_url(query.get("url", [""])[0])
+                with Store(database_path(self.server.home)) as store:
+                    job = store.find_job_by_url(url)
+                document, _profile = self._document()
+                draft = load_draft(self.server.home, job.id)
+                self._json(
+                    200,
+                    {
+                        "ok": True,
+                        "job": {
+                            "id": job.id,
+                            "company": job.company,
+                            "role": job.role,
+                            "location": job.location,
+                            "description": bool(job.description.strip()),
+                            "application_url": _application_url(job),
+                        },
+                        "document": document,
+                        "draft": draft,
+                        "minimax_configured": minimax_key_configured(
+                            self.server.home
+                        ),
+                    },
+                )
+            except (FileNotFoundError, KeyError, OSError, RuntimeError, ValueError) as exc:
+                self._json(422, {"error": str(exc)})
             return
         if parsed_request.path == "/tailor":
             query = parse_qs(parsed_request.query)
@@ -210,32 +305,122 @@ class BridgeHandler(BaseHTTPRequestHandler):
         self._json(404, {"error": "Not found"})
 
     def do_POST(self) -> None:
-        if self.path != "/prepare":
+        parsed_request = urlparse(self.path)
+        if parsed_request.path not in {
+            "/prepare",
+            "/api/settings/minimax",
+            "/api/suggest",
+            "/api/draft",
+            "/api/export",
+        }:
             self._json(404, {"error": "Not found"})
             return
         if not self._authorized():
             self._json(401, {"error": "Bridge token required"})
             return
         try:
-            length = int(self.headers.get("Content-Length", "0"))
-        except ValueError:
-            length = 0
-        if length <= 0 or length > MAX_REQUEST_BYTES:
-            self._json(400, {"error": "Invalid request size"})
+            payload = self._payload()
+        except ValueError as exc:
+            self._json(400, {"error": str(exc)})
             return
+
+        if parsed_request.path == "/api/settings/minimax":
+            try:
+                save_minimax_key(
+                    self.server.home,
+                    str(payload.get("api_key", "")),
+                )
+                self._json(200, {"ok": True, "configured": True})
+            except (OSError, RuntimeError, ValueError) as exc:
+                self._json(422, {"error": str(exc)})
+            return
+
         try:
-            payload = json.loads(self.rfile.read(length))
-            url = str(payload.get("url", "")).strip()
-        except (AttributeError, json.JSONDecodeError):
-            self._json(400, {"error": "Expected JSON with a job URL"})
-            return
-        parsed = urlparse(url)
-        if parsed.scheme != "https" or not parsed.hostname or len(url) > 2048:
-            self._json(400, {"error": "Only absolute HTTPS job URLs are accepted"})
-            return
-        try:
+            url = self._job_url(payload.get("url"))
             with Store(database_path(self.server.home)) as store:
                 job = store.find_job_by_url(url)
+
+                if parsed_request.path == "/api/suggest":
+                    # Fetch at generation time so opening the editor is instant and
+                    # no API credit is used before the user asks for suggestions.
+                    from .runner import _fetch_resume_description
+
+                    description, _source = _fetch_resume_description(job)
+                    if description != job.description:
+                        store.update_description(job.id, description)
+                        job.description = description
+                    document, _profile = self._document()
+                    instructions = str(payload.get("instructions", ""))[:4000]
+                    generated = generate_suggestions(
+                        job,
+                        document,
+                        api_key=load_minimax_key(self.server.home),
+                        instructions=instructions,
+                    )
+                    saved = save_draft(
+                        self.server.home,
+                        document,
+                        job.id,
+                        generated,
+                        existing=generated,
+                    )
+                    self._json(200, {"ok": True, "draft": saved})
+                    return
+
+                if parsed_request.path == "/api/draft":
+                    document, _profile = self._document()
+                    incoming = payload.get("draft")
+                    if not isinstance(incoming, dict):
+                        raise ValueError("Expected a CV draft object")
+                    existing = load_draft(self.server.home, job.id)
+                    saved = save_draft(
+                        self.server.home,
+                        document,
+                        job.id,
+                        incoming,
+                        existing=existing,
+                    )
+                    self._json(200, {"ok": True, "draft": saved})
+                    return
+
+                if parsed_request.path == "/api/export":
+                    document, _profile = self._document()
+                    draft = load_draft(self.server.home, job.id)
+                    resume = resume_from_document(document, draft)
+                    output = (
+                        self.server.home
+                        / "generated"
+                        / _safe_filename(job.id).removesuffix(".pdf")
+                        / "full-tailored-resume.pdf"
+                    )
+                    resume_hash = render_resume(resume, output)
+                    ticket = self.server.new_download(
+                        output,
+                        _safe_filename(f"{job.company}-{job.role}"),
+                    )
+                    host, port = self.server.server_address
+                    self._json(
+                        200,
+                        {
+                            "ok": True,
+                            "resume_sha256": resume_hash,
+                            "resume_download_url": (
+                                f"http://{host}:{port}/resume/{ticket}"
+                            ),
+                            "accepted_patch_count": len(
+                                resume.selection_audit["accepted_patch_ids"]
+                            )
+                            + int(
+                                resume.selection_audit[
+                                    "summary_patch_accepted"
+                                ]
+                            ),
+                            "master_fact_count": len(resume.selected_fact_ids),
+                            "application_url": _application_url(job),
+                        },
+                    )
+                    return
+
                 result = prepare(
                     store, self.server.home, job.id, resume_only=True
                 )
@@ -266,7 +451,13 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     ),
                 },
             )
-        except (FileNotFoundError, KeyError, OSError, RuntimeError, ValueError) as exc:
+        except (
+            FileNotFoundError,
+            KeyError,
+            OSError,
+            RuntimeError,
+            ValueError,
+        ) as exc:
             self._json(422, {"error": str(exc)})
 
 

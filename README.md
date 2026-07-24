@@ -15,9 +15,11 @@ cd "$HOME/Desktop/internship watcher"
 ./start-autoapply.command
 ```
 
-Every dashboard card has a native **⚡ Tailor CV + Apply** button; Tampermonkey is not required for the dashboard. It reads the live job page when possible, generates evidence-checked wording edits with the local Ollama model, downloads a job-specific PDF, and opens the employer application page where Simplify can autofill. If an employer blocks live page reading, the screen explicitly says that public tracker metadata was used as the fallback.
+Every dashboard card has a native **✦ Edit CV for this job** button; Tampermonkey is not required for the dashboard. It opens a private localhost editor containing the complete master CV. MiniMax M3 proposes a small set of evidence-checked wording patches that can be accepted, rejected, or directly edited before exporting a job-specific PDF. Untouched content is preserved, and the employer application remains a separate button where Simplify can autofill.
 
-The GitHub repository never receives the private profile or fact bank. The CV is generated on `127.0.0.1`, remains a draft requiring review, and is never submitted by the bridge.
+The GitHub repository never receives the private profile, fact bank, MiniMax key, drafts, or generated PDFs. The editor runs on `127.0.0.1`, stores the API key locally as a mode-0600 private file, requires review of every proposed change, and never submits an application.
+
+Pressing **Generate suggestions** sends the selected job description and master CV text to the MiniMax API through the user's account. Merely opening the editor, manually editing, or exporting a PDF does not call MiniMax.
 
 ## At a glance
 
