@@ -1,4 +1,4 @@
-# Manual Check List — 2026-07-23
+# Manual Check List — 2026-07-24
 These companies use JS-heavy or private ATS — check their career pages directly.
 Set `my_status` in tracker.csv once you've applied or decided to skip.
 
