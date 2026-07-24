@@ -26,6 +26,7 @@ def profile():
         "work_authorization": {
             "GB": {
                 "authorized_now": True,
+                "authorization_scope": "unrestricted",
                 "requires_sponsorship_now_or_future": False,
             },
             "US": {
@@ -94,6 +95,32 @@ class QuestionPolicyTests(unittest.TestCase):
         self.assertEqual(plan.actions[0].value, "Yes")
         self.assertEqual(plan.actions[0].option_selector, "#yes")
 
+    def test_limited_uk_authorization_requires_exact_job_form_review(self):
+        configured = profile()
+        configured["work_authorization"]["GB"] = {
+            "authorized_now": True,
+            "authorization_scope": "limited",
+            "requires_sponsorship_now_or_future": True,
+        }
+        job = Job(
+            "limited", "Acme", "Robotics Intern",
+            "https://job-boards.greenhouse.io/acme/jobs/20",
+            ats="greenhouse", location="London", region="UK",
+        )
+        field = FormField(
+            "auth",
+            "Are you authorised to work in the United Kingdom?",
+            "radio",
+            required=True,
+            options=["Yes", "No"],
+            option_selectors={"Yes": "#yes", "No": "#no"},
+        )
+        plan = build_fill_plan(
+            job, snapshot(field), configured, "/tmp/resume.pdf", "hash"
+        )
+        self.assertFalse(plan.safe_to_submit)
+        self.assertIn("scope_limited", plan.blocking[0].reason)
+
     def test_explicit_question_country_overrides_job_location(self):
         job = Job(
             "j2b", "Acme", "Global Intern",
@@ -121,6 +148,7 @@ class QuestionPolicyTests(unittest.TestCase):
         configured = profile()
         configured["work_authorization"]["US"] = {
             "authorized_now": True,
+            "authorization_scope": "unrestricted",
             "requires_sponsorship_now_or_future": False,
         }
         configured["work_authorization"]["DE"] = {
@@ -151,6 +179,7 @@ class QuestionPolicyTests(unittest.TestCase):
         configured = profile()
         configured["work_authorization"]["US"] = {
             "authorized_now": True,
+            "authorization_scope": "unrestricted",
             "requires_sponsorship_now_or_future": False,
         }
         field = FormField(

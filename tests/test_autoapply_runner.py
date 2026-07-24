@@ -201,6 +201,7 @@ class ApprovalGateTests(unittest.TestCase):
             "work_authorization": {
                 "GB": {
                     "authorized_now": True,
+                    "authorization_scope": "unrestricted",
                     "requires_sponsorship_now_or_future": False,
                 }
             },

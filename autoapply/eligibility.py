@@ -205,4 +205,13 @@ def assess_eligibility(job: Job, profile: dict[str, Any]) -> EligibilityReport:
         reasons.append("Job jurisdiction is unknown or spans multiple countries")
     elif auth.get("authorized_now", "unknown") == "unknown":
         reasons.append(f"Work authorisation for {jurisdiction} is not confirmed")
+    elif (
+        auth.get("authorized_now") is True
+        and auth.get("authorization_scope", "unknown") != "unrestricted"
+    ):
+        scope = auth.get("authorization_scope", "unknown")
+        reasons.append(
+            f"Work authorisation for {jurisdiction} is {scope}; "
+            "the exact role and visa conditions require review"
+        )
     return EligibilityReport("review_required" if reasons else "not_blocked", reasons)

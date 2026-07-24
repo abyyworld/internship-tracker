@@ -53,6 +53,28 @@ class GlobalEligibilityTests(unittest.TestCase):
         self.assertEqual(report.status, "review_required")
         self.assertIn("CH", report.reasons[0])
 
+    def test_limited_or_program_specific_authorization_requires_review(self):
+        job = Job(
+            "j", "Robot Co", "Intern", "https://invalid.test",
+            region="UK", location="London",
+        )
+        for scope in ("limited", "program_specific"):
+            with self.subTest(scope=scope):
+                report = assess_eligibility(
+                    job,
+                    {
+                        "work_authorization": {
+                            "GB": {
+                                "authorized_now": True,
+                                "authorization_scope": scope,
+                                "requires_sponsorship_now_or_future": True,
+                            }
+                        }
+                    },
+                )
+                self.assertEqual(report.status, "review_required")
+                self.assertIn(scope, report.reasons[0])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -200,6 +200,17 @@ def _resolve(
         value = auth.get(key, "unknown")
         if value == "unknown" or value is None:
             return None, f"profile.work_authorization.{jurisdiction}.{key}_unknown"
+        if category == Category.WORK_AUTH and value is True:
+            scope = auth.get("authorization_scope", "unknown")
+            if scope != "unrestricted":
+                reviewed = _reviewed_answer(profile, job, form_hash, field)
+                if reviewed is not None:
+                    return reviewed, "profile.reviewed_answers.exact_prompt"
+                return (
+                    None,
+                    f"profile.work_authorization.{jurisdiction}."
+                    f"authorization_scope_{scope}_requires_exact_review",
+                )
         return value, f"profile.work_authorization.{jurisdiction}.{key}"
     if category == Category.EEO:
         mode = profile.get("preferences", {}).get("eeo", "manual")

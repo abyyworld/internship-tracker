@@ -70,12 +70,41 @@ In `profile.yaml`, verify:
 - Institution, exact degree, field of study, degree level, and graduation date.
 - Each citizenship using an ISO country code.
 - Work authorisation separately for every relevant country.
+- Whether that authorisation is `unrestricted`, `limited`, `program_specific`,
+  or `unknown`.
 - Whether sponsorship is required now or in the future in each country.
 - Your EEO preference: manual, or decline only when one exact decline option exists.
 
 Do not infer citizenship from residence, work authorisation from citizenship, or
 sponsorship from a job location. Leave uncertain values as `unknown`; the assistant
 will stop on them.
+
+Visa-limited permission is not the same as unrestricted work authorisation. Record
+the visa under `visa_status`, put the practical restriction in `limitations`, and
+use:
+
+- `limited` for permission restricted by hours, term dates, employer, occupation,
+  or another condition.
+- `program_specific` when work is allowed only within an approved programme or
+  sponsor document.
+- `unrestricted` only when you personally verified that the permission is not
+  restricted for the job being considered.
+
+For `limited` and `program_specific` profiles, the assistant may prepare and inspect
+an application but will not auto-answer a broad work-authorisation question. The
+exact job, form, hours, dates, and visa conditions must be reviewed first.
+
+Official references: the US State Department says J-1 work is limited to the
+activity on Form DS-2019 and the exchange category, with sponsor approval for work
+outside the programme sponsor. UK Student rules generally limit eligible
+degree-level students to their stated term-time hours and allow full-time work only
+in permitted vacation periods; an eligible course placement must be integral and
+assessed. Always verify the conditions shown on your own DS-2019, eVisa, and
+university term/placement documents:
+
+- https://j1visa.state.gov/participants/common-questions/
+- https://www.gov.uk/guidance/immigration-rules/immigration-rules-appendix-student
+- https://www.gov.uk/government/publications/right-to-work-checks-employers-guide/
 
 `reviewed_answers` is for a required question you personally checked on a specific
 job and form revision. Construct its key from the `form_hash`, `field_key`, and
