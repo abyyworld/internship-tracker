@@ -31,6 +31,18 @@ python -m pip install -r requirements-autoapply.txt
 
 The guarded browser workflow currently expects Microsoft Edge to be installed.
 
+For free local generative CV edits on macOS, install Ollama and one compact model:
+
+```bash
+brew install ollama
+brew services start ollama
+ollama pull qwen3:1.7b
+```
+
+Ollama runs on the loopback interface. With `tailoring.provider: ollama`, the
+assistant refuses any non-local model endpoint so private CV facts cannot be sent
+to a remote host. The model download is approximately 1.4 GB.
+
 The daily watcher and cockpit do not require the extra packages:
 
 ```bash
@@ -40,6 +52,48 @@ open apply_cockpit.html
 ```
 
 `apply_cockpit.html` is generated locally and ignored by Git.
+
+## GitHub click-to-tailor workflow
+
+This is the fastest workflow when Simplify is already installed:
+
+1. Install Tampermonkey.
+2. Open `github-cv-apply.user.js` from the GitHub repository and install it.
+3. In this repository directory, run:
+
+   ```bash
+   source .venv/bin/activate
+   python -m autoapply bridge
+   ```
+
+4. Keep that terminal open and copy its one private bridge token when the
+   userscript asks for it the first time.
+5. Search or browse jobs in the GitHub README and click
+   **⚡ Generate CV + Apply** beside a role.
+
+The localhost bridge imports the current tracker, resolves the clicked Greenhouse,
+Lever, or Ashby URL, fetches its current description, and creates a fresh PDF. The
+userscript downloads that PDF and opens the application page. Simplify can then
+autofill the form; choose the newly downloaded PDF as the resume and review the
+whole application.
+
+The bridge does not control or impersonate Simplify, fill legal answers, or click
+Submit. Unsupported employer-hosted links can still be opened normally and handled
+by Simplify, but the local generator currently requires an imported Greenhouse,
+Lever, or Ashby identity.
+
+### What the local AI is allowed to edit
+
+The model can rephrase and emphasize selected bullets and the summary for the job.
+Every selected bullet remains linked to an original private fact ID. Generated
+wording is rejected when it adds a new number, named technology/entity, unsupported
+qualification, or loses too much evidence overlap; rejected edits fall back to the
+original verified bullet. The private evidence sidecar records original facts,
+rendered wording, the model, and accepted/rejected edits.
+
+This is a draft-generation accelerator, not proof that every sentence is correct.
+Read the downloaded PDF before attaching it. The application approval gate remains
+separate from CV generation.
 
 ## 2. Create the private profile
 

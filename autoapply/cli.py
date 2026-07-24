@@ -172,6 +172,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     status = commands.add_parser("status", allow_abbrev=False)
     status.add_argument("--job-id")
+
+    bridge = commands.add_parser(
+        "bridge",
+        help="Serve the private click-to-tailor bridge on localhost",
+        allow_abbrev=False,
+    )
+    bridge.add_argument("--tracker", type=Path, default=Path("tracker.csv"))
+    bridge.add_argument("--port", type=int, default=8765)
     return parser
 
 
@@ -232,6 +240,40 @@ def doctor(home: Path) -> tuple[dict[str, Any], bool]:
         for path in (profile_path(home), facts_path(home), database_path(home))
         if path.exists()
     }
+    tailoring = profile.get("tailoring", {})
+    tailoring_provider = tailoring.get("provider", "deterministic")
+    local_ai_check: dict[str, Any] = {
+        "ok": True,
+        "provider": tailoring_provider,
+    }
+    if configs_ok and tailoring_provider == "ollama":
+        model = str(tailoring.get("model", "")).strip()
+        endpoint = str(
+            tailoring.get("endpoint", "http://127.0.0.1:11434")
+        ).strip()
+        try:
+            from .ai_tailoring import ollama_models
+
+            models = ollama_models(endpoint)
+            local_ai_check = {
+                "ok": bool(model) and model in models,
+                "provider": "ollama",
+                "model": model,
+                "endpoint": endpoint,
+                "available_models": sorted(models),
+                "error": (
+                    "" if model in models else "Configured model is not installed"
+                ),
+            }
+        except Exception as exc:
+            local_ai_check = {
+                "ok": False,
+                "provider": "ollama",
+                "model": model,
+                "endpoint": endpoint,
+                "available_models": [],
+                "error": str(exc),
+            }
     checks = {
         "python": {
             "ok": sys.version_info >= (3, 11),
@@ -245,6 +287,7 @@ def doctor(home: Path) -> tuple[dict[str, Any], bool]:
         "profile": {"ok": profile_path(home).is_file(), "path": str(profile_path(home))},
         "resume_facts": {"ok": facts_path(home).is_file(), "path": str(facts_path(home))},
         "configuration": {"ok": configs_ok, "error": config_error},
+        "local_ai_tailoring": local_ai_check,
         "application_profile": {
             "ok": application_profile_ok,
             "missing_required_values": missing_profile_values,
@@ -276,6 +319,15 @@ def main(argv: list[str] | None = None) -> int:
         result, ok = doctor(home)
         _print(result)
         return 0 if ok else 1
+    if args.command == "bridge":
+        from .bridge import run_bridge
+
+        try:
+            run_bridge(home, args.tracker, args.port)
+        except (FileNotFoundError, OSError, RuntimeError, ValueError) as exc:
+            print(f"autoapply: {exc}", file=sys.stderr)
+            return 2
+        return 0
 
     try:
         with Store(database_path(home)) as store:

@@ -125,6 +125,8 @@ def render_resume(resume: TailoredResume, destination: Path) -> str:
                 "resume_sha256": pdf_hash,
                 "selected_fact_ids": resume.selected_fact_ids,
                 "evidence_links": [asdict(link) for link in resume.evidence_links],
+                "rendered_sections": resume.sections,
+                "rendered_summary": resume.summary,
                 "selection_audit": resume.selection_audit,
             },
             ensure_ascii=False,

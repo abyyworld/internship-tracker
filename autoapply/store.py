@@ -209,6 +209,37 @@ class Store:
             source_status=row["source_status"],
         )
 
+    def find_job_by_url(self, url: str) -> Job:
+        """Resolve a clicked public ATS URL to exactly one imported job."""
+        from .jobs import canonicalize_url, detect_ats, external_id
+
+        canonical = canonicalize_url(url)
+        ats = detect_ats(canonical)
+        identifier = external_id(canonical, ats)
+        row = None
+        if ats != "unknown" and identifier:
+            row = self.db.execute(
+                "SELECT id FROM jobs WHERE ats=? AND external_id=? LIMIT 1",
+                (ats, identifier),
+            ).fetchone()
+        if row is None:
+            matches = [
+                candidate["id"]
+                for candidate in self.db.execute("SELECT id, url FROM jobs").fetchall()
+                if canonicalize_url(candidate["url"]) == canonical
+            ]
+            if len(matches) == 1:
+                row = {"id": matches[0]}
+        if row is None:
+            raise KeyError(
+                "This link is not one of the currently imported Greenhouse, "
+                "Lever, or Ashby postings"
+            )
+        job = self.get_job(str(row["id"]))
+        if job.source_status != "open":
+            raise KeyError("This job is no longer open in the latest tracker import")
+        return job
+
     def update_description(self, job_id: str, description: str) -> None:
         self.db.execute(
             "UPDATE jobs SET description=?, updated_at=? WHERE id=?",

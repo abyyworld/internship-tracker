@@ -2058,6 +2058,18 @@ def build_dashboard(rows_out, new_ids, current):
         "Ashby, and Lever feeds. Career hubs and forecast programmes are kept "
         "separate from real postings. Unknown work-authorisation or sponsorship "
         "data means **review required**, never assumed eligible.\n",
+        "\n## Click a GitHub role, generate a CV, then use Simplify\n",
+        "\nInstall [github-cv-apply.user.js](https://github.com/abyyworld/internship-tracker/raw/refs/heads/main/github-cv-apply.user.js) in "
+        "Tampermonkey and keep the private local bridge running:\n",
+        "\n```bash\nsource .venv/bin/activate\npython -m autoapply bridge\n```\n",
+        "\nOn this GitHub README, supported job links gain a "
+        "**⚡ Generate CV + Apply** button. One click fetches the current job "
+        "description, generates evidence-checked wording edits with the configured "
+        "local Ollama model, downloads a job-specific PDF, and opens the employer "
+        "application page where Simplify can autofill.\n",
+        "\nThe GitHub repository and userscript never receive the private profile "
+        "or fact bank. The CV is generated on `127.0.0.1`, remains a draft "
+        "requiring review, and is never submitted by the bridge.\n",
     ]
     if stale_error:
         lines.append(

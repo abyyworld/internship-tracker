@@ -90,6 +90,13 @@ preferences:
   # manual | decline_if_available
   eeo: manual
 
+# Optional free on-device generative editing. Private facts are sent only to the
+# loopback Ollama service. The generated PDF remains a draft requiring review.
+tailoring:
+  provider: deterministic  # deterministic | ollama
+  model: ""
+  endpoint: http://127.0.0.1:11434
+
 # Answers are nested by job ID. Inside that job, use
 # "form_hash :: field_key :: exact prompt" -> answer you personally reviewed.
 # Copy all values from `inspect`; cross-job, old-form, prompt-only, and fuzzy
