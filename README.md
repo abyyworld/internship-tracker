@@ -1,6 +1,6 @@
 # Internship + Robotics Opportunity Watcher
 
-> Last verified run: **2026-07-24** · **494 verified-open postings** · **67 robotics / embodied-AI postings**
+> Last verified run: **2026-07-25** · **490 verified-open postings** · **67 robotics / embodied-AI postings**
 
 This tracker watches community internship boards and official Greenhouse, Ashby, and Lever feeds. Career hubs and forecast programmes are kept separate from real postings. Unknown work-authorisation or sponsorship data means **review required**, never assumed eligible.
 
@@ -8,105 +8,43 @@ This tracker watches community internship boards and official Greenhouse, Ashby,
 
 [Open the filterable Role Radar dashboard](https://abyyworld.github.io/internship-tracker/) for search, category, region, term, degree, company-type, robotics-startup, and CV-support filters.
 
-The private helper is configured to start automatically on the owner's Mac. Double-click `start-autoapply.command` once to connect the browser, or run this from any terminal:
+The private helper is configured to start automatically on the owner's Mac. Double-click `start-autoapply.command` once to connect the browser, or run:
 
 ```bash
 cd "$HOME/Desktop/internship watcher"
 ./start-autoapply.command
 ```
 
-Every dashboard card has a native **✦ Edit CV for this job** button; Tampermonkey is not required for the dashboard. It opens a private localhost editor containing the complete master CV. MiniMax M3 proposes a small set of evidence-checked wording patches that can be accepted, rejected, or directly edited before exporting a job-specific PDF. Untouched content is preserved, and the employer application remains a separate button where Simplify can autofill.
+Every dashboard card has a native **⚡ Tailor CV + Apply** button; Tampermonkey is not required for the dashboard. It reads the live job page when possible, generates evidence-checked wording edits with the local Ollama model, downloads a job-specific PDF, and opens the employer application page where Simplify can autofill. If an employer blocks live page reading, the screen explicitly says that public tracker metadata was used as the fallback.
 
-The GitHub repository never receives the private profile, fact bank, MiniMax key, drafts, or generated PDFs. The editor runs on `127.0.0.1`, stores the API key locally as a mode-0600 private file, requires review of every proposed change, and never submits an application.
-
-Pressing **Generate suggestions** sends the selected job description and master CV text to the MiniMax API through the user's account. Merely opening the editor, manually editing, or exporting a PDF does not call MiniMax.
+The GitHub repository never receives the private profile or fact bank. The CV is generated on `127.0.0.1`, remains a draft requiring review, and is never submitted by the bridge.
 
 ## At a glance
 
 | Metric | Count |
 |--|--:|
-| Verified-open postings | 494 |
-| Roles discovered today | 102 |
-| New verified postings | 102 |
+| Verified-open postings | 490 |
+| Roles discovered today | 2 |
+| New verified postings | 2 |
 | Robotics / embodied AI | 67 |
 | Robotics at private startups / scaleups | 61 |
 | Elite tier | 104 |
-| High tier | 62 |
-| Eligibility still needs review | 494 |
+| High tier | 59 |
+| Eligibility still needs review | 490 |
 | Deadlines within 10 days | 0 |
 
-**By category:** Software Engineering 292 · Quant 90 · Robotics & Embodied AI 67 · AI / ML 36 · Data 9
+**By category:** Software Engineering 288 · Quant 90 · Robotics & Embodied AI 67 · AI / ML 35 · Data 10
 
-**By region:** US 420 · UK 25 · Canada 18 · Unknown 7 · Netherlands 4 · UK / France 3 · India 3 · Ireland 3 · France 2 · Switzerland 2 · Netherlands / India 2 · Serbia 2 · Hong Kong 1 · Australia 1 · US / Netherlands 1
+**By region:** US 416 · UK 25 · Canada 18 · Unknown 7 · Netherlands 4 · UK / France 3 · India 3 · Ireland 3 · Netherlands / India 2 · France 2 · Serbia 2 · Switzerland 2 · Hong Kong 1 · Australia 1 · US / Netherlands 1
 
-**By degree evidence:** Unknown 396 · Advanced/unknown 51 · PhD 30 · Undergraduate eligible 15 · Masters 2
+**By degree evidence:** Unknown 393 · Advanced/unknown 50 · PhD 30 · Undergraduate eligible 15 · Masters 2
 
-## Newly opened (102)
+## Newly opened (2)
 
 | Company | Role | Category | Region | Term | Eligibility |
 |--|--|--|--|--|--|
-| **Akuna Capital** | [Python Software Engineer Intern 🇺🇸](https://akunacapital.com/careers/job/8018853/?gh_jid=8018853&utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
-| **Akuna Capital** | [Software Engineer Intern \(Summer 2027, Python / C++ / Full Stack / C# .NET\)](https://akunacapital.com/careers/job/8018847/) | Software Engineering | US | Summer 2027 | review required |
-| **IMC** | [Hardware Engineer Intern](https://job-boards.eu.greenhouse.io/imc/jobs/4823945101) | Software Engineering | US | Summer 2027 | review required |
-| **IMC** | [Quantitative Research Intern](https://job-boards.eu.greenhouse.io/imc/jobs/4907399101) | Quant | US | Summer 2027 | review required |
-| **Jane Street** | [Data Engineer Intern](https://www.janestreet.com/join-jane-street/position/8631973002/?utm_source=github-vansh-ouckah) | Data | US | Summer 2027 | review required |
-| **Jane Street** | [Fundamental Research Analyst Intern](https://www.janestreet.com/join-jane-street/position/8347286002/?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
-| **Jane Street** | [Hardware Engineer \(FPGA/ASIC\) Intern](https://www.janestreet.com/join-jane-street/position/8624440002/?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
-| **Jane Street** | [Linux Engineer Intern](https://www.janestreet.com/join-jane-street/position/8626260002/?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
-| **Jane Street** | [Machine Learning Engineer Intern](https://www.janestreet.com/join-jane-street/position/8611307002/?utm_source=github-vansh-ouckah) | AI / ML | US | Summer 2027 | review required |
-| **Jane Street** | [Machine Learning Researcher Intern](https://www.janestreet.com/join-jane-street/position/8384490002/?utm_source=github-vansh-ouckah) | AI / ML | US | Summer 2027 | review required |
-| **Jane Street** | [Network Engineer Intern](https://www.janestreet.com/join-jane-street/position/8620793002/?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
-| **Jane Street** | [Quantitative Researcher Intern](https://www.janestreet.com/join-jane-street/position/8498547002/?utm_source=github-vansh-ouckah) | Quant | US | Summer 2027 | review required |
-| **Jane Street** | [Quantitative Trader Intern](https://www.janestreet.com/join-jane-street/position/8617344002/?utm_source=github-vansh-ouckah) | Quant | US | Summer 2027 | review required |
-| **Jane Street** | [Sales and Trading Intern](https://www.janestreet.com/join-jane-street/position/8347385002/?utm_source=github-vansh-ouckah) | Quant | US | Summer 2027 | review required |
-| **Jane Street** | [Software Engineer Intern](https://www.janestreet.com/join-jane-street/position/8599644002/?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
-| **Jane Street** | [Tools and Compilers Research and Development Intern](https://www.janestreet.com/join-jane-street/position/5869205002/?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
-| **Jane Street** | [Trading Desk Operations Engineer Intern](https://www.janestreet.com/join-jane-street/position/8621450002/?utm_source=github-vansh-ouckah) | Quant | US | Summer 2027 | review required |
-| **Jane Street** | [Windows Engineer Intern](https://www.janestreet.com/join-jane-street/position/8628843002/?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
-| **Jump Trading** | [Campus AI Research Engineer \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8052281) | Quant | US | Unknown | review required |
-| **Jump Trading** | [Campus AI Research Engineer - Deep Learning \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8052338) | Quant | US | Unknown | review required |
-| **Jump Trading** | [Campus AI Research Engineer – Research Automation \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8052351) | Quant | US | Unknown | review required |
-| **Jump Trading** | [Campus AI Researcher, PhD/Postdoc \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=7976964) | Quant | UK | Unknown | review required |
-| **Jump Trading** | [Campus ASIC Engineer \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=7974837) | Quant | Unknown | Unknown | review required |
-| **Jump Trading** | [Campus Crypto Researcher \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=7362318) | Quant | UK | Unknown | review required |
-| **Jump Trading** | [Campus FPGA Engineer \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=7974391) | Quant | UK | Unknown | review required |
-| **Jump Trading** | [Campus ML Research Engineer \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=7977145) | Quant | UK | Unknown | review required |
-| **Jump Trading** | [Campus Quantitative Researcher \(M1/M2 Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8059384) | Quant | France | Unknown | review required |
-| **Jump Trading** | [Campus Quantitative Researcher, PhD \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8049938) | Quant | US | Unknown | review required |
-| **Jump Trading** | [Campus Quantitative Researcher, UG/MS \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=7982648) | Quant | US | Unknown | review required |
-| **Jump Trading** | [Campus Quantitative Trader \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8050772) | Quant | Netherlands | Unknown | review required |
-| **Jump Trading** | [Campus Systems Engineer \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8000323) | Quant | Netherlands | Unknown | review required |
-| **Jump Trading** | [Campus Systems Engineer Intern](https://www.jumptrading.com/hr/job?gh_jid=8007788&utm_source=github-vansh-ouckah) | Quant | US | Summer 2027 | review required |
-| **Jump Trading** | [Campus Trading Team Software Engineer  \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=7565728) | Quant | Hong Kong | Unknown | review required |
-| **Jump Trading** | [Campus UI Software Engineer \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=7974943) | Quant | UK | Unknown | review required |
-| **Jump Trading** | [Quantitative Trader Intern](https://www.jumptrading.com/hr/job?gh_jid=7848371&utm_source=github-vansh-ouckah) | Quant | US | Summer 2027 | review required |
-| **Cloudflare** | [Systems Engineer - Global Resource Management \(Data Residency\)](https://boards.greenhouse.io/cloudflare/jobs/8015230?gh_jid=8015230) | Software Engineering | Unknown | Unknown | review required |
-| **Google** | [Software Engineering Intern](https://www.google.com/about/careers/applications/jobs/results/85564713261245126-software-engineering-intern-bs-summer-2027?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
-| **Mistral AI** | [AI Data Solutions Intern - Data Partnerships](https://jobs.ashbyhq.com/mistral.ai/60fcc44d-4d96-469d-a96c-d6a9bbfe8edd/application?embed=true&utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer 2026 | review required |
-| **Palantir** | [Software Engineer, Internship](https://jobs.lever.co/palantir/7d69cf8a-06fd-4f05-bd84-27149db29c4d?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
-| **Palantir** | [Software Engineer, Internship](https://jobs.lever.co/palantir/e27af7ab-41fc-40c9-b31d-02c6cb1c505c?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
-| **Deft Robotics** | [Electrical Engineer Intern \(Spring-Summer 2026\)](https://jobs.ashbyhq.com/deft-ai/0d16afe8-30a9-43df-90d5-ccba1cb97b69) | Robotics &amp; Embodied AI | US | Spring/Summer 2026 | review required |
-| **Deft Robotics** | [Mechanical Engineer Intern \(Spring-Summer 2026\)](https://jobs.ashbyhq.com/deft-ai/1bef1405-cd24-4da7-b1e7-0ca02e8f5eb2) | Robotics &amp; Embodied AI | US | Spring/Summer 2026 | review required |
-| **Dyna Robotics** | [Research Internship](https://jobs.ashbyhq.com/dyna-robotics/5a431519-ee6b-4cb7-8a3a-422727053a09) | Robotics &amp; Embodied AI | US | Unknown | review required |
-| **Lightwheel** | [Developer Advocate / Research Community Intern](https://jobs.ashbyhq.com/lightwheel/e22363b9-9c4f-4991-8de3-339b8e9399df) | Robotics &amp; Embodied AI | US | Unknown | review required |
-| **Physical Intelligence** | [Research Internships](https://jobs.ashbyhq.com/physicalintelligence/f020ff1a-4b4c-4415-8434-2da5010a7076) | Robotics &amp; Embodied AI | US | Unknown | review required |
-| **Sunday Robotics** | [Manufacturing Engineering Intern \(Fall 2026\)](https://jobs.ashbyhq.com/sunday/08feb65a-08b0-462d-aebf-4f0239a16ed8) | Robotics &amp; Embodied AI | US | Fall 2026 | review required |
-| **1X** | [AI Residency](https://jobs.ashbyhq.com/1x/5b2b4c73-13b5-46ca-8467-8024741a4b57) | Robotics &amp; Embodied AI | US | Unknown | review required |
-| **ANYbotics** | [Product Data Management Internship](https://jobs.lever.co/anybotics/74b68707-86aa-4efc-9efb-94ca5ad82698) | Robotics &amp; Embodied AI | Switzerland | Unknown | review required |
-| **ANYbotics** | [Robotics Lab Technician Intern](https://jobs.lever.co/anybotics/9755ae0f-f740-40bc-bc13-be52c505748b) | Robotics &amp; Embodied AI | Switzerland | Unknown | review required |
-| **Anduril** | [2027 Electrical Engineer Intern](https://boards.greenhouse.io/andurilindustries/jobs/5148101007?gh_jid=5148101007) | Robotics &amp; Embodied AI | US | 2027 | review required |
-| **Anduril** | [2027 Manufacturing Engineer Intern](https://boards.greenhouse.io/andurilindustries/jobs/5153218007?gh_jid=5153218007) | Robotics &amp; Embodied AI | US | 2027 | review required |
-| **Anduril** | [2027 Mechanical Engineer Intern](https://boards.greenhouse.io/andurilindustries/jobs/5153187007?gh_jid=5153187007) | Robotics &amp; Embodied AI | US | 2027 | review required |
-| **Applied Intuition** | [Research Intern - Reinforcement Learning, Robotics](https://jobs.ashbyhq.com/applied/bb953f29-0059-4a40-aa9e-3a8c88733902) | Robotics &amp; Embodied AI | US | Unknown | review required |
-| **Applied Intuition** | [Research Intern - World-Action Foundation Model, Robotics](https://jobs.ashbyhq.com/applied/edc2528d-6e6c-4a67-b871-bfe7d9c890b4) | Robotics &amp; Embodied AI | US | Unknown | review required |
-| **Apptronik** | [Robotics Software Intern – Real-Time Controls](https://boards.greenhouse.io/apptronik/jobs/5985132004?gh_jid=5985132004) | Robotics &amp; Embodied AI | US | Unknown | review required |
-| **Bot Auto** | [Intern, Deep Learning Engineer](https://job-boards.greenhouse.io/botauto/jobs/5289440008) | Robotics &amp; Embodied AI | US | Unknown | review required |
-| **CoreWeave** | [Data Center Apprentice Program](https://coreweave.com/careers/job?4694103006&board=coreweave&gh_jid=4694103006) | Software Engineering | US | Unknown | review required |
-| **Deepgram** | [Software Engineering Intern](https://jobs.ashbyhq.com/deepgram/dc8693b5-72ce-4ca3-ab15-9c8434d35da1?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
-| **FieldAI** | [1.53 Robotics Research Internship, Humanoid Manipulation \(Summer 2026\) \| PhD Internship](https://jobs.lever.co/field-ai/2a2c8f00-3a28-481b-882c-33cb0ec4a3a0) | Robotics &amp; Embodied AI | US | Summer 2026 | review required |
-| **Figure** | [Electrical Engineering Intern \[Fall 2026\]](https://job-boards.greenhouse.io/figureai/jobs/4676467006) | Robotics &amp; Embodied AI | US | Fall 2026 | review required |
-
-_42 more are in [tracker.csv](tracker.csv)._
+| **Core &amp; Main** | [Data Engineering Intern](https://coreandmain.wd1.myworkdayjobs.com/en-US/coreandmain/job/Saint-Louis-MO-63146/Intern---Data-Engineering----Corp_45804?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer 2026 | review required |
+| **Northwell Health** | [Data Analytics / Data Science Intern](https://eppr.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_2/job/192734?utm_source=Simplify&ref=Simplify) | Data | US | Summer 2026 | review required |
 
 ## Robotics & embodied AI (67 live)
 
@@ -186,7 +124,7 @@ Includes directly robotics-focused work and technical roles at robotics companie
 
 The company signal is a discovery aid, not a prediction. Private-company options can become valuable, but can also expire, dilute, remain illiquid, or end up worth zero. `private company; verify offer` means the posting does not prove that equity is included. Ask for the option count **and fully diluted percentage**, strike price, vesting/cliff, exercise window, latest common valuation, and liquidation preferences.
 
-## Elite and high-tier live postings (166)
+## Elite and high-tier live postings (163)
 
 | Company | Role | Category | Region | Term | Eligibility |
 |--|--|--|--|--|--|
@@ -291,7 +229,7 @@ The company signal is a discovery aid, not a prediction. Private-company options
 | **Virtu Financial** | [2027 Internship - Quantitative Strategist and Research Intern](https://job-boards.greenhouse.io/virtu/jobs/8631180002) | Quant | Ireland | 2027 | review required |
 | **Virtu Financial** | [2027 Internship - Quantitative Trading](https://job-boards.greenhouse.io/virtu/jobs/8547254002) | Quant | Ireland | 2027 | review required |
 
-_66 more are in [tracker.csv](tracker.csv)._
+_63 more are in [tracker.csv](tracker.csv)._
 
 ## Planned spring / insight programmes
 
