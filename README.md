@@ -1,6 +1,6 @@
 # Internship + Robotics Opportunity Watcher
 
-> Last verified run: **2026-07-25** · **490 verified-open postings** · **67 robotics / embodied-AI postings**
+> Last verified run: **2026-07-26** · **476 verified-open postings** · **66 robotics / embodied-AI postings**
 
 This tracker watches community internship boards and official Greenhouse, Ashby, and Lever feeds. Career hubs and forecast programmes are kept separate from real postings. Unknown work-authorisation or sponsorship data means **review required**, never assumed eligible.
 
@@ -23,30 +23,30 @@ The GitHub repository never receives the private profile or fact bank. The CV is
 
 | Metric | Count |
 |--|--:|
-| Verified-open postings | 490 |
+| Verified-open postings | 476 |
 | Roles discovered today | 2 |
 | New verified postings | 2 |
-| Robotics / embodied AI | 67 |
+| Robotics / embodied AI | 66 |
 | Robotics at private startups / scaleups | 61 |
-| Elite tier | 104 |
+| Elite tier | 101 |
 | High tier | 59 |
-| Eligibility still needs review | 490 |
+| Eligibility still needs review | 476 |
 | Deadlines within 10 days | 0 |
 
-**By category:** Software Engineering 288 · Quant 90 · Robotics & Embodied AI 67 · AI / ML 35 · Data 10
+**By category:** Software Engineering 282 · Quant 86 · Robotics & Embodied AI 66 · AI / ML 32 · Data 10
 
-**By region:** US 416 · UK 25 · Canada 18 · Unknown 7 · Netherlands 4 · UK / France 3 · India 3 · Ireland 3 · Netherlands / India 2 · France 2 · Serbia 2 · Switzerland 2 · Hong Kong 1 · Australia 1 · US / Netherlands 1
+**By region:** US 405 · UK 25 · Canada 17 · Unknown 7 · Netherlands 4 · UK / France 3 · Ireland 3 · India 2 · France 2 · Serbia 2 · Switzerland 2 · US / Australia 1 · Hong Kong 1 · Australia 1 · US / Netherlands 1
 
-**By degree evidence:** Unknown 393 · Advanced/unknown 50 · PhD 30 · Undergraduate eligible 15 · Masters 2
+**By degree evidence:** Unknown 387 · Advanced/unknown 42 · PhD 30 · Undergraduate eligible 15 · Masters 2
 
 ## Newly opened (2)
 
 | Company | Role | Category | Region | Term | Eligibility |
 |--|--|--|--|--|--|
-| **Core &amp; Main** | [Data Engineering Intern](https://coreandmain.wd1.myworkdayjobs.com/en-US/coreandmain/job/Saint-Louis-MO-63146/Intern---Data-Engineering----Corp_45804?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer 2026 | review required |
-| **Northwell Health** | [Data Analytics / Data Science Intern](https://eppr.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_2/job/192734?utm_source=Simplify&ref=Simplify) | Data | US | Summer 2026 | review required |
+| **Northrop Grumman** | [Software Engineer Intern](https://ngc.wd1.myworkdayjobs.com/northrop_grumman_external_site/job/United-States-Florida-Melbourne/XMLNAME-2027-Intern-Software-Engineer_R10239275?utm_source=github-vansh-ouckah) | Software Engineering | US / Australia | 2027 | review required |
+| **University of Maryland - College Park** | [Office of Career Services Intern - Technology Team](https://umd.wd1.myworkdayjobs.com/UMCP/job/University-of-Maryland-College-Park/Intern--Office-of-Career-Services---Technology-Team_JR104246-1?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer 2026 | review required |
 
-## Robotics & embodied AI (67 live)
+## Robotics & embodied AI (66 live)
 
 Includes directly robotics-focused work and technical roles at robotics companies: robot learning, perception, autonomy, controls, manipulation, firmware, mechatronics, and field robotics. Live geography reflects what official feeds expose today; the worldwide career-hub watchlist is kept separately in [manual_checks.md](manual_checks.md).
 
@@ -99,7 +99,6 @@ Includes directly robotics-focused work and technical roles at robotics companie
 | **Neuralink** | [Software Engineer Intern, Infrastructure](https://boards.greenhouse.io/neuralink/jobs/5469298003?gh_jid=5469298003) | US | neural / surgical robotics | private-scaleup | private company; verify offer |
 | **Neuralink** | [Software Engineer Intern, Internal Apps](https://boards.greenhouse.io/neuralink/jobs/6083322003?gh_jid=6083322003) | US | neural / surgical robotics | private-scaleup | private company; verify offer |
 | **Neuralink** | [Software Engineer Intern, Robotics](https://boards.greenhouse.io/neuralink/jobs/5469305003?gh_jid=5469305003) | US | neural / surgical robotics | private-scaleup | private company; verify offer |
-| **PlusAI** | [Perception Intern 🎓](https://jobs.lever.co/plus-2/e4b669b3-c07f-4b5f-abb6-c1c6db602a64/apply?utm_source=Simplify&ref=Simplify) | US | perception | unknown | unknown |
 | **Revise Robotics** | [Engineer Intern](https://jobs.ashbyhq.com/reviserobotics/7b0426d4-cf8c-4fdf-98a8-5a0360706633/application?embed=true&utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
 | **Saronic** | [Enterprise Technology Intern - AI and Automation \(Fall 2026\)](https://jobs.ashbyhq.com/saronic/c95c2e3a-4c67-47b0-a03d-0e0317ac11a3) | US | autonomous marine systems | private-scaleup | private company; verify offer |
 | **Saronic** | [Enterprise Technology Intern - Technical Delivery \(Fall 2026\)](https://jobs.ashbyhq.com/saronic/18055a6f-030f-41ef-9116-7ffffac15f68) | US | autonomous marine systems | private-scaleup | private company; verify offer |
@@ -124,7 +123,7 @@ Includes directly robotics-focused work and technical roles at robotics companie
 
 The company signal is a discovery aid, not a prediction. Private-company options can become valuable, but can also expire, dilute, remain illiquid, or end up worth zero. `private company; verify offer` means the posting does not prove that equity is included. Ask for the option count **and fully diluted percentage**, strike price, vesting/cliff, exercise window, latest common valuation, and liquidation preferences.
 
-## Elite and high-tier live postings (163)
+## Elite and high-tier live postings (160)
 
 | Company | Role | Category | Region | Term | Eligibility |
 |--|--|--|--|--|--|
@@ -161,10 +160,7 @@ The company signal is a discovery aid, not a prediction. Private-company options
 | **IMC** | [Hardware Engineer Intern](https://job-boards.eu.greenhouse.io/imc/jobs/4823945101) | Software Engineering | US | Summer 2027 | review required |
 | **IMC** | [Quantitative Research Intern](https://job-boards.eu.greenhouse.io/imc/jobs/4907399101) | Quant | US | Summer 2027 | review required |
 | **IMC** | [Software Engineer Intern](https://job-boards.eu.greenhouse.io/imc/jobs/4823924101) | Software Engineering | US | Summer 2027 | review required |
-| **IMC Trading** | [2027 - FPGA Intern - IIT Bombay](https://job-boards.eu.greenhouse.io/imc/jobs/4860306101) | Quant | Netherlands / India | 2027 | review required |
-| **IMC Trading** | [2027 - Quant Research Intern - IIT Bombay](https://job-boards.eu.greenhouse.io/imc/jobs/4860277101) | Quant | Netherlands / India | 2027 | review required |
 | **IMC Trading** | [2027 - Software Engineering Intern - BITS Pilani](https://job-boards.eu.greenhouse.io/imc/jobs/4917549101) | Quant | India | 2027 | review required |
-| **IMC Trading** | [2027 - Software Engineering Intern - IIT Bombay](https://job-boards.eu.greenhouse.io/imc/jobs/4860319101) | Quant | India | 2027 | review required |
 | **IMC Trading** | [Hardware Machine Learning PhD Research Internship](https://job-boards.eu.greenhouse.io/imc/jobs/4829785101) | Quant | US | Unknown | review required |
 | **IMC Trading** | [Machine Learning Research Intern](https://job-boards.eu.greenhouse.io/imc/jobs/4907430101) | Quant | US | Summer 2027 | review required |
 | **IMC Trading** | [Machine Learning Research Intern - Summer 2027 - Amsterdam](https://job-boards.eu.greenhouse.io/imc/jobs/4912874101) | Quant | Netherlands | Summer 2027 | review required |
@@ -228,8 +224,11 @@ The company signal is a discovery aid, not a prediction. Private-company options
 | **Virtu Financial** | [2027 Internship - Quantitative Researcher \(PhD\)](https://job-boards.greenhouse.io/virtu/jobs/8624424002) | Quant | US | 2027 | review required |
 | **Virtu Financial** | [2027 Internship - Quantitative Strategist and Research Intern](https://job-boards.greenhouse.io/virtu/jobs/8631180002) | Quant | Ireland | 2027 | review required |
 | **Virtu Financial** | [2027 Internship - Quantitative Trading](https://job-boards.greenhouse.io/virtu/jobs/8547254002) | Quant | Ireland | 2027 | review required |
+| **Virtu Financial** | [2027 Internship - Software Engineer](https://job-boards.greenhouse.io/virtu/jobs/8551566002) | Software Engineering | Ireland | 2027 | review required |
+| **Virtu Financial** | [2027 Internship - Software Engineer](https://job-boards.greenhouse.io/virtu/jobs/8624410002) | Software Engineering | US | 2027 | review required |
+| **Virtu Financial** | [Internship - Quantitative Trading](https://job-boards.greenhouse.io/virtu/jobs/8624408002) | Quant | US | Unknown | review required |
 
-_63 more are in [tracker.csv](tracker.csv)._
+_60 more are in [tracker.csv](tracker.csv)._
 
 ## Planned spring / insight programmes
 
