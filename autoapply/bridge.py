@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import mimetypes
 import os
@@ -100,7 +100,17 @@ class Download:
     expires_at: datetime
 
 
-class BridgeServer(HTTPServer):
+class BridgeServer(ThreadingHTTPServer):
+    """Serve each request on its own thread.
+
+    Generating suggestions fetches the live job page and then waits on the
+    OpenAI API, which can take a minute. On a single-threaded server that
+    blocks every other request, so opening another job or checking the local
+    connection appears to hang until generation finishes.
+    """
+
+    daemon_threads = True
+
     def __init__(
         self,
         address: tuple[str, int],
@@ -114,6 +124,34 @@ class BridgeServer(HTTPServer):
         self.tracker = tracker.resolve()
         self.token = token
         self.downloads: dict[str, Download] = {}
+        self._tracker_mtime = self._current_tracker_mtime()
+
+    def _current_tracker_mtime(self) -> float:
+        try:
+            return self.tracker.stat().st_mtime
+        except OSError:
+            return 0.0
+
+    def refresh_jobs_if_tracker_changed(self) -> bool:
+        """Re-import the tracker when it has changed on disk.
+
+        The bridge normally runs as a long-lived background service while the
+        daily watcher rewrites tracker.csv underneath it. Without this the
+        database keeps only the jobs that existed at start-up, so every newly
+        discovered posting fails to open in the editor until a manual restart.
+        """
+        mtime = self._current_tracker_mtime()
+        if mtime and mtime == self._tracker_mtime:
+            return False
+        self._tracker_mtime = mtime
+        try:
+            with Store(database_path(self.home)) as store:
+                store.import_jobs(
+                    jobs_from_tracker(self.tracker, include_unknown=True)
+                )
+        except (OSError, ValueError, RuntimeError):
+            return False
+        return True
 
     def new_download(self, path: Path, filename: str) -> str:
         ticket = secrets.token_urlsafe(32)
@@ -196,6 +234,22 @@ class BridgeHandler(BaseHTTPRequestHandler):
             raise ValueError("Only absolute HTTPS job URLs are accepted")
         return url
 
+    def _find_job(self, url: str):
+        """Look up a job, re-importing the tracker once if it is not known yet.
+
+        A posting discovered by a watcher run after this process started is not
+        in the database, so the first lookup misses. Re-import and retry before
+        telling the user the link is not tracked.
+        """
+        with Store(database_path(self.server.home)) as store:
+            try:
+                return store.find_job_by_url(url)
+            except (KeyError, ValueError):
+                pass
+        self.server.refresh_jobs_if_tracker_changed()
+        with Store(database_path(self.server.home)) as store:
+            return store.find_job_by_url(url)
+
     def _document(self) -> tuple[dict[str, Any], dict[str, Any]]:
         profile = load_yaml(profile_path(self.server.home))
         facts = load_yaml(facts_path(self.server.home))
@@ -241,8 +295,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
             try:
                 query = parse_qs(parsed_request.query)
                 url = self._job_url(query.get("url", [""])[0])
-                with Store(database_path(self.server.home)) as store:
-                    job = store.find_job_by_url(url)
+                job = self._find_job(url)
                 document, _profile = self._document()
                 draft = load_draft(self.server.home, job.id)
                 self._json(
@@ -346,36 +399,40 @@ class BridgeHandler(BaseHTTPRequestHandler):
 
         try:
             url = self._job_url(payload.get("url"))
-            with Store(database_path(self.server.home)) as store:
-                job = store.find_job_by_url(url)
+            job = self._find_job(url)
 
-                if parsed_request.path == "/api/suggest":
-                    # Fetch at generation time so opening the editor is instant and
-                    # no API credit is used before the user asks for suggestions.
-                    from .runner import _fetch_resume_description
+            if parsed_request.path == "/api/suggest":
+                # Fetch at generation time so opening the editor is instant and
+                # no API credit is used before the user asks for suggestions.
+                # The database is deliberately not held open across the network
+                # fetch or the model call: both are slow, and another request
+                # thread would block on the SQLite write lock behind them.
+                from .runner import _fetch_resume_description
 
-                    description, _source = _fetch_resume_description(job)
-                    if description != job.description:
+                description, _source = _fetch_resume_description(job)
+                if description != job.description:
+                    with Store(database_path(self.server.home)) as store:
                         store.update_description(job.id, description)
-                        job.description = description
-                    document, _profile = self._document()
-                    instructions = str(payload.get("instructions", ""))[:4000]
-                    generated = generate_suggestions(
-                        job,
-                        document,
-                        api_key=load_openai_key(self.server.home),
-                        instructions=instructions,
-                    )
-                    saved = save_draft(
-                        self.server.home,
-                        document,
-                        job.id,
-                        generated,
-                        existing=generated,
-                    )
-                    self._json(200, {"ok": True, "draft": saved})
-                    return
+                    job.description = description
+                document, _profile = self._document()
+                instructions = str(payload.get("instructions", ""))[:4000]
+                generated = generate_suggestions(
+                    job,
+                    document,
+                    api_key=load_openai_key(self.server.home),
+                    instructions=instructions,
+                )
+                saved = save_draft(
+                    self.server.home,
+                    document,
+                    job.id,
+                    generated,
+                    existing=generated,
+                )
+                self._json(200, {"ok": True, "draft": saved})
+                return
 
+            with Store(database_path(self.server.home)) as store:
                 if parsed_request.path == "/api/draft":
                     document, _profile = self._document()
                     incoming = payload.get("draft")
