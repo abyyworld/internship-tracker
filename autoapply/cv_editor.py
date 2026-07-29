@@ -52,8 +52,126 @@ def _private_write_json(path: Path, value: dict[str, Any]) -> None:
     path.chmod(0o600)
 
 
-def master_document(profile: dict[str, Any], facts: dict[str, Any]) -> dict[str, Any]:
-    """Return the complete fact bank in a stable, editor-friendly structure."""
+def _academic_as_sections(
+    academic: dict[str, Any],
+    seen: set[str],
+) -> list[dict[str, Any]]:
+    """Convert academic_profile.yaml into supplementary CV sections."""
+    extra: list[dict[str, Any]] = []
+
+    def _bullet_id(prefix: str, idx: int) -> str:
+        raw = f"academic_{prefix}_{idx}"
+        if raw in seen:
+            raw = f"{raw}_x{len(seen)}"
+        seen.add(raw)
+        return raw
+
+    # Publications
+    pubs = [p for p in (academic.get("publications") or []) if isinstance(p, dict) and p.get("title")]
+    if pubs:
+        sec: dict[str, Any] = {"name": "Publications", "entries": []}
+        for i, p in enumerate(pubs):
+            venue = str(p.get("venue", "")).strip()
+            year = str(p.get("year", "")).strip()
+            authors = str(p.get("authors", "")).strip()
+            contribution = str(p.get("contribution", "")).strip()
+            label = f"{venue} {year}".strip() or "Publication"
+            text = contribution or f"{str(p['title']).strip()}. {venue} {year}".strip()
+            bid = _bullet_id("pub", i)
+            entry: dict[str, Any] = {
+                "title": str(p["title"]).strip(),
+                "organization": venue,
+                "dates": year,
+                "bullets": [{"id": bid, "text": text or str(p["title"])}],
+            }
+            if authors:
+                entry["authors"] = authors
+            url = str(p.get("url") or p.get("arxiv") or "").strip()
+            if url:
+                entry["url"] = url
+            sec["entries"].append(entry)
+        extra.append(sec)
+
+    # Awards & honours
+    awards = [a for a in (academic.get("awards") or []) if isinstance(a, dict) and a.get("name")]
+    if awards:
+        sec = {"name": "Awards & Honours", "entries": []}
+        for i, a in enumerate(awards):
+            desc = str(a.get("description", "")).strip()
+            text = desc or f"{str(a['name']).strip()} — {str(a.get('institution', '')).strip()}".strip(" —")
+            bid = _bullet_id("award", i)
+            sec["entries"].append({
+                "title": str(a["name"]).strip(),
+                "organization": str(a.get("institution", "")).strip(),
+                "dates": str(a.get("year", "")).strip(),
+                "bullets": [{"id": bid, "text": text}],
+            })
+        extra.append(sec)
+
+    # Grants
+    grants = [g for g in (academic.get("grants") or []) if isinstance(g, dict) and g.get("name")]
+    if grants:
+        sec = {"name": "Grants & Funding", "entries": []}
+        for i, g in enumerate(grants):
+            desc = str(g.get("description", "")).strip()
+            amount = str(g.get("amount", "")).strip()
+            text = desc or (f"{str(g['name']).strip()}" + (f" ({amount})" if amount else ""))
+            bid = _bullet_id("grant", i)
+            sec["entries"].append({
+                "title": str(g["name"]).strip(),
+                "organization": str(g.get("funder", "")).strip(),
+                "dates": str(g.get("year", "")).strip(),
+                "bullets": [{"id": bid, "text": text}],
+            })
+        extra.append(sec)
+
+    # Talks
+    talks = [t for t in (academic.get("talks") or []) if isinstance(t, dict) and t.get("title")]
+    if talks:
+        sec = {"name": "Talks & Presentations", "entries": []}
+        for i, t in enumerate(talks):
+            ttype = str(t.get("type", "")).title()
+            venue = str(t.get("venue", "")).strip()
+            text = f"{ttype} presentation at {venue}".strip() if venue else str(t["title"]).strip()
+            bid = _bullet_id("talk", i)
+            sec["entries"].append({
+                "title": str(t["title"]).strip(),
+                "organization": venue,
+                "dates": str(t.get("date", "")).strip(),
+                "bullets": [{"id": bid, "text": text}],
+            })
+        extra.append(sec)
+
+    # Teaching
+    teaching = [t for t in (academic.get("teaching") or []) if isinstance(t, dict) and t.get("role")]
+    if teaching:
+        sec = {"name": "Teaching", "entries": []}
+        for i, t in enumerate(teaching):
+            desc = str(t.get("description", "")).strip()
+            course = str(t.get("course", "")).strip()
+            text = desc or f"{str(t['role']).strip()}: {course}".strip(": ")
+            bid = _bullet_id("teach", i)
+            sec["entries"].append({
+                "title": str(t["role"]).strip(),
+                "organization": str(t.get("institution", "")).strip() + (f" — {course}" if course else ""),
+                "dates": str(t.get("term", "")).strip(),
+                "bullets": [{"id": bid, "text": text}],
+            })
+        extra.append(sec)
+
+    return extra
+
+
+def master_document(
+    profile: dict[str, Any],
+    facts: dict[str, Any],
+    academic: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Return the complete fact bank in a stable, editor-friendly structure.
+
+    If an academic_profile dict is supplied, publications, awards, grants,
+    talks, and teaching sections are appended as additional CV sections.
+    """
     identity = profile.get("identity", {})
     contact = profile.get("contact", {})
     seen: set[str] = set()
@@ -81,6 +199,41 @@ def master_document(profile: dict[str, Any], facts: dict[str, Any]) -> dict[str,
                 copied_entry["bullets"].append({"id": fact_id, "text": text})
             copied_section["entries"].append(copied_entry)
         sections.append(copied_section)
+
+    # Academic supplement
+    if academic and isinstance(academic, dict):
+        for sec in _academic_as_sections(academic, seen):
+            sections.append(sec)
+
+    # Research skills supplement
+    research_skills = []
+    if academic and isinstance(academic, dict):
+        research_skills = [
+            str(s).strip()
+            for s in (academic.get("research_skills") or [])
+            if str(s).strip()
+        ]
+
+    # Research statement for summary supplement
+    research_statement = ""
+    if academic and isinstance(academic, dict):
+        rs = (academic.get("research") or {}).get("statement", "")
+        if rs and rs != "REPLACE_ME":
+            research_statement = str(rs).strip()
+
+    # Supervisor info for rich header
+    supervisors = []
+    if academic and isinstance(academic, dict):
+        for sup in (academic.get("supervisors") or []):
+            if isinstance(sup, dict) and sup.get("name") and sup.get("name") != "REPLACE_ME":
+                supervisors.append({
+                    "name": str(sup.get("name", "")).strip(),
+                    "title": str(sup.get("title", "")).strip(),
+                    "institution": str(sup.get("institution", "")).strip(),
+                    "lab": str(sup.get("lab", "")).strip(),
+                    "relationship": str(sup.get("relationship", "")).strip(),
+                })
+
     return {
         "schema_version": SCHEMA_VERSION,
         "header": {
@@ -100,16 +253,19 @@ def master_document(profile: dict[str, Any], facts: dict[str, Any]) -> dict[str,
                 )
                 if str(value).strip()
             ],
+            "supervisors": supervisors,
         },
         "summary": str(facts.get("summary", "")).strip(),
+        "research_statement": research_statement,
         "skills": [
             str(value).strip()
             for value in facts.get("skills", [])
             if str(value).strip()
-        ],
+        ] + research_skills,
         "education": deepcopy(list(facts.get("education", []))),
         "sections": sections,
         "fact_ids": sorted(seen),
+        "has_academic": bool(academic),
     }
 
 
@@ -118,8 +274,8 @@ def empty_draft(job_id: str, description_hash: str = "") -> dict[str, Any]:
         "schema_version": SCHEMA_VERSION,
         "job_id": job_id,
         "description_hash": description_hash,
-        "provider": "minimax",
-        "model": "MiniMax-M3",
+        "provider": "openai",
+        "model": "gpt-4o-mini",
         "instructions": "",
         "summary": None,
         "bullets": {},

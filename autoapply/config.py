@@ -48,6 +48,10 @@ def facts_path(home: Path) -> Path:
     return home / "resume_facts.yaml"
 
 
+def academic_path(home: Path) -> Path:
+    return home / "academic_profile.yaml"
+
+
 def database_path(home: Path) -> Path:
     return home / "autoapply.sqlite3"
 

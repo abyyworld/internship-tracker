@@ -13,6 +13,7 @@ from typing import Any
 from urllib.parse import parse_qs, urlparse
 
 from .config import (
+    academic_path,
     database_path,
     facts_path,
     load_yaml,
@@ -27,11 +28,11 @@ from .cv_editor import (
 )
 from .editor_ui import EDITOR_PAGE
 from .jobs import jobs_from_tracker
-from .minimax_tailoring import (
+from .openai_tailoring import (
     generate_suggestions,
-    load_minimax_key,
-    minimax_key_configured,
-    save_minimax_key,
+    load_openai_key,
+    openai_key_configured,
+    save_openai_key,
 )
 from .resume import render_resume
 from .runner import prepare
@@ -200,7 +201,15 @@ class BridgeHandler(BaseHTTPRequestHandler):
         facts = load_yaml(facts_path(self.server.home))
         reject_placeholders(profile)
         reject_placeholders(facts)
-        return master_document(profile, facts), profile
+        # Academic profile is optional — load if present, skip silently otherwise
+        academic: dict[str, Any] | None = None
+        ap = academic_path(self.server.home)
+        if ap.exists():
+            try:
+                academic = load_yaml(ap)
+            except Exception:
+                academic = None
+        return master_document(profile, facts, academic), profile
 
     def do_GET(self) -> None:
         parsed_request = urlparse(self.path)
@@ -250,7 +259,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                         },
                         "document": document,
                         "draft": draft,
-                        "minimax_configured": minimax_key_configured(
+                        "ai_configured": openai_key_configured(
                             self.server.home
                         ),
                     },
@@ -308,7 +317,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
         parsed_request = urlparse(self.path)
         if parsed_request.path not in {
             "/prepare",
-            "/api/settings/minimax",
+            "/api/settings/openai",
             "/api/suggest",
             "/api/draft",
             "/api/export",
@@ -324,9 +333,9 @@ class BridgeHandler(BaseHTTPRequestHandler):
             self._json(400, {"error": str(exc)})
             return
 
-        if parsed_request.path == "/api/settings/minimax":
+        if parsed_request.path == "/api/settings/openai":
             try:
-                save_minimax_key(
+                save_openai_key(
                     self.server.home,
                     str(payload.get("api_key", "")),
                 )
@@ -354,7 +363,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     generated = generate_suggestions(
                         job,
                         document,
-                        api_key=load_minimax_key(self.server.home),
+                        api_key=load_openai_key(self.server.home),
                         instructions=instructions,
                     )
                     saved = save_draft(
