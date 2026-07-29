@@ -97,24 +97,36 @@ LANE = [
 ]
 
 # Elite tier — a public discovery signal, not a personal application decision.
+# Tier is a coarse "how hard is this to get" signal, not a claim about which
+# employer is better. It spans every domain the tracker covers, so big tech,
+# frontier AI labs, and top quant firms all rank together rather than one
+# industry's hierarchy being applied to all of them.
 TIER_1 = {
+    # Big tech
+    "google", "alphabet", "meta", "facebook", "apple", "amazon", "microsoft",
+    "netflix", "nvidia",
+    # Frontier AI labs and corporate research
+    "openai", "anthropic", "google deepmind", "deepmind", "xai", "x.ai",
+    "google research", "microsoft research", "meta ai", "fair",
+    "apple machine learning research", "nvidia research", "mistral",
+    # Top quant / trading
     "jane street", "de shaw", "two sigma", "hudson river trading", "hrt",
     "citadel", "citadel securities", "optiver", "imc trading", "imc",
     "five rings", "susquehanna", "sig", "akuna capital", "akuna",
-    "openai", "anthropic", "google deepmind", "deepmind", "xai", "x.ai",
-    "microsoft research", "meta ai", "fair", "jump trading", "jump",
-    "virtu", "virtu financial", "tower research", "squarepoint",
-    "g-research", "gresearch", "xtx markets", "xtx", "marshall wace",
-    "man group", "point72", "cubist", "qube research",
+    "jump trading", "jump", "virtu", "virtu financial", "tower research",
+    "squarepoint", "g-research", "gresearch", "xtx markets", "xtx",
+    "marshall wace", "man group", "point72", "cubist", "qube research", "drw",
 }
 TIER_2 = {
-    "palantir", "google", "alphabet", "meta", "facebook", "apple",
-    "amazon", "microsoft", "netflix", "stripe", "waymo", "databricks",
-    "scale ai", "figma", "hugging face", "cohere", "mistral", "together ai",
-    "drw", "arm", "graphcore", "wayve", "isomorphic labs", "nvidia",
-    "cloudflare", "brex", "verkada", "nuro", "perplexity", "ramp",
-    "notion", "cursor", "anysphere", "cognition", "sierra", "harvey",
-    "elevenlabs", "airbnb", "coinbase", "datadog", "spotify",
+    # Highly selective, a step below the names above
+    "palantir", "stripe", "databricks", "waymo", "figma", "scale ai",
+    "hugging face", "cohere", "together ai", "arm", "graphcore", "wayve",
+    "isomorphic labs", "cloudflare", "brex", "verkada", "nuro", "perplexity",
+    "ramp", "notion", "cursor", "anysphere", "cognition", "sierra", "harvey",
+    "elevenlabs", "airbnb", "coinbase", "datadog", "spotify", "snowflake",
+    "mongodb", "cerebras", "groq", "anyscale", "weights & biases", "roboflow",
+    "qualcomm", "amd", "intel", "ibm research", "adobe research",
+    "samsung research", "allen institute", "spacex", "tesla",
 }
 
 try:

@@ -177,7 +177,6 @@ border-radius:13px;font-size:13px}
       <span class="muted" id="savedFlag" style="font-size:11px">Saved</span>
     </div>
     <div style="display:flex;gap:6px">
-      <button class="secondary mini" id="saveAsCv">Save as new CV</button>
       <button class="secondary mini" id="acceptAll" disabled>Accept all AI</button>
       <button class="secondary mini" id="resetAll" disabled>Revert all</button>
     </div>
@@ -204,6 +203,17 @@ border-radius:13px;font-size:13px}
         <button class="primary" id="generate">Generate suggestions</button>
       </div>
       <div class="busy" id="busy"><span class="spinner"></span><span id="busyText">AI is reviewing your CV…</span></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">Saved CVs</div>
+      <div id="cvList"></div>
+      <div style="display:flex;gap:6px;margin-top:9px">
+        <input class="key" id="newCvName" placeholder="Name a new CV…" maxlength="80" style="flex:1">
+        <button class="secondary mini" id="saveAsCv">Save</button>
+      </div>
+      <p class="hint">Saves the CV you are editing, with your edits applied.
+      Stored as private files in <code id="cvStorage">private/cv-library/</code></p>
     </div>
 
     <div class="card" id="gapCard" style="display:none">
@@ -577,14 +587,57 @@ async function generate(){
   finally{clearTimeout(tick);$("generate").disabled=false;$("busy").classList.remove("show")}
 }
 async function saveAsCv(){
-  const label=prompt("Name this CV (e.g. \"ML research CV\")","");
-  if(!label)return;
+  const label=$("newCvName").value.trim();
+  if(!label){notice("Type a name for the CV first.","error");$("newCvName").focus();return}
   try{
     const result=await api("/api/cv/save",{method:"POST",
-      body:JSON.stringify({url:jobUrl,cv_id:cvId,label,save_as:label.toLowerCase().replace(/[^a-z0-9]+/g,"-")})});
-    state.cvs=result.cvs;renderCvPicker();
-    toast("Saved as \""+result.cv.label+"\"");
+      body:JSON.stringify({url:jobUrl,cv_id:cvId,label,
+        save_as:label.toLowerCase().replace(/[^a-z0-9]+/g,"-")})});
+    state.cvs=result.cvs;$("newCvName").value="";
+    renderCvPicker();renderCvList();
+    toast("Saved \""+result.cv.label+"\"");
   }catch(err){notice(err.message,"error")}
+}
+async function renameCv(cv){
+  const label=prompt("Rename this CV",cv.label);
+  if(!label||label===cv.label)return;
+  try{
+    const result=await api("/api/cv/rename",{method:"POST",
+      body:JSON.stringify({target:cv.id,label})});
+    state.cvs=result.cvs;renderCvPicker();renderCvList();toast("Renamed");
+  }catch(err){notice(err.message,"error")}
+}
+async function deleteCv(cv){
+  if(!confirm(`Delete the saved CV "${cv.label}"? This cannot be undone.`))return;
+  try{
+    const result=await api("/api/cv/delete",{method:"POST",
+      body:JSON.stringify({target:cv.id})});
+    state.cvs=result.cvs;
+    if(cvId===cv.id){await loadCv("master")}
+    else{renderCvPicker();renderCvList()}
+    toast("Deleted");
+  }catch(err){notice(err.message,"error")}
+}
+function renderCvList(){
+  const root=$("cvList");root.replaceChildren();
+  for(const cv of state.cvs||[]){
+    const row=document.createElement("div");row.className="gap-row";
+    const name=document.createElement("span");name.className="gap-skill";
+    name.textContent=cv.label;
+    if(cv.id===cvId)name.style.color="var(--green)";
+    row.append(name);
+    if(cv.is_master){
+      const b=document.createElement("span");b.className="gap-badge gap-covered";
+      b.textContent="master";row.append(b);
+    }else{
+      const r=document.createElement("button");r.className="ghost mini";r.textContent="rename";
+      r.onclick=()=>renameCv(cv);
+      const d=document.createElement("button");d.className="ghost mini";d.textContent="delete";
+      d.style.color="var(--red)";d.onclick=()=>deleteCv(cv);
+      row.append(r,d);
+    }
+    root.append(row);
+  }
 }
 function renderCvPicker(){
   const sel=$("cvSelect");sel.replaceChildren();
@@ -640,8 +693,9 @@ async function loadCv(id){
   $("factCount").textContent=`${state.document.fact_ids.length} facts`;
   $("applyTop").href=$("applySide").href=state.job.application_url;
   $("instructions").value=state.draft.instructions||"";
+  if(state.cv_storage)$("cvStorage").textContent=state.cv_storage;
   flag("Saved");
-  renderCvPicker();renderKey();renderAll();
+  renderCvPicker();renderCvList();renderKey();renderAll();
 }
 async function init(){
   if(token.length<32){showInitError("Browser connection missing — open start-autoapply.command once, then reload.");return}

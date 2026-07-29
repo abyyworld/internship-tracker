@@ -14,8 +14,10 @@ from autoapply.cv_editor import (
 from autoapply.cv_library import (
     MASTER_CV_ID,
     cv_path,
+    delete_cv,
     list_cvs,
     load_cv,
+    rename_cv,
     safe_cv_id,
     save_cv,
 )
@@ -81,6 +83,38 @@ class CvLibraryTests(unittest.TestCase):
             escaped = cv_path(home, "../../etc/passwd")
             self.assertEqual(escaped.parent, (home / "cv-library").resolve())
             self.assertEqual(safe_cv_id("../../etc/passwd"), "etc-passwd")
+
+    def test_rename_keeps_the_id_and_content(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            save_cv(home, "ml-cv", "ML CV", FACTS)
+            rename_cv(home, "ml-cv", "Research CV")
+            reloaded = load_cv(home, "ml-cv")
+            self.assertEqual(reloaded["label"], "Research CV")
+            self.assertEqual(len(reloaded["sections"]), len(FACTS["sections"]))
+
+    def test_delete_removes_only_the_named_cv(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            save_cv(home, "one", "One", FACTS)
+            save_cv(home, "two", "Two", FACTS)
+            delete_cv(home, "one")
+            self.assertEqual(
+                [item["id"] for item in list_cvs(home) if not item["is_master"]],
+                ["two"],
+            )
+
+    def test_master_cannot_be_deleted_or_renamed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            (home / "resume_facts.yaml").write_text(
+                yaml.safe_dump(FACTS), encoding="utf-8"
+            )
+            with self.assertRaises(ValueError):
+                delete_cv(home, MASTER_CV_ID)
+            with self.assertRaises(ValueError):
+                rename_cv(home, MASTER_CV_ID, "Something else")
+            self.assertTrue((home / "resume_facts.yaml").exists())
 
     def test_drafts_are_scoped_per_cv(self):
         with tempfile.TemporaryDirectory() as directory:

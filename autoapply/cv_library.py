@@ -94,6 +94,31 @@ def list_cvs(home: Path) -> list[dict[str, Any]]:
     return entries
 
 
+def delete_cv(home: Path, cv_id: str) -> None:
+    """Remove a saved CV. The master fact bank is never deletable here."""
+    identifier = safe_cv_id(cv_id)
+    if not identifier or identifier == MASTER_CV_ID:
+        raise ValueError("The master CV cannot be deleted")
+    path = cv_path(home, identifier)
+    if not path.exists():
+        raise FileNotFoundError(f"Saved CV '{identifier}' does not exist")
+    if path.is_symlink():
+        raise RuntimeError("Refusing a symbolic-link CV file")
+    path.unlink()
+
+
+def rename_cv(home: Path, cv_id: str, label: str) -> dict[str, Any]:
+    """Change a saved CV's display label, keeping its id and file stable."""
+    identifier = safe_cv_id(cv_id)
+    if not identifier or identifier == MASTER_CV_ID:
+        raise ValueError("The master CV cannot be renamed")
+    cleaned = str(label or "").strip()
+    if not cleaned:
+        raise ValueError("Choose a name for the saved CV")
+    facts = load_cv(home, identifier)
+    return save_cv(home, identifier, cleaned, facts)
+
+
 def load_cv(home: Path, cv_id: str) -> dict[str, Any]:
     path = cv_path(home, cv_id)
     if not path.exists():
