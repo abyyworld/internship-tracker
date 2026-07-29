@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import stat
 import tempfile
@@ -6,15 +7,17 @@ import unittest
 from unittest.mock import Mock, patch
 
 from autoapply.cv_editor import master_document
-from autoapply.minimax_tailoring import (
+from autoapply.openai_tailoring import (
+    OPENAI_MODEL_DEFAULT,
     generate_suggestions,
-    load_minimax_key,
-    save_minimax_key,
+    load_openai_key,
+    openai_key_configured,
+    save_openai_key,
 )
 from autoapply.models import Job
 
 
-class MiniMaxTailoringTests(unittest.TestCase):
+class OpenAiTailoringTests(unittest.TestCase):
     def setUp(self):
         self.document = master_document(
             {
@@ -64,15 +67,29 @@ class MiniMaxTailoringTests(unittest.TestCase):
     def test_key_is_private_and_stable(self):
         with tempfile.TemporaryDirectory() as directory:
             home = Path(directory)
-            save_minimax_key(home, "test-key-with-at-least-twenty-characters")
+            self.assertFalse(openai_key_configured(home))
+            save_openai_key(home, "sk-test-key-with-at-least-twenty-characters")
             self.assertEqual(
-                load_minimax_key(home),
-                "test-key-with-at-least-twenty-characters",
+                load_openai_key(home),
+                "sk-test-key-with-at-least-twenty-characters",
             )
+            self.assertTrue(openai_key_configured(home))
             self.assertEqual(
-                stat.S_IMODE((home / "minimax.key").stat().st_mode),
+                stat.S_IMODE((home / "openai.key").stat().st_mode),
                 0o600,
             )
+
+    def test_environment_key_is_used_when_present(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            with patch.dict(
+                os.environ,
+                {"OPENAI_API_KEY": "sk-env-key-with-at-least-twenty-chars"},
+            ):
+                self.assertEqual(
+                    load_openai_key(home),
+                    "sk-env-key-with-at-least-twenty-chars",
+                )
 
     def test_safe_patch_is_returned_and_new_metric_is_discarded(self):
         response = Mock()
@@ -112,7 +129,7 @@ class MiniMaxTailoringTests(unittest.TestCase):
             ]
         }
         with patch(
-            "autoapply.minimax_tailoring.requests.post",
+            "autoapply.openai_tailoring.requests.post",
             return_value=response,
         ) as request:
             draft = generate_suggestions(
@@ -130,8 +147,75 @@ class MiniMaxTailoringTests(unittest.TestCase):
             sent.kwargs["headers"]["Authorization"],
             "Bearer private-api-key",
         )
-        self.assertEqual(sent.kwargs["json"]["model"], "MiniMax-M3")
+        self.assertEqual(sent.kwargs["json"]["model"], OPENAI_MODEL_DEFAULT)
         self.assertNotIn("private-api-key", json.dumps(sent.kwargs["json"]))
+
+    def test_endpoint_is_openai(self):
+        response = Mock()
+        response.raise_for_status.return_value = None
+        response.json.return_value = {
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {
+                                "summary": None,
+                                "bullets": [
+                                    {
+                                        "fact_id": "robot",
+                                        "proposal": (
+                                            "Developed a Python robot controller, "
+                                            "reducing latency by 20%."
+                                        ),
+                                        "rationale": "Stronger action verb.",
+                                        "keywords": ["Python"],
+                                    }
+                                ],
+                                "advice": [],
+                            }
+                        )
+                    }
+                }
+            ]
+        }
+        with patch(
+            "autoapply.openai_tailoring.requests.post",
+            return_value=response,
+        ) as request:
+            generate_suggestions(
+                self.job,
+                self.document,
+                api_key="private-api-key",
+            )
+        self.assertEqual(
+            request.call_args.args[0],
+            "https://api.openai.com/v1/chat/completions",
+        )
+
+    def test_empty_model_response_is_rejected(self):
+        response = Mock()
+        response.raise_for_status.return_value = None
+        response.json.return_value = {
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {"summary": None, "bullets": [], "advice": []}
+                        )
+                    }
+                }
+            ]
+        }
+        with patch(
+            "autoapply.openai_tailoring.requests.post",
+            return_value=response,
+        ):
+            with self.assertRaises(RuntimeError):
+                generate_suggestions(
+                    self.job,
+                    self.document,
+                    api_key="private-api-key",
+                )
 
 
 if __name__ == "__main__":
