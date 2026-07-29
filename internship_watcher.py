@@ -1059,10 +1059,17 @@ def category_of(company, role, description=""):
                  r"artificial intelligence|research scientist|generative ai|"
                  r"reinforcement learning|multimodal)\b", t):
         return "AI / ML"
-    # Bioinformatics / Computational Science
-    if re.search(r"\b(bioinformatics|computational biology|genomics|proteomics|"
-                 r"drug discovery|structural biology|cheminformatics|"
-                 r"biotech|neuroscience|cognitive science|climate model)\b", t):
+    # Computational / natural / life sciences — any "computational X", plus the
+    # physical, earth, and life science domains a universal tracker must cover.
+    if re.search(r"\bcomputational \w+", t) or re.search(
+            r"\b(bioinformatics|genomics|proteomics|"
+            r"drug discovery|structural biology|cheminformatics|"
+            r"biotech|biomedical|bioengineering|biostatistics|epidemiology|"
+            r"neuroscience|cognitive science|"
+            r"climate|atmospheric|oceanograph\w*|geoscience|earth science|"
+            r"astronom\w*|astrophysic\w*|cosmolog\w*|"
+            r"physics|chemistry|materials science|molecular dynamics|"
+            r"quantum comput\w*|scientific computing|numerical simulation)\b", t):
         return "Computational Science"
     # Data / Analytics
     if re.search(r"\b(data scientist|data engineer|analytics|business intelligence|"

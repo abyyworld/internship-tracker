@@ -15,6 +15,52 @@ TRACKER = ROOT / "tracker.csv"
 OUTPUT = ROOT / "docs" / "index.html"
 ATS_SUFFIXES = ("greenhouse.io", "lever.co", "ashbyhq.com")
 
+# Categories the dashboard chips can filter on. Must stay in sync with
+# CATEGORY_ORDER in the page template and category_of() in the watcher.
+KNOWN_CATEGORIES = {
+    "AI / ML",
+    "Software Engineering",
+    "Quant / Finance",
+    "Robotics & Embodied AI",
+    "Security",
+    "Data",
+    "Systems & Infra",
+    "Hardware / EE",
+    "HCI / XR",
+    "Computational Science",
+}
+
+# Rows scraped before the category rename keep their old label. Without this
+# map their chip never matches and the jobs become unreachable by any filter.
+LEGACY_CATEGORIES = {
+    "Quant": "Quant / Finance",
+    "HCI": "HCI / XR",
+    "Robotics": "Robotics & Embodied AI",
+    "Bioinformatics": "Computational Science",
+    "Systems": "Systems & Infra",
+    "Hardware": "Hardware / EE",
+}
+
+
+def normalize_category(stored: str, company: str, role: str) -> str:
+    """Map a tracker row onto a current chip label.
+
+    Rows keep whatever category the watcher assigned when it scraped them, so
+    after a rename or a new category is added the stored value can be stale.
+    Renames are mapped directly; anything still unrecognised is reclassified
+    with the watcher's own classifier so there is a single source of truth.
+    """
+    value = (stored or "").strip()
+    if value in KNOWN_CATEGORIES:
+        return value
+    if value in LEGACY_CATEGORIES:
+        return LEGACY_CATEGORIES[value]
+    try:
+        from internship_watcher import category_of
+    except Exception:
+        return value or "Software Engineering"
+    return category_of(company, role)
+
 
 def safe_url(value: str) -> str:
     candidate = (value or "").strip()
@@ -51,7 +97,11 @@ def load_jobs() -> list[dict[str, object]]:
                 "id": row.get("id", ""),
                 "company": row.get("company", ""),
                 "role": row.get("role", ""),
-                "category": row.get("category", "Unknown"),
+                "category": normalize_category(
+                    row.get("category", ""),
+                    row.get("company", ""),
+                    row.get("role", ""),
+                ),
                 "position_type": row.get("role_type", ""),
                 "region": row.get("region", "Unknown"),
                 "location": row.get("location", ""),
