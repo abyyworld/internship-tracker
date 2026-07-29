@@ -27,7 +27,16 @@ from .cv_editor import (
     resume_from_document,
     save_draft,
 )
-from .cv_library import MASTER_CV_ID, list_cvs, load_cv, safe_cv_id, save_cv
+from .cv_library import (
+    MASTER_CV_ID,
+    delete_cv,
+    library_directory,
+    list_cvs,
+    load_cv,
+    rename_cv,
+    safe_cv_id,
+    save_cv,
+)
 from .editor_ui import EDITOR_PAGE
 from .jobs import jobs_from_tracker
 from .openai_tailoring import (
@@ -323,6 +332,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                         "draft": draft,
                         "cv_id": cv_id,
                         "cvs": list_cvs(self.server.home),
+                        "cv_storage": str(library_directory(self.server.home)),
                         "ai_configured": openai_key_configured(
                             self.server.home
                         ),
@@ -395,6 +405,8 @@ class BridgeHandler(BaseHTTPRequestHandler):
             "/api/draft",
             "/api/export",
             "/api/cv/save",
+            "/api/cv/delete",
+            "/api/cv/rename",
         }:
             self._json(404, {"error": "Not found"})
             return
@@ -415,6 +427,28 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 )
                 self._json(200, {"ok": True, "configured": True})
             except (OSError, RuntimeError, ValueError) as exc:
+                self._json(422, {"error": str(exc)})
+            return
+
+        # Managing the CV library is independent of any job posting.
+        if parsed_request.path in {"/api/cv/delete", "/api/cv/rename"}:
+            try:
+                if parsed_request.path == "/api/cv/delete":
+                    delete_cv(self.server.home, payload.get("target", ""))
+                    self._json(
+                        200, {"ok": True, "cvs": list_cvs(self.server.home)}
+                    )
+                    return
+                info = rename_cv(
+                    self.server.home,
+                    payload.get("target", ""),
+                    payload.get("label", ""),
+                )
+                self._json(
+                    200,
+                    {"ok": True, "cv": info, "cvs": list_cvs(self.server.home)},
+                )
+            except (FileNotFoundError, OSError, RuntimeError, ValueError) as exc:
                 self._json(422, {"error": str(exc)})
             return
 

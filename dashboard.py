@@ -42,6 +42,20 @@ LEGACY_CATEGORIES = {
 }
 
 
+def normalize_tier(company: str, stored: str) -> str:
+    """Recompute a row's tier from the current watchlists.
+
+    Tier is written when a row is scraped, so a row discovered before the
+    tiers were rebalanced keeps its old value — which is how every FAANG
+    posting stayed on "high" while smaller firms showed as "elite".
+    """
+    try:
+        from internship_watcher import tier_of
+    except Exception:
+        return (stored or "").strip()
+    return tier_of(company or "") or ""
+
+
 def normalize_category(stored: str, company: str, role: str) -> str:
     """Map a tracker row onto a current chip label.
 
@@ -108,7 +122,9 @@ def load_jobs() -> list[dict[str, object]]:
                 "term": row.get("term", "Unknown"),
                 "level": row.get("level", "Unknown"),
                 "work_mode": row.get("work_mode", "unspecified"),
-                "tier": row.get("elite_tier", ""),
+                "tier": normalize_tier(
+                    row.get("company", ""), row.get("elite_tier", "")
+                ),
                 "focus": row.get("focus_tags", ""),
                 "company_type": row.get("company_type", "unknown"),
                 "company_signal": row.get("company_signal", ""),
