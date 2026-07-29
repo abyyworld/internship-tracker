@@ -11,15 +11,15 @@ This tracker watches community internship boards and official Greenhouse, Ashby,
 The private helper is configured to start automatically on the owner's Mac. Double-click `start-autoapply.command` once to connect the browser, or run this from any terminal:
 
 ```bash
-cd "$HOME/Desktop/internship watcher"
+cd "$HOME/Desktop/other projects/internship watcher"
 ./start-autoapply.command
 ```
 
-Every dashboard card has a native **✦ Edit CV for this job** button; Tampermonkey is not required for the dashboard. It opens a private localhost editor containing the complete master CV. MiniMax M3 proposes a small set of evidence-checked wording patches that can be accepted, rejected, or directly edited before exporting a job-specific PDF. Untouched content is preserved, and the employer application remains a separate button where Simplify can autofill.
+Every dashboard card has a native **✦ Edit CV for this job** button; Tampermonkey is not required for the dashboard. It opens a private localhost editor (AI CV Studio) containing the complete master CV. OpenAI proposes a small set of evidence-checked wording patches that can be accepted, rejected, or directly edited before exporting a job-specific PDF. Untouched content is preserved, and the employer application remains a separate button where Simplify can autofill.
 
-The GitHub repository never receives the private profile, fact bank, MiniMax key, drafts, or generated PDFs. The editor runs on `127.0.0.1`, stores the API key locally as a mode-0600 private file, requires review of every proposed change, and never submits an application.
+The GitHub repository never receives the private profile, fact bank, OpenAI key, drafts, or generated PDFs. The editor runs on `127.0.0.1`, stores the API key locally as a mode-0600 private file, requires review of every proposed change, and never submits an application.
 
-Pressing **Generate suggestions** sends the selected job description and master CV text to the MiniMax API through the user's account. Merely opening the editor, manually editing, or exporting a PDF does not call MiniMax.
+Pressing **Generate suggestions** sends the selected job description and master CV text to the OpenAI API through the user's account. Merely opening the editor, manually editing, or exporting a PDF does not call OpenAI.
 
 ## At a glance
 

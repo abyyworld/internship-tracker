@@ -483,9 +483,17 @@ async function exportPdf(){
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
+function showInitError(msg){
+  notice(msg,"error");
+  $("jobTitle").textContent="Not connected";
+  $("jobMeta").textContent="Bridge not running";
+  $("cvDoc").innerHTML='<div class="empty-state" style="border-color:#6f3430;color:var(--red)">'+
+    '<strong>CV not loaded</strong><br><br>'+msg+'<br><br>'+
+    'Double-click <code>start-autoapply.command</code> in the project folder, then reload this page.</div>';
+}
 async function init(){
-  if(token.length<32){notice("Browser connection missing. Open start-autoapply.command once, then retry.","error");return}
-  if(!jobUrl){notice("No job URL was supplied.","error");return}
+  if(token.length<32){showInitError("Browser connection missing — open start-autoapply.command once, then reload.");return}
+  if(!jobUrl){showInitError("No job URL was supplied.");return}
   try{
     state=await api(`/api/editor?url=${encodeURIComponent(jobUrl)}`);
     $("jobTitle").textContent=`${state.job.role} · ${state.job.company}`;
@@ -494,7 +502,7 @@ async function init(){
     $("applyTop").href=$("applySide").href=state.job.application_url;
     $("instructions").value=state.draft.instructions||"";
     renderKey();renderCV();renderSuggestions();renderGaps();renderFitPill();
-  }catch(err){notice(err.message,"error")}
+  }catch(err){showInitError(err.message)}
 }
 $("generate").onclick=generate;
 $("saveKey").onclick=saveKey;

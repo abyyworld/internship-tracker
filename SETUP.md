@@ -3,9 +3,9 @@
 The watcher, cockpit, PDF editor, and guarded application assistant run locally.
 The watcher itself uses the Python standard library. The application assistant
 uses free Python packages and an installed copy of Microsoft Edge, and requires
-Python 3.11 or newer. MiniMax M3 suggestions use your own MiniMax API account;
-browsing, manual editing, accepting/rejecting prior suggestions, PDF export, and
-the job tracker do not consume model credits.
+Python 3.11 or newer. AI CV suggestions use your own OpenAI API account (model
+`gpt-4o-mini` by default); browsing, manual editing, accepting/rejecting prior
+suggestions, PDF export, and the job tracker do not consume API credits.
 
 The system deliberately separates discovery from submission:
 
@@ -31,12 +31,12 @@ python -m pip install -r requirements-autoapply.txt
 
 The guarded browser workflow currently expects Microsoft Edge to be installed.
 
-No local model download is required for the CV Patch Studio. The first time an
-editor opens, paste a MiniMax API key into its private setup card. The bridge
-stores it in `private/minimax.key` with mode 0600 and never exposes it to the
-public dashboard or browser URL. Pressing **Generate suggestions** sends the job
-description and master CV text to MiniMax through that API account; opening the
-editor and exporting locally do not call the model.
+No local model download is required for the AI CV Studio. The first time an
+editor opens, paste an OpenAI API key (`sk-…`) into the key card in the right
+panel. The bridge stores it in `private/openai.key` with mode 0600 and never
+exposes it to the public dashboard or browser URL. Pressing **Generate
+suggestions** sends the job description and master CV text to OpenAI through
+that API account; opening the editor and exporting locally do not call the API.
 
 The daily watcher and cockpit do not require the extra packages:
 
@@ -71,14 +71,14 @@ directory. Running `.venv/bin/activate` from `~` will fail because `.venv` is in
 the project:
 
 ```bash
-cd "$HOME/Desktop/internship watcher"
+cd "$HOME/Desktop/other projects/internship watcher"
 ./start-autoapply.command
 ```
 
 The localhost bridge imports every open HTTPS role in the current tracker. The
 editor immediately displays the complete master CV without spending API credits.
 Press **Generate suggestions** to fetch the current job description and ask
-MiniMax M3 for a small patch set. Accept, reject, or directly edit each proposal,
+OpenAI for a small patch set. Accept, reject, or directly edit each proposal,
 then press **Export accepted PDF**. Simplify can autofill the employer form;
 choose the newly downloaded PDF as the resume and review the whole application.
 
@@ -280,29 +280,33 @@ expiry. It is never placed in shell history. An ambiguous browser response is
 recorded as `unknown_outcome` and is never retried automatically; check the employer
 portal or confirmation email yourself.
 
-## Worldwide robotics and emerging startups
+## Categories and position types
 
-The watcher has a dedicated `Robotics & Embodied AI` category spanning official
-global ATS boards and a manual worldwide watchlist. It covers areas such as:
+The dashboard has two filter rows:
 
-- Humanoid and general-purpose robotics.
-- Robot learning, embodied AI, perception, planning, and autonomy.
-- Industrial, warehouse, construction, agricultural, medical, and field robotics.
-- Autonomous vehicles, drones, delivery systems, mechatronics, controls, and firmware.
+**Category chips** (green) — AI / ML, Software Engineering, Quant / Finance,
+Robotics & Embodied AI, Security, Data, Systems & Infra, Hardware / EE, HCI / XR,
+Computational Science.
+
+**Position type chips** (purple) — Internship, Co-op, Research Assistant,
+New Grad, PhD Fellowship, Postdoc, Masters Research.
+
+Academic sources (NSF REU, NIH, NASA, DOE, CERN, ESA, Turing Institute,
+EURAXESS, jobs.ac.uk) feed the Research Assistant, PhD Fellowship, Postdoc,
+and Masters Research chips.
 
 Useful tracker columns are:
 
-- `category` and `robotics_focus` for the technical area.
+- `category` for the technical area.
+- `role_type` for position type (intern, co-op, research-assistant, phd-fellowship, postdoc, new-grad).
 - `company_type` for emerging startup, startup, private scaleup, established, or public.
 - `region` and `work_mode` for geography.
 - `equity_signal` as a reminder to verify the actual offer.
 
-Filter `category = Robotics & Embodied AI`, then prioritise
-`company_type = emerging-startup`, `startup`, or `private-scaleup` if early-stage
-companies are your goal. A company being private does not guarantee that an intern
-will receive equity, that the equity will have value, or that the role fits your visa
-status. Verify compensation, vesting, strike price, dilution, tax treatment, and
-work authorisation before accepting any offer.
+A company being private does not guarantee that an intern will receive equity,
+that the equity will have value, or that the role fits your visa status. Verify
+compensation, vesting, strike price, dilution, tax treatment, and work
+authorisation before accepting any offer.
 
 ## Legacy basic userscript
 
