@@ -2238,13 +2238,12 @@ def build_dashboard(rows_out, new_ids, current):
         and r.get("source_status") == "open"
     ]
     new_live = [r for r in live if r.get("NEW") == "YES"]
-    robotics = [
-        r for r in live if r.get("category") == "Robotics & Embodied AI"
-    ]
-    startup_robotics = [
-        r for r in robotics
-        if r.get("company_type") in (
-            "emerging-startup", "startup", "private-scaleup"
+    # Research-track roles are surfaced in the header alongside the total so no
+    # single technical category is presented as the headline of the tracker.
+    research_live = [
+        r for r in live
+        if r.get("role_type") in (
+            "research-assistant", "phd-fellowship", "postdoc", "masters-research"
         )
     ]
     elite = [r for r in live if r.get("elite_tier") == "elite"]
@@ -2313,9 +2312,9 @@ def build_dashboard(rows_out, new_ids, current):
     urgent_pairs.sort(key=lambda item: item[0])
 
     lines = [
-        "# Internship + Robotics Opportunity Watcher\n",
+        "# 🎯 Universal Academic & Career Tracker — Internships · Research · PhD · New Grad\n",
         f"\n> Last verified run: **{TODAY}** · **{len(live)} verified-open postings** · "
-        f"**{len(robotics)} robotics / embodied-AI postings**\n",
+        f"**{len(research_live)} research / PhD / postdoc positions**\n",
         "\nThis tracker watches community internship boards and official Greenhouse, "
         "Ashby, and Lever feeds. Career hubs and forecast programmes are kept "
         "separate from real postings. Unknown work-authorisation or sponsorship "
@@ -2323,22 +2322,28 @@ def build_dashboard(rows_out, new_ids, current):
         "\n## Filter jobs, generate a CV, then use Simplify\n",
         "\n[Open the filterable Role Radar dashboard]"
         "(https://abyyworld.github.io/internship-tracker/) for search, category, "
-        "region, term, degree, company-type, robotics-startup, and CV-support filters.\n",
+        "position type, region, term, degree, company-type, and CV-support filters.\n",
         "\nThe private helper is configured to start automatically on the owner's "
         "Mac. Double-click `start-autoapply.command` once to connect the browser, "
         "or run:\n",
-        "\n```bash\ncd \"$HOME/Desktop/internship watcher\"\n"
+        "\n```bash\ncd \"$HOME/Desktop/other projects/internship watcher\"\n"
         "./start-autoapply.command\n```\n",
-        "\nEvery dashboard card has a native **⚡ Tailor CV + Apply** button; "
-        "Tampermonkey is not required for the dashboard. It reads the live job page "
-        "when possible, generates evidence-checked wording edits with the local "
-        "Ollama model, downloads a job-specific PDF, and opens the employer "
-        "application page where Simplify can autofill. If an employer blocks live "
-        "page reading, the screen explicitly says that public tracker metadata was "
-        "used as the fallback.\n",
-        "\nThe GitHub repository never receives the private profile or fact bank. "
-        "The CV is generated on `127.0.0.1`, remains a draft requiring review, and "
-        "is never submitted by the bridge.\n",
+        "\nEvery dashboard card has a native **✦ Edit CV for this job** button; "
+        "Tampermonkey is not required for the dashboard. It opens a private "
+        "localhost editor (AI CV Studio) containing the complete master CV. "
+        "OpenAI (`gpt-4o-mini`) proposes a small set of evidence-checked wording "
+        "patches that can be accepted, rejected, or directly edited before "
+        "exporting a job-specific PDF. Untouched content is preserved, and the "
+        "employer application remains a separate button where Simplify can "
+        "autofill.\n",
+        "\nThe GitHub repository never receives the private profile, fact bank, "
+        "OpenAI key, drafts, or generated PDFs. The editor runs on `127.0.0.1`, "
+        "stores the API key locally as a mode-0600 private file, requires review "
+        "of every proposed change, and never submits an application.\n",
+        "\nPressing **Generate suggestions** sends the selected job description "
+        "and master CV text to the OpenAI API through the user's account. Merely "
+        "opening the editor, manually editing, or exporting a PDF does not call "
+        "OpenAI.\n",
     ]
     if stale_error:
         lines.append(
@@ -2352,8 +2357,7 @@ def build_dashboard(rows_out, new_ids, current):
         f"| Verified-open postings | {len(live)} |\n",
         f"| Roles discovered today | {len(new_ids)} |\n",
         f"| New verified postings | {len(new_live)} |\n",
-        f"| Robotics / embodied AI | {len(robotics)} |\n",
-        f"| Robotics at private startups / scaleups | {len(startup_robotics)} |\n",
+        f"| Research / PhD / postdoc positions | {len(research_live)} |\n",
         f"| Elite tier | {len(elite)} |\n",
         f"| High tier | {len(high)} |\n",
         f"| Eligibility still needs review | {unknown_eligibility} |\n",
@@ -2377,22 +2381,26 @@ def build_dashboard(rows_out, new_ids, current):
                 f"\n_{len(new_live) - 60} more are in [tracker.csv](tracker.csv)._\n"
             )
 
-    lines.append(f"\n## Robotics & embodied AI ({len(robotics)} live)\n\n")
+    # One section per category, ordered by how many postings are live, so every
+    # technical area is presented the same way rather than one being featured.
+    lines.append("\n## Browse by category\n\n")
     lines.append(
-        "Includes directly robotics-focused work and technical roles at robotics "
-        "companies: robot learning, perception, autonomy, controls, manipulation, "
-        "firmware, mechatronics, and field robotics. Live geography reflects what "
-        "official feeds expose today; the worldwide career-hub watchlist is kept "
-        "separately in [manual_checks.md](manual_checks.md).\n\n"
+        "Every category is listed the same way. Live geography reflects what "
+        "official feeds expose today; the worldwide career-hub and academic "
+        "watchlists are kept separately in [manual_checks.md](manual_checks.md).\n"
     )
-    if robotics:
-        posting_table(lines, robotics, limit=100, startup=True)
-        if len(robotics) > 100:
+    per_category_limit = 40
+    for category_name, category_count in categories.most_common():
+        category_rows = [r for r in live if r.get("category") == category_name]
+        if not category_rows:
+            continue
+        lines.append(f"\n### {category_name} ({category_count} live)\n\n")
+        posting_table(lines, category_rows, limit=per_category_limit, startup=True)
+        if category_count > per_category_limit:
             lines.append(
-                f"\n_{len(robotics) - 100} more are in [tracker.csv](tracker.csv)._\n"
+                f"\n_{category_count - per_category_limit} more are in "
+                "[tracker.csv](tracker.csv)._\n"
             )
-    else:
-        lines.append("_No matching verified posting is live in this run._\n")
 
     lines.append("\n### Early-company / equity reality check\n\n")
     lines.append(
