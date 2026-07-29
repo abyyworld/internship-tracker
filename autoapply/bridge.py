@@ -21,11 +21,13 @@ from .config import (
     reject_placeholders,
 )
 from .cv_editor import (
+    facts_from_document,
     load_draft,
     master_document,
     resume_from_document,
     save_draft,
 )
+from .cv_library import MASTER_CV_ID, list_cvs, load_cv, safe_cv_id, save_cv
 from .editor_ui import EDITOR_PAGE
 from .jobs import jobs_from_tracker
 from .openai_tailoring import (
@@ -250,9 +252,15 @@ class BridgeHandler(BaseHTTPRequestHandler):
         with Store(database_path(self.server.home)) as store:
             return store.find_job_by_url(url)
 
-    def _document(self) -> tuple[dict[str, Any], dict[str, Any]]:
+    def _document(
+        self,
+        cv_id: str = MASTER_CV_ID,
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
         profile = load_yaml(profile_path(self.server.home))
-        facts = load_yaml(facts_path(self.server.home))
+        if cv_id and cv_id != MASTER_CV_ID:
+            facts = load_cv(self.server.home, cv_id)
+        else:
+            facts = load_yaml(facts_path(self.server.home))
         reject_placeholders(profile)
         reject_placeholders(facts)
         # Academic profile is optional — load if present, skip silently otherwise
@@ -295,9 +303,10 @@ class BridgeHandler(BaseHTTPRequestHandler):
             try:
                 query = parse_qs(parsed_request.query)
                 url = self._job_url(query.get("url", [""])[0])
+                cv_id = safe_cv_id(query.get("cv", [""])[0]) or MASTER_CV_ID
                 job = self._find_job(url)
-                document, _profile = self._document()
-                draft = load_draft(self.server.home, job.id)
+                document, _profile = self._document(cv_id)
+                draft = load_draft(self.server.home, job.id, cv_id)
                 self._json(
                     200,
                     {
@@ -312,12 +321,23 @@ class BridgeHandler(BaseHTTPRequestHandler):
                         },
                         "document": document,
                         "draft": draft,
+                        "cv_id": cv_id,
+                        "cvs": list_cvs(self.server.home),
                         "ai_configured": openai_key_configured(
                             self.server.home
                         ),
                     },
                 )
             except (FileNotFoundError, KeyError, OSError, RuntimeError, ValueError) as exc:
+                self._json(422, {"error": str(exc)})
+            return
+        if parsed_request.path == "/api/cvs":
+            if not self._authorized():
+                self._json(401, {"error": "Bridge token required"})
+                return
+            try:
+                self._json(200, {"ok": True, "cvs": list_cvs(self.server.home)})
+            except (OSError, RuntimeError, ValueError) as exc:
                 self._json(422, {"error": str(exc)})
             return
         if parsed_request.path == "/tailor":
@@ -374,6 +394,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
             "/api/suggest",
             "/api/draft",
             "/api/export",
+            "/api/cv/save",
         }:
             self._json(404, {"error": "Not found"})
             return
@@ -399,6 +420,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
 
         try:
             url = self._job_url(payload.get("url"))
+            cv_id = safe_cv_id(payload.get("cv_id", "")) or MASTER_CV_ID
             job = self._find_job(url)
 
             if parsed_request.path == "/api/suggest":
@@ -414,7 +436,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     with Store(database_path(self.server.home)) as store:
                         store.update_description(job.id, description)
                     job.description = description
-                document, _profile = self._document()
+                document, _profile = self._document(cv_id)
                 instructions = str(payload.get("instructions", ""))[:4000]
                 generated = generate_suggestions(
                     job,
@@ -422,6 +444,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     api_key=load_openai_key(self.server.home),
                     instructions=instructions,
                 )
+                generated["cv_id"] = cv_id
                 saved = save_draft(
                     self.server.home,
                     document,
@@ -432,13 +455,33 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 self._json(200, {"ok": True, "draft": saved})
                 return
 
+            if parsed_request.path == "/api/cv/save":
+                document, _profile = self._document(cv_id)
+                draft = load_draft(self.server.home, job.id, cv_id)
+                label = str(payload.get("label", "")).strip()
+                target = safe_cv_id(payload.get("save_as", "") or label)
+                if not target:
+                    raise ValueError("Choose a name for the saved CV")
+                info = save_cv(
+                    self.server.home,
+                    target,
+                    label or target,
+                    facts_from_document(document, draft),
+                )
+                self._json(
+                    200,
+                    {"ok": True, "cv": info, "cvs": list_cvs(self.server.home)},
+                )
+                return
+
             with Store(database_path(self.server.home)) as store:
                 if parsed_request.path == "/api/draft":
-                    document, _profile = self._document()
+                    document, _profile = self._document(cv_id)
                     incoming = payload.get("draft")
                     if not isinstance(incoming, dict):
                         raise ValueError("Expected a CV draft object")
-                    existing = load_draft(self.server.home, job.id)
+                    incoming.setdefault("cv_id", cv_id)
+                    existing = load_draft(self.server.home, job.id, cv_id)
                     saved = save_draft(
                         self.server.home,
                         document,
@@ -450,8 +493,8 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     return
 
                 if parsed_request.path == "/api/export":
-                    document, _profile = self._document()
-                    draft = load_draft(self.server.home, job.id)
+                    document, _profile = self._document(cv_id)
+                    draft = load_draft(self.server.home, job.id, cv_id)
                     resume = resume_from_document(document, draft)
                     output = (
                         self.server.home
