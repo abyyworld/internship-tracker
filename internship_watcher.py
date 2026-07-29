@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 """
-internship_watcher.py v3 — global internship + robotics edition
+internship_watcher.py v4 — universal academic & career platform
 =================================================
-Target:  Global internships, robotics/embodied-AI startups, and UK programmes
+Target:  Global internships, research assistant roles, PhD/postdoc fellowships,
+         new-grad positions, robotics/embodied-AI startups, and UK programmes.
 
 SOURCES AUTO-SCRAPED EVERY RUN:
-  GitHub community repos  — SimplifyJobs, vanshb03, sndsh404
-  Greenhouse JSON API     — trading, AI, software, and robotics boards
-  Ashby public job boards — AI and emerging robotics startups
-  Lever public postings   — software, autonomy, and robotics companies
+  GitHub community repos  — SimplifyJobs (internships + new-grad), vanshb03, sndsh404
+  Greenhouse JSON API     — trading, AI, software, robotics, research boards
+  Ashby public job boards — AI, robotics, and science startups
+  Lever public postings   — software, autonomy, defence, and research companies
 
-CURATED ELITE + ROBOTICS WATCHLISTS (career hubs, never counted as postings):
+CURATED ELITE + ACADEMIC WATCHLISTS (career hubs, never counted as postings):
   Jane Street, DE Shaw, Two Sigma, Citadel, Optiver, HRT, Five Rings, SIG,
   Google/DeepMind, Meta, Apple, Amazon, Microsoft Research, OpenAI, ARM,
-  Netflix, Palantir
+  Netflix, Palantir; plus NSF REU, NIH, CERN, and major university career hubs
 
 UK SPRING WEEKS (hardcoded, always in tracker):
   Jane Street FOCUS, Citadel Discover, Goldman Sachs, Morgan Stanley,
@@ -50,16 +51,49 @@ INCLUDE_OFF_LANE   = False   # True keeps non-SWE/AI/quant roles (marketing, HR,
 # Everything else (country, citizenship, visa, degree level, term, role type) is a
 # COLUMN you filter yourself — no role is hidden. See the columns in tracker.csv.
 
-# Your lanes: SWE / AI-ML / quant / data / research / HCI. A role must touch one
-# of these to be kept. (Elite tier is scored separately.)
+# Technical lane filter — a role must mention at least one of these to be included.
+# Covers all CS/STEM domains: SWE, AI/ML, quant, data, research, HCI, security,
+# biotech, physics, EE, and academic positions (postdoc, RA, PhD fellowship).
 LANE = [
+    # Core CS/SWE
     "software", "engineer", "developer", "swe", "backend", "frontend",
     "full stack", "full-stack", "systems", "platform", "infrastructure",
+    "devops", "site reliability", "cloud", "distributed",
+    # AI / ML / Data Science
     "machine learning", " ml", "ml ", " ai", "ai ", "artificial intelligence",
-    "data", "quant", "research", "scientist", "applied", "hci", "human-computer",
-    "computer vision", "nlp", "fpga", "algorithmic", "trading", "quantitative",
-    "robotics", "mechatronics", "perception", "deep learning", "technology",
-    "trader",
+    "deep learning", "computer vision", "nlp", "natural language",
+    "large language", "llm", "foundation model", "generative",
+    "reinforcement learning", "multimodal",
+    # Data / Analytics
+    "data", "analytics", "business intelligence", "database", "data warehouse",
+    "data pipeline", "etl", "spark", "hadoop",
+    # Quant / Finance
+    "quant", "quantitative", "trading", "trader", "algorithmic", "market making",
+    "financial engineer", "risk", "portfolio",
+    # Robotics / Autonomy
+    "robotics", "mechatronics", "perception", "autonomous", "autonomy",
+    "motion planning", "slam", "ros", "embodied", "manipulation", "humanoid",
+    # HCI / UX / XR
+    "hci", "human-computer", "user experience", "ux research",
+    "virtual reality", "augmented reality", "mixed reality", "xr", "interaction",
+    # Security / Crypto
+    "security", "cybersecurity", "cryptography", "privacy", "infosec",
+    "penetration", "vulnerability", "reverse engineering", "malware",
+    # Hardware / Embedded / EE
+    "fpga", "embedded", "firmware", "hardware", "electrical engineering",
+    "ece", "vlsi", "chip", "asic", "dsp", "signal processing", "rf",
+    "mechatronics", "circuit",
+    # Computational Science / Research
+    "research", "scientist", "applied", "computational",
+    "bioinformatics", "computational biology", "genomics", "proteomics",
+    "neuroscience", "cognitive science", "operations research",
+    "climate", "atmospheric", "physics", "applied mathematics", "statistics",
+    "mathematical", "optimization",
+    # Academic positions (always pass these role types regardless of topic)
+    "postdoc", "postdoctoral", "research assistant", "research associate",
+    "phd fellowship", "doctoral", "fellowship",
+    # Specific role titles
+    "technology", "technical", "product engineer",
 ]
 
 # Elite tier — a public discovery signal, not a personal application decision.
@@ -193,6 +227,12 @@ GITHUB_SOURCES = [
         "term": "Summer 2026",
     },
     {
+        "name": "SimplifyNewGrad",
+        "url":  "https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/README.md",
+        "fmt":  "html",
+        "term": "New Grad 2026",
+    },
+    {
         "name": "vanshb03_2027",
         "url":  "https://raw.githubusercontent.com/vanshb03/Summer2027-Internships/dev/README.md",
         "fmt":  "md_href",
@@ -264,6 +304,51 @@ GREENHOUSE_BOARDS = [
     ("skildai-careers",      "Skild AI",                None),
     ("stackav",              "Stack AV",                None),
     ("wing",                 "Wing",                    None),
+    # Broader tech / research companies
+    ("nvidia",               "NVIDIA",                  None),
+    ("amd",                  "AMD",                     None),
+    ("qualcomm",             "Qualcomm",                None),
+    ("arm",                  "Arm",                     None),
+    ("intel",                "Intel",                   None),
+    ("ibm",                  "IBM",                     None),
+    ("samsungresearch",      "Samsung Research",        None),
+    ("huggingface",          "Hugging Face",            None),
+    ("mistral",              "Mistral AI",              None),
+    ("groq",                 "Groq",                    None),
+    ("lambdalabs",           "Lambda Labs",             None),
+    ("modal",                "Modal",                   None),
+    ("replit",               "Replit",                  None),
+    ("coinbase",             "Coinbase",                None),
+    ("ripple",               "Ripple",                  None),
+    ("chime",                "Chime",                   None),
+    ("plaid",                "Plaid",                   None),
+    ("robinhood",            "Robinhood",               None),
+    ("duolingo",             "Duolingo",                None),
+    ("reddit",               "Reddit",                  None),
+    ("discord",              "Discord",                 None),
+    ("snap",                 "Snap",                    None),
+    ("twilio",               "Twilio",                  None),
+    ("snowflake",            "Snowflake",               None),
+    ("mongodb",              "MongoDB",                 None),
+    ("elastic",              "Elastic",                 None),
+    ("hashicorp",            "HashiCorp",               None),
+    ("1password",            "1Password",               None),
+    ("cloudsmith",           "Cloudsmith",              None),
+    # Defence / aerospace / space
+    ("spacex",               "SpaceX",                  None),
+    ("boeing",               "Boeing",                  None),
+    ("l3harris",             "L3Harris",                None),
+    ("bae-systems",          "BAE Systems",             None),
+    ("northropgrumman",      "Northrop Grumman",        None),
+    ("lockheedmartin",       "Lockheed Martin",         None),
+    ("raytheon",             "Raytheon",                None),
+    # Research / academic / biotech
+    ("allen-institute",      "Allen Institute for AI",  None),
+    ("calico",               "Calico (Google)",         None),
+    ("modernatx",            "Moderna",                 None),
+    ("genentech",            "Genentech",               None),
+    ("biontech",             "BioNTech",                None),
+    ("deepvariant",          "DeepVariant / Google",    None),
     # NOTE: palantir removed — their Greenhouse board is 404; already tracked via Lever
 ]
 
@@ -307,6 +392,28 @@ ASHBY_BOARDS = [
     ("summer-robotics",      "Summer Robotics",         None),
     ("sunrise",              "Sunrise Robotics",        None),
     ("unitxlabs",            "UnitX",                   None),
+    # More AI / research startups
+    ("together",             "Together AI",             None),
+    ("anyscale",             "Anyscale",                None),
+    ("run-ai",               "Run:AI",                  None),
+    ("weights-biases",       "Weights & Biases",        None),
+    ("scale",                "Scale AI",                None),
+    ("labelbox",             "Labelbox",                None),
+    ("roboflow",             "Roboflow",                None),
+    ("landing-ai",           "Landing AI",              None),
+    ("covariant",            "Covariant",               None),
+    ("nuro",                 "Nuro",                    None),
+    ("voxel51",              "Voxel51",                 None),
+    ("modal-labs",           "Modal Labs",              None),
+    ("midjourney",           "Midjourney",              None),
+    ("coreweave",            "CoreWeave",               None),
+    ("recursion",            "Recursion Pharmaceuticals", None),
+    ("insitro",              "insitro",                 None),
+    ("etched",               "Etched AI",               None),
+    ("groq",                 "Groq",                    None),
+    ("sambanova",            "SambaNova Systems",       None),
+    ("cerebras",             "Cerebras Systems",        None),
+    ("tenstorrent",          "Tenstorrent",             None),
     # NOTE: mistral removed — Ashby slug 404; moved to Lever below
 ]
 
@@ -328,6 +435,33 @@ LEVER_BOARDS = [
     ("robust-ai",    "Robust AI",     None),
     ("zoox",         "Zoox",          None),
     ("brightmachines","Bright Machines", None),
+    # Additional software / infra / research companies
+    ("linear",       "Linear",        None),
+    ("vercel",       "Vercel",        None),
+    ("supabase",     "Supabase",      None),
+    ("retool",       "Retool",        None),
+    ("figma",        "Figma",         None),
+    ("notion",       "Notion",        None),
+    ("loom",         "Loom",          None),
+    ("asana",        "Asana",         None),
+    ("airtable",     "Airtable",      None),
+    ("benchling",    "Benchling",     None),
+    ("prefect",      "Prefect",       None),
+    ("dbt-labs",     "dbt Labs",      None),
+    ("airbyte",      "Airbyte",       None),
+    ("astronomer",   "Astronomer",    None),
+    ("temporal",     "Temporal",      None),
+    ("earthly",      "Earthly",       None),
+    # Cybersecurity
+    ("crowdstrike",  "CrowdStrike",   None),
+    ("sentinelone",  "SentinelOne",   None),
+    ("lacework",     "Lacework",      None),
+    ("snyk",         "Snyk",          None),
+    ("semgrep",      "Semgrep",       None),
+    # Climate / clean energy
+    ("climateai",    "Climate AI",    None),
+    ("watershed",    "Watershed",     None),
+    ("energyvault",  "Energy Vault",  None),
 ]
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -366,6 +500,46 @@ ELITE_WATCHLIST = [
     ("NVIDIA",               "→ University Recruiting",            "Global (incl UK)",      "https://www.nvidia.com/en-us/about-nvidia/careers/university-recruiting/",   "high"),
     ("Netflix",              "→ Students",                        "Los Gatos / Remote",    "https://explore.jobs.netflix.net/careers?query=intern",                     "high"),
     ("ARM",                  "→ Early Careers",                   "Cambridge, UK",         "https://careers.arm.com/early-careers",                                     "high"),
+    # ---- Academic & research-specific watchlists ----
+    ("Tesla",                "→ Internships (all teams)",          "Global / Fremont CA",   "https://www.tesla.com/careers/search/?type=3",                              "high"),
+    ("IBM Research",         "→ Research Internships",             "Global",                "https://research.ibm.com/careers/",                                         "high"),
+    ("Adobe Research",       "→ Research Internships",             "US / Global",           "https://research.adobe.com/careers/",                                       "high"),
+    ("Samsung Research",     "→ Research roles",                   "UK / US / Korea",       "https://www.samsungresearch.com/careers",                                   "high"),
+    ("Allen Institute for AI","→ Research / Engineering roles",    "Seattle",               "https://allenai.org/careers",                                               "high"),
+]
+
+# Academic research programmes — funded, competitive, and time-limited.
+# These are watchlist entries (career hubs), not individual job postings.
+ACADEMIC_WATCHLIST = [
+    # US federal research programmes
+    ("NSF REU",              "Research Experience for Undergrads", "USA (various)",         "https://www.nsf.gov/crssprgm/reu/",                                         "high"),
+    ("NIH Internship",       "NIH Intramural Research Training",   "Bethesda MD / Remote",  "https://www.training.nih.gov/programs/sip",                                 "high"),
+    ("NASA OSSI",            "One Stop Shopping Initiative (NASA)","USA (various centres)",  "https://intern.nasa.gov/",                                                  "high"),
+    ("DOE SULI",             "Science Undergraduate Lab Internship","USA (national labs)",   "https://science.osti.gov/wdts/suli",                                        "high"),
+    ("DOE CCI",              "Community College Internships",       "USA (national labs)",   "https://science.osti.gov/wdts/cci",                                         "high"),
+    ("CERN openlab",         "CERN Summer Student / openlab",       "Geneva, Switzerland",   "https://openlab.cern/education",                                            "high"),
+    ("CERN",                 "CERN Technical / Doctoral Student",   "Geneva, Switzerland",   "https://careers.cern/",                                                     "high"),
+    ("European Space Agency","ESA Young Graduate Trainee",          "Darmstadt / Noordwijk", "https://www.esa.int/About_Us/Careers_at_ESA/Young_Graduate_Trainees",        "high"),
+    # UK national labs / universities
+    ("The Alan Turing Institute","Research internships / studentships","London, UK",         "https://www.turing.ac.uk/work-turing/",                                     "high"),
+    ("Wellcome Sanger Institute","Internships / PhD studentships",  "Cambridge, UK",         "https://www.sanger.ac.uk/about/work-with-us/",                             "high"),
+    ("EMBL-EBI",             "Internships / PhD positions",          "Cambridge, UK",         "https://www.ebi.ac.uk/about/jobs/",                                         "high"),
+    ("STFC / RAL",           "Placement / Research roles",           "Harwell, UK",           "https://www.ukri.org/careers/",                                             "high"),
+    # University career hubs (funnel students to research + intern roles)
+    ("MIT Career Office",    "→ MIT students / research roles",     "Cambridge MA",          "https://capd.mit.edu/",                                                     "high"),
+    ("Stanford Career Ed",   "→ Stanford students / research",      "Stanford CA",           "https://careereducation.stanford.edu/",                                     "high"),
+    ("CMU Career Centre",    "→ CMU students / research",           "Pittsburgh PA",         "https://www.cmu.edu/career/",                                               "high"),
+    ("Oxford Careers",       "→ Oxford students / DPhil roles",     "Oxford, UK",            "https://www.careers.ox.ac.uk/",                                             "high"),
+    ("Cambridge Careers",    "→ Cambridge students / PhD roles",    "Cambridge, UK",         "https://www.careers.cam.ac.uk/",                                            "high"),
+    ("Imperial Careers",     "→ Imperial students / research",      "London, UK",            "https://www.imperial.ac.uk/careers/",                                       "high"),
+    # European research funding / job boards
+    ("EURAXESS",             "→ European PhD / postdoc / RA jobs",  "Europe (various)",      "https://euraxess.ec.europa.eu/jobs",                                        "high"),
+    ("jobs.ac.uk",           "→ UK academic jobs (all levels)",     "UK (various)",          "https://www.jobs.ac.uk/",                                                   "high"),
+    ("Academic Positions",   "→ PhD / postdoc / faculty (EU)",      "Europe (various)",      "https://academicpositions.eu/",                                             "high"),
+    # AI-specific research programmes
+    ("Google Research",      "→ Student Researcher / intern",       "Global",                "https://research.google/careers/",                                          "elite"),
+    ("OpenAI Research",      "→ Research roles",                    "San Francisco CA",      "https://openai.com/careers/",                                               "elite"),
+    ("DeepMind Research",    "→ Research Scientist / Intern",       "London / Mountain View","https://deepmind.google/about/careers/",                                    "elite"),
 ]
 
 # Top robotics organisations whose ATS cannot be read reliably. These are career
@@ -747,6 +921,19 @@ def degree_level(text, flags=None):
 
 def role_type(role):
     t = role.lower()
+    # Academic / research positions — checked before generic "graduate" catch
+    if re.search(r"\bpostdoc(?:toral)?\b|\bpost-doctoral\b", t): return "postdoc"
+    if re.search(r"\bph\.?\s?d\.?\b(?!\s*(?:intern|student))|"
+                 r"\bdoctoral (?:student|fellow|candidate|position|programme)\b|"
+                 r"\bphd (?:student|fellow|candidate|position|programme|thesis)\b", t,
+                 re.I):
+        return "phd-fellowship"
+    if re.search(r"\bm(?:sc|\.sc\.?|asters?)[- ](?:student|research|thesis|intern|"
+                 r"position|fellow)\b|\bmaster'?s? research\b", t, re.I):
+        return "masters-research"
+    if re.search(r"\bresearch (?:assistant|associate|trainee)\b|\bra \b", t):
+        return "research-assistant"
+    # Standard early-career types
     if re.search(r"\bnew grad(uate)?\b", t):              return "new-grad"
     if "spring" in t and ("week" in t or "insight" in t): return "spring-week"
     if re.search(r"\bco-?op\b", t):                       return "co-op"
@@ -772,10 +959,16 @@ def is_senior_fte(role):
     return False
 
 def early_career(role):
-    """True only for explicit student/intern programmes in the internship feed."""
+    """True for student, intern, research, and PhD/postdoc roles — anything non-senior.
+    'graduate' is intentionally excluded: "Graduate Software Engineer" is an FTE title
+    at many companies and should NOT auto-pass the strict_intern gate on ATS boards.
+    New-grad positions from GitHub repos (SimplifyJobs/New-Grad-Positions) are still
+    collected because those sources run without strict_intern=True.
+    """
     return role_type(role) in {
         "intern", "co-op", "placement", "spring-week", "summer-analyst",
-        "apprenticeship", "fellowship",
+        "apprenticeship", "fellowship", "new-grad", "entry-level",
+        "research-assistant", "phd-fellowship", "postdoc", "masters-research",
     }
 
 def keep(company, role, closed, strict_intern=False):
@@ -839,37 +1032,89 @@ def _robotics_meta(company):
 
 def category_of(company, role, description=""):
     t = f" {company} {role} {description} ".lower()
+    # Quant / HFT — most specific financial domain
+    if re.search(r"\b(quant|quantitative|trading|trader|market making|"
+                 r"algorithmic trading|high frequency|hft)\b", t):
+        return "Quant / Finance"
+    # Security — its own domain
+    if re.search(r"\b(security|cybersecurity|infosec|cryptography|"
+                 r"penetration test|vulnerability|malware|reverse engineering|"
+                 r"zero.?day|exploit|threat intel)\b", t):
+        return "Security"
+    # HCI / XR
+    if re.search(r"\b(hci|human.computer interaction|ux research|"
+                 r"virtual reality|augmented reality|mixed reality|xr|"
+                 r"interaction design)\b", t):
+        return "HCI / XR"
+    # Robotics & Embodied AI
     if _robotics_meta(company)[0] or re.search(
         r"\b(robot(?:ics?)?|mechatronics|embodied ai|"
         r"autonomous (?:vehicle|driving|systems?)|perception|motion planning|"
-        r"slam|ros2?|manipulation|humanoid)\b", t
+        r"slam|ros2?|manipulation|humanoid|legged|quadruped)\b", t
     ):
         return "Robotics & Embodied AI"
-    if re.search(r"\b(quant|quantitative|trading|trader|market making)\b", t):
-        return "Quant"
-    if re.search(r"\b(hci|human-computer|ux research|virtual reality|mixed reality)\b", t):
-        return "HCI / XR"
+    # AI / ML / Research
     if re.search(r"\b(machine learning|deep learning|computer vision|nlp|"
-                 r"artificial intelligence|research scientist)\b", t):
+                 r"natural language|large language|llm|foundation model|"
+                 r"artificial intelligence|research scientist|generative ai|"
+                 r"reinforcement learning|multimodal)\b", t):
         return "AI / ML"
-    if re.search(r"\b(data scientist|data engineer|analytics)\b", t):
+    # Bioinformatics / Computational Science
+    if re.search(r"\b(bioinformatics|computational biology|genomics|proteomics|"
+                 r"drug discovery|structural biology|cheminformatics|"
+                 r"biotech|neuroscience|cognitive science|climate model)\b", t):
+        return "Computational Science"
+    # Data / Analytics
+    if re.search(r"\b(data scientist|data engineer|analytics|business intelligence|"
+                 r"data warehouse|etl|data pipeline|spark|hadoop)\b", t):
         return "Data"
+    # Systems / Infrastructure / Cloud
+    if re.search(r"\b(systems engineer|infrastructure|platform engineer|"
+                 r"devops|site reliability|cloud engineer|distributed systems|"
+                 r"kernel|operating systems|compiler|storage|networking)\b", t):
+        return "Systems & Infra"
+    # Hardware / EE / Embedded
+    if re.search(r"\b(fpga|embedded|firmware|hardware engineer|electrical engineer|"
+                 r"vlsi|asic|chip design|dsp|signal processing|pcb)\b", t):
+        return "Hardware / EE"
     return "Software Engineering"
 
 
 def focus_tags(company, role, description=""):
     t = f" {company} {role} {description} ".lower()
     rules = [
-        ("embodied-ai", r"\bembodied ai\b|foundation model"),
-        ("humanoid", r"\bhumanoid\b"),
-        ("perception", r"\bperception\b|computer vision|sensor fusion"),
-        ("autonomy", r"\bautonom"),
-        ("controls", r"\bcontrol(?:s)?\b|motion planning"),
-        ("manipulation", r"\bmanipulation\b|grasp"),
-        ("robot-software", r"\brobot(?:ics?)?\b.*\bsoftware\b|\bros2?\b"),
-        ("hardware", r"\bfirmware\b|\bembedded\b|\bmechanical\b|"
-                     r"\belectrical\b|\bmechatronics\b"),
-        ("research", r"\bresearch\b"),
+        # Robotics / autonomy
+        ("embodied-ai",     r"\bembodied ai\b|foundation model"),
+        ("humanoid",        r"\bhumanoid\b"),
+        ("perception",      r"\bperception\b|computer vision|sensor fusion"),
+        ("autonomy",        r"\bautonom"),
+        ("controls",        r"\bcontrol(?:s)?\b|motion planning|trajectory"),
+        ("manipulation",    r"\bmanipulation\b|grasp"),
+        ("robot-software",  r"\brobot(?:ics?)?\b.*\bsoftware\b|\bros2?\b"),
+        ("hardware",        r"\bfirmware\b|\bembedded\b|\bmechanical\b|"
+                            r"\belectrical\b|\bmechatronics\b|\bfpga\b|\bvlsi\b"),
+        # AI / ML subdomains
+        ("llm",             r"\bllm\b|large language|gpt|transformer\b"),
+        ("computer-vision", r"\bcomputer vision\b|\bcv\b(?= )|image recognition|"
+                            r"object detect|segmentation"),
+        ("nlp",             r"\bnlp\b|natural language processing"),
+        ("rl",              r"\breinforcement learning\b|\brl\b(?= )"),
+        ("multimodal",      r"\bmultimodal\b"),
+        # Data / systems
+        ("data-eng",        r"\bdata engineer|etl\b|data pipeline|spark\b"),
+        ("infra",           r"\binfrastructure\b|devops|site reliability|kubernetes|"
+                            r"cloud infra"),
+        ("distributed",     r"\bdistributed systems?\b"),
+        # Security
+        ("security",        r"\bsecurity\b|cryptography|penetration|exploit"),
+        # Science / research
+        ("research",        r"\bresearch\b"),
+        ("bioinformatics",  r"\bbioinformatics\b|genomics|proteomics|drug discovery"),
+        ("climate",         r"\bclimate\b|atmospheric|carbon|sustainability"),
+        ("neuroscience",    r"\bneuroscience\b|neural|brain"),
+        # Academic level signals
+        ("phd-position",    r"\bphd\b|doctoral|postdoc"),
+        ("funded",          r"\bfunded\b|\bstipend\b|\bfellowship\b"),
     ]
     tags = [name for name, pattern in rules if re.search(pattern, t)]
     return ",".join(tags)
@@ -1480,6 +1725,8 @@ def gather(existing=None):
         add_static(company, role, loc, url, tier_of(company),
                    "robotics_watchlist", "watchlist",
                    category="Robotics & Embodied AI")
+    for company, role, loc, url, tier in ACADEMIC_WATCHLIST:
+        add_static(company, role, loc, url, tier, "academic_watchlist", "watchlist")
     for company, role, loc, url, deadline, tier in SPRING_WEEKS:
         add_static(company, role, loc, url, tier, "spring_weeks", "planned",
                    deadline=deadline)
@@ -1761,6 +2008,12 @@ def write_manual_checks(failed):
     for company, role, loc, url in ROBOTICS_WATCHLIST:
         lines.append(f"| {company} | {role} | {loc} | [Careers]({url}) |\n")
 
+    lines.append("\n## Academic & Research Programmes\n")
+    lines.append("| Organisation | Programme | Location | Link |\n")
+    lines.append("|--------------|-----------|----------|------|\n")
+    for company, role, loc, url, _tier in ACADEMIC_WATCHLIST:
+        lines.append(f"| {company} | {role} | {loc} | [Apply]({url}) |\n")
+
     lines.append("\n## UK Spring Weeks (planned windows — verify before applying)\n")
     lines.append("| Company | Program | Location | Deadline | Link |\n")
     lines.append("|---------|---------|----------|----------|------|\n")
@@ -1820,10 +2073,12 @@ def _build_dashboard_legacy(rows_out, new_ids, current):
     region_counts = Counter(r.get("region", "?") for r in live)
 
     L = []
-    L.append("# 🎯 Elite Internship Tracker — Summer 2027 + UK Spring Weeks\n")
+    L.append("# 🎯 Universal Academic & Career Tracker — Internships · Research · PhD · New Grad\n")
     L.append(f"> **Auto-updated daily** by GitHub Actions · Last run: **{TODAY}** · "
              f"**{len(live)} live roles** tracked\n")
-    L.append("\nCurated for **AI/ML · SWE · Quant/HFT · HCI research**. "
+    L.append("\nCovers **Internships · Research Assistantships · PhD Fellowships · Postdocs · "
+             "New Grad** across **SWE · AI/ML · Quant · Data · Security · Robotics · "
+             "Hardware · Computational Science**. "
              "Scrapes community boards + Greenhouse, Ashby & Lever company APIs "
              "every day, merges + de-dupes, and flags what newly opened. "
              "Every role is **tagged, not filtered out** — sort/slice by region, "

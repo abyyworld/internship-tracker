@@ -1,0 +1,90 @@
+# Academic profile — extends resume_facts.yaml with research-specific sections.
+# Copy this file to <AUTOAPPLY_HOME>/academic_profile.yaml.
+# All fields are optional. Leave blank or remove any section you don't need.
+# Never commit the completed copy — it lives in private/ with mode 0600.
+schema_version: 1
+
+# ── Research identity ──────────────────────────────────────────────────────────
+research:
+  # One-sentence research statement used in cover letters and profile summaries.
+  statement: "REPLACE_ME"
+  # Broad area tags used for job matching (e.g. machine-learning, robotics, NLP)
+  areas:
+    - REPLACE_ME
+  keywords:
+    - REPLACE_ME
+
+# ── Supervisors / advisors ────────────────────────────────────────────────────
+# List every supervisor, PI, or advisor you have worked with.
+supervisors:
+  - name: REPLACE_ME
+    title: "Professor"           # Professor / Dr. / Associate Professor / PI
+    institution: REPLACE_ME
+    department: REPLACE_ME
+    lab: REPLACE_ME              # Lab / group name
+    research_areas:
+      - REPLACE_ME
+    url: https://example.com/lab   # Lab or personal page
+    relationship: "PhD advisor"    # PhD advisor | MSc supervisor | RA mentor | collaborator
+
+# ── Publications ─────────────────────────────────────────────────────────────
+# Peer-reviewed papers, preprints, workshop papers.
+publications:
+  - title: "REPLACE_ME"
+    venue: "REPLACE_ME"          # e.g. ICRA 2025, NeurIPS 2025 Workshop, arXiv
+    year: 2025
+    authors: "You, Supervisor, Coauthor"
+    doi: ""                       # DOI or leave blank
+    arxiv: ""                     # arXiv ID e.g. 2412.12345
+    url: ""
+    contribution: "REPLACE_ME"   # One sentence: your specific contribution
+
+# ── Grants & funding ──────────────────────────────────────────────────────────
+grants:
+  - name: "REPLACE_ME"           # e.g. NSF Graduate Research Fellowship
+    funder: "REPLACE_ME"         # e.g. National Science Foundation
+    year: 2025
+    amount: ""                   # e.g. $37,000/year or £15,000 stipend
+    description: "REPLACE_ME"   # One sentence on what it funded
+
+# ── Awards & honours ──────────────────────────────────────────────────────────
+awards:
+  - name: "REPLACE_ME"
+    institution: "REPLACE_ME"
+    year: 2025
+    description: "REPLACE_ME"
+
+# ── Talks & presentations ─────────────────────────────────────────────────────
+talks:
+  - title: "REPLACE_ME"
+    venue: "REPLACE_ME"          # Conference / workshop / lab seminar
+    date: "2025-06"
+    type: "oral"                 # oral | poster | invited | keynote
+
+# ── Teaching ─────────────────────────────────────────────────────────────────
+teaching:
+  - role: "Teaching Assistant"
+    course: "REPLACE_ME"
+    institution: "REPLACE_ME"
+    term: "Autumn 2024"
+    description: "REPLACE_ME"
+
+# ── Academic service ──────────────────────────────────────────────────────────
+service:
+  - role: "Reviewer"
+    venue: "REPLACE_ME"          # e.g. ICRA 2026, NeurIPS 2025
+    year: 2025
+
+# ── Research skills & tools ──────────────────────────────────────────────────
+# Add domain-specific tools / datasets / frameworks beyond your general skills.
+research_skills:
+  - REPLACE_ME
+
+# ── Reference contacts ────────────────────────────────────────────────────────
+# Used for auto-populating reference fields on applications. Never auto-submitted.
+references:
+  - name: REPLACE_ME
+    title: "Professor"
+    institution: REPLACE_ME
+    email: REPLACE_ME@example.com
+    relationship: "PhD advisor"
