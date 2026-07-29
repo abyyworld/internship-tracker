@@ -1,6 +1,6 @@
 # Internship + Robotics Opportunity Watcher
 
-> Last verified run: **2026-07-28** · **477 verified-open postings** · **68 robotics / embodied-AI postings**
+> Last verified run: **2026-07-29** · **474 verified-open postings** · **70 robotics / embodied-AI postings**
 
 This tracker watches community internship boards and official Greenhouse, Ashby, and Lever feeds. Career hubs and forecast programmes are kept separate from real postings. Unknown work-authorisation or sponsorship data means **review required**, never assumed eligible.
 
@@ -23,36 +23,34 @@ The GitHub repository never receives the private profile or fact bank. The CV is
 
 | Metric | Count |
 |--|--:|
-| Verified-open postings | 477 |
-| Roles discovered today | 8 |
-| New verified postings | 8 |
-| Robotics / embodied AI | 68 |
-| Robotics at private startups / scaleups | 64 |
-| Elite tier | 102 |
-| High tier | 59 |
-| Eligibility still needs review | 477 |
+| Verified-open postings | 474 |
+| Roles discovered today | 6 |
+| New verified postings | 6 |
+| Robotics / embodied AI | 70 |
+| Robotics at private startups / scaleups | 66 |
+| Elite tier | 100 |
+| High tier | 58 |
+| Eligibility still needs review | 474 |
 | Deadlines within 10 days | 0 |
 
-**By category:** Software Engineering 281 · Quant 88 · Robotics & Embodied AI 68 · AI / ML 31 · Data 9
+**By category:** Software Engineering 277 · Quant 87 · Robotics & Embodied AI 70 · AI / ML 31 · Data 9
 
-**By region:** US 405 · UK 25 · Canada 16 · Unknown 7 · Netherlands 4 · Switzerland 3 · UK / France 3 · Ireland 3 · India 2 · France 2 · Serbia 2 · US / France / Singapore / Hong Kong 1 · Hong Kong 1 · Australia 1 · US / Netherlands 1 · US / Australia 1
+**By region:** US 404 · UK 25 · Canada 16 · Unknown 6 · Netherlands 4 · UK / France 3 · Ireland 3 · Switzerland 3 · India 2 · France 2 · Serbia 2 · Hong Kong 1 · US / France / Singapore / Hong Kong 1 · Australia 1 · US / Netherlands 1
 
-**By degree evidence:** Unknown 387 · Advanced/unknown 41 · PhD 32 · Undergraduate eligible 15 · Masters 2
+**By degree evidence:** Unknown 382 · Advanced/unknown 41 · PhD 33 · Undergraduate eligible 16 · Masters 2
 
-## Newly opened (8)
+## Newly opened (6)
 
 | Company | Role | Category | Region | Term | Eligibility |
 |--|--|--|--|--|--|
-| **Squarepoint Capital** | [Intern Quant Researcher](https://www.squarepoint-capital.com/open-opportunities?id=243853&gh_jid=243853) | Quant | US / France / Singapore / Hong Kong | Unknown | review required |
-| **ANYbotics** | [Software Engineering Internship](https://jobs.lever.co/anybotics/7e305a48-4628-4a6a-b054-0367b6f6e586) | Robotics &amp; Embodied AI | Switzerland | Unknown | review required |
-| **Appian** | [Information Security Engineer Intern 🛂](https://job-boards.greenhouse.io/appian/jobs/8088496?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | work-rights review |
-| **Apptronik** | [Software Engineer Intern - ML Systems](https://boards.greenhouse.io/apptronik/jobs/6128057004?gh_jid=6128057004) | Robotics &amp; Embodied AI | US | Unknown | review required |
-| **Axon** | [Firmware Engineering Internship](https://job-boards.greenhouse.io/axontalentcommunity/jobs/7800628003?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer 2026 | review required |
-| **FieldAI** | [Robotics Research Internship-Locomotion &amp; Planning \(Fall 2026\)](https://jobs.lever.co/field-ai/ce04c5b3-17c3-49aa-b833-a6bebbf9d23f) | Robotics &amp; Embodied AI | US | Fall 2026 | review required |
-| **GlobalFoundries** | [Device Engineer Intern - Ulp Cmos](https://globalfoundries.wd1.myworkdayjobs.com/External/job/USA---New-York---Malta/Product-Business-Unit-Finance-Intern--Summer-2026-_JR-2502830?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer 2026 | review required |
-| **Intel Corporation** | [AI Software Engineering PhD Intern](https://intel.wd1.myworkdayjobs.com/external/job/US-Oregon-Hillsboro/AI-Applied-intern_JR0285916?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
+| **Cloudflare** | [Research Engineer Intern \(Fall 2026\)](https://boards.greenhouse.io/cloudflare/jobs/8089379?gh_jid=8089379) | Software Engineering | Unknown | Fall 2026 | review required |
+| **Chicago Trading Company** | [Software Engineer Intern](https://job-boards.greenhouse.io/ctccampusboard/jobs/4708230005?utm_source=github-vansh-ouckah) | Quant | US | Summer 2027 | review required |
+| **FieldAI** | [Internship - Robot Control Systems \(Fall 2026\)](https://jobs.lever.co/field-ai/8a3b5d4b-f88f-4704-bfdd-74e8dcd30704) | Robotics &amp; Embodied AI | US | Fall 2026 | review required |
+| **Pennsylvania State University** | [R&amp;D Engineer Intern](https://psu.wd1.myworkdayjobs.com/PSU_Staff/job/Penn-State-University-Park/R-D-Engineer-Intern_REQ_0000079178-1?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer 2026 | review required |
+| **Savannah River National Laboratory** | [Software Developer Undergraduate Intern](https://ewvl.fa.us8.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/2164?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer 2026 | review required |
+| **Zipline** | [Mechanical Engineer Intern \(Fall 2026\)](https://www.zipline.com/open-roles?gh_jid=7734831003) | Robotics &amp; Embodied AI | US | Fall 2026 | review required |
 
-## Robotics & embodied AI (68 live)
+## Robotics & embodied AI (70 live)
 
 Includes directly robotics-focused work and technical roles at robotics companies: robot learning, perception, autonomy, controls, manipulation, firmware, mechatronics, and field robotics. Live geography reflects what official feeds expose today; the worldwide career-hub watchlist is kept separately in [manual_checks.md](manual_checks.md).
 
@@ -70,7 +68,7 @@ Includes directly robotics-focused work and technical roles at robotics companie
 | **1X** | [AI Residency](https://jobs.ashbyhq.com/1x/5b2b4c73-13b5-46ca-8467-8024741a4b57) | US | humanoid robotics | private-scaleup | private company; verify offer |
 | **ANYbotics** | [Product Data Management Internship](https://jobs.lever.co/anybotics/74b68707-86aa-4efc-9efb-94ca5ad82698) | Switzerland | legged robots | private-scaleup | private company; verify offer |
 | **ANYbotics** | [Robotics Lab Technician Intern](https://jobs.lever.co/anybotics/9755ae0f-f740-40bc-bc13-be52c505748b) | Switzerland | legged robots | private-scaleup | private company; verify offer |
-| **ANYbotics** | [Software Engineering Internship](https://jobs.lever.co/anybotics/7e305a48-4628-4a6a-b054-0367b6f6e586) | Switzerland | legged robots | private-scaleup | private company; verify offer |
+| **ANYbotics** | [Software Engineering Internship - AI Platform](https://jobs.lever.co/anybotics/7e305a48-4628-4a6a-b054-0367b6f6e586) | Switzerland | legged robots | private-scaleup | private company; verify offer |
 | **Anduril** | [2027 Electrical Engineer Intern](https://boards.greenhouse.io/andurilindustries/jobs/5148101007?gh_jid=5148101007) | US | autonomous systems | private-scaleup | private company; verify offer |
 | **Anduril** | [2027 Manufacturing Engineer Intern](https://boards.greenhouse.io/andurilindustries/jobs/5153218007?gh_jid=5153218007) | US | autonomous systems | private-scaleup | private company; verify offer |
 | **Anduril** | [2027 Mechanical Engineer Intern](https://boards.greenhouse.io/andurilindustries/jobs/5153187007?gh_jid=5153187007) | US | autonomous systems | private-scaleup | private company; verify offer |
@@ -83,6 +81,7 @@ Includes directly robotics-focused work and technical roles at robotics companie
 | **Apptronik** | [Robotics Software Intern – Real-Time Controls](https://boards.greenhouse.io/apptronik/jobs/5985132004?gh_jid=5985132004) | US | humanoid robotics | private-scaleup | private company; verify offer |
 | **Apptronik** | [Software Engineer Intern - ML Systems](https://boards.greenhouse.io/apptronik/jobs/6128057004?gh_jid=6128057004) | US | humanoid robotics | private-scaleup | private company; verify offer |
 | **Bot Auto** | [Intern, Deep Learning Engineer](https://job-boards.greenhouse.io/botauto/jobs/5289440008) | US | autonomous trucking | startup | private company; verify offer |
+| **FieldAI** | [Internship - Robot Control Systems \(Fall 2026\)](https://jobs.lever.co/field-ai/8a3b5d4b-f88f-4704-bfdd-74e8dcd30704) | US | field robotics | private-scaleup | posting mentions equity |
 | **FieldAI** | [Robotics Research Internship, Humanoid Manipulation \(Summer 2026\) \| PhD Internship](https://jobs.lever.co/field-ai/2a2c8f00-3a28-481b-882c-33cb0ec4a3a0) | US | field robotics | private-scaleup | private company; verify offer |
 | **FieldAI** | [Robotics Research Internship-Locomotion &amp; Planning \(Fall 2026\)](https://jobs.lever.co/field-ai/ce04c5b3-17c3-49aa-b833-a6bebbf9d23f) | US | field robotics | private-scaleup | private company; verify offer |
 | **Figure** | [Electrical Engineering Intern \[Fall 2026\]](https://job-boards.greenhouse.io/figureai/jobs/4676467006) | US | humanoid robotics | private-scaleup | private company; verify offer |
@@ -122,6 +121,7 @@ Includes directly robotics-focused work and technical roles at robotics companie
 | **Zipline** | [Embedded Software Engineer Intern \(Fall 2026\)](https://www.zipline.com/open-roles?gh_jid=7765240003) | US | autonomous delivery | private-scaleup | private company; verify offer |
 | **Zipline** | [Enterprise Systems Software Engineer Intern \(Fall 2026\)](https://www.zipline.com/open-roles?gh_jid=7767667003) | US | autonomous delivery | private-scaleup | private company; verify offer |
 | **Zipline** | [Flight Test Engineer Intern \(Fall 2026\)](https://www.zipline.com/open-roles?gh_jid=7767622003) | US | autonomous delivery | private-scaleup | private company; verify offer |
+| **Zipline** | [Mechanical Engineer Intern \(Fall 2026\)](https://www.zipline.com/open-roles?gh_jid=7734831003) | US | autonomous delivery | private-scaleup | private company; verify offer |
 | **Zipline** | [Mechatronics Perception Intern \(Fall 2026\)](https://www.zipline.com/open-roles?gh_jid=7763697003) | US | autonomous delivery | private-scaleup | private company; verify offer |
 | **Zipline** | [Perception Intern \(Fall 2026\)](https://www.zipline.com/open-roles?gh_jid=7761650003) | US | autonomous delivery | private-scaleup | private company; verify offer |
 | **Zipline** | [Software Engineer Intern \(Fall 2026\)](https://www.zipline.com/open-roles?gh_jid=7787509003) | US | autonomous delivery | private-scaleup | private company; verify offer |
@@ -131,7 +131,7 @@ Includes directly robotics-focused work and technical roles at robotics companie
 
 The company signal is a discovery aid, not a prediction. Private-company options can become valuable, but can also expire, dilute, remain illiquid, or end up worth zero. `private company; verify offer` means the posting does not prove that equity is included. Ask for the option count **and fully diluted percentage**, strike price, vesting/cliff, exercise window, latest common valuation, and liquidation preferences.
 
-## Elite and high-tier live postings (161)
+## Elite and high-tier live postings (158)
 
 | Company | Role | Category | Region | Term | Eligibility |
 |--|--|--|--|--|--|
@@ -151,8 +151,6 @@ The company signal is a discovery aid, not a prediction. Private-company options
 | **Citadel** | [Quantitative Researcher – PhD Intern 🎓](https://www.citadel.com/careers/details/quantitative-researcher-phd-intern-us/?utm_source=Simplify&ref=Simplify) | Quant | US | Summer 2026 | review required |
 | **Citadel** | [Quantitative Researcher – PhD Intern 🎓](https://www.citadel.com/careers/details/quantitative-researcher-phd-intern-europe/?utm_source=Simplify&ref=Simplify) | Quant | UK | Summer 2026 | review required |
 | **Citadel** | [Software Engineer Intern](https://www.citadel.com/careers/details/software-engineer-intern-us/?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Ambiguous | review required |
-| **Citadel Securities** | [Credit &amp; Rates Rotational Trader Intern](https://www.citadelsecurities.com/careers/details/credit-rates-rotational-trader-intern-us/?utm_source=Simplify&ref=Simplify) | Quant | US | Summer 2026 | review required |
-| **Citadel Securities** | [Designated Market Maker Intern - Designated Market Maker - Trader](https://www.citadelsecurities.com/careers/details/designated-market-maker-dmm-trader-intern-us/?utm_source=Simplify&ref=Simplify) | Quant | US | Summer 2026 | review required |
 | **Citadel Securities** | [Machine Learning Researcher PhD Intern 🎓](https://www.citadelsecurities.com/careers/details/machine-learning-researcher-phd-intern-us/?utm_source=Simplify&ref=Simplify) | AI / ML | US | Summer 2026 | review required |
 | **Citadel Securities** | [Quantitative Research Analyst Bachelor's or master's degree Intern 🎓](https://www.citadelsecurities.com/careers/details/quantitative-research-analyst-intern-bs-ms-europe/?utm_source=Simplify&ref=Simplify) | Quant | UK / France | Summer 2026 | review required |
 | **Citadel Securities** | [Quantitative Research Analyst Intern](https://www.citadelsecurities.com/careers/details/quantitative-research-analyst-intern-bs-ms-europe-2/?utm_source=Simplify&ref=Simplify) | Quant | UK | Summer 2026 | review required |
@@ -230,13 +228,15 @@ The company signal is a discovery aid, not a prediction. Private-company options
 | **Tower Research Capital** | [Quantitative Trader Intern 🎓](https://www.tower-research.com/open-positions/?gh_jid=8024138&utm_source=Simplify&ref=Simplify) | Quant | US | Summer 2026 | review required |
 | **Two Sigma** | [AI Research Scientist Intern \(MS / PhD\)](https://careers.twosigma.com/careers/JobDetail/New-York-New-York-United-States-AI-Research-Scientist-Internship-2027-Summer/14022) | AI / ML | US | Summer 2027 | review required |
 | **Two Sigma** | [Quantitative Researcher Intern](https://careers.twosigma.com/careers/JobDetail/New-York-New-York-United-States-Quantitative-Researcher-Internship-2027-Summer/13945) | Quant | US | Summer 2027 | review required |
-| **Virtu** | [Quantitative Trading Intern](https://job-boards.greenhouse.io/virtu/jobs/8624408002?utm_source=github-vansh-ouckah) | Quant | US | Summer 2027 | review required |
+| **Virtu** | [Quantitative Trading Intern](https://job-boards.greenhouse.io/virtu/jobs/8624408002?utm_source=github-vansh-ouckah) | Quant | US | 2027 | review required |
+| **Virtu Financial** | [2027 Internship - Quantitative Researcher \(Master or PhD\)](https://job-boards.greenhouse.io/virtu/jobs/8631180002) | Quant | Ireland | 2027 | review required |
 | **Virtu Financial** | [2027 Internship - Quantitative Researcher \(PhD\)](https://job-boards.greenhouse.io/virtu/jobs/8624424002) | Quant | US | 2027 | review required |
-| **Virtu Financial** | [2027 Internship - Quantitative Strategist and Research Intern](https://job-boards.greenhouse.io/virtu/jobs/8631180002) | Quant | Ireland | 2027 | review required |
 | **Virtu Financial** | [2027 Internship - Quantitative Trading](https://job-boards.greenhouse.io/virtu/jobs/8547254002) | Quant | Ireland | 2027 | review required |
 | **Virtu Financial** | [2027 Internship - Software Engineer](https://job-boards.greenhouse.io/virtu/jobs/8551566002) | Software Engineering | Ireland | 2027 | review required |
+| **Virtu Financial** | [Quant Research Intern \(Undergrad\)](https://job-boards.greenhouse.io/virtu/jobs/8142539002) | Quant | US | 2027 | review required |
+| **Virtu Financial** | [Software Engineer Intern](https://job-boards.greenhouse.io/virtu/jobs/8624410002?utm_source=github-vansh-ouckah) | Software Engineering | US | 2027 | review required |
 
-_61 more are in [tracker.csv](tracker.csv)._
+_58 more are in [tracker.csv](tracker.csv)._
 
 ## Planned spring / insight programmes
 
