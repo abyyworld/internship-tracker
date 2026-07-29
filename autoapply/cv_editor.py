@@ -25,8 +25,17 @@ def _safe_job_id(value: str) -> str:
     return cleaned[:160] or "job"
 
 
-def draft_path(home: Path, job_id: str) -> Path:
-    return home / "editor-drafts" / f"{_safe_job_id(job_id)}.json"
+def draft_path(home: Path, job_id: str, cv_id: str = "") -> Path:
+    """Drafts are per job and per saved CV.
+
+    Tailoring the same job from a different saved CV is a different piece of
+    work, so it must not overwrite the draft made from another one.
+    """
+    name = _safe_job_id(job_id)
+    identifier = re.sub(r"[^A-Za-z0-9._-]+", "-", str(cv_id or "")).strip(".-")
+    if identifier and identifier != "master":
+        name = f"{name}__{identifier[:64]}"
+    return home / "editor-drafts" / f"{name}.json"
 
 
 def _private_write_json(path: Path, value: dict[str, Any]) -> None:
@@ -269,10 +278,15 @@ def master_document(
     }
 
 
-def empty_draft(job_id: str, description_hash: str = "") -> dict[str, Any]:
+def empty_draft(
+    job_id: str,
+    description_hash: str = "",
+    cv_id: str = "master",
+) -> dict[str, Any]:
     return {
         "schema_version": SCHEMA_VERSION,
         "job_id": job_id,
+        "cv_id": cv_id or "master",
         "description_hash": description_hash,
         "provider": "openai",
         "model": "gpt-4o-mini",
@@ -285,10 +299,10 @@ def empty_draft(job_id: str, description_hash: str = "") -> dict[str, Any]:
     }
 
 
-def load_draft(home: Path, job_id: str) -> dict[str, Any]:
-    path = draft_path(home, job_id)
+def load_draft(home: Path, job_id: str, cv_id: str = "master") -> dict[str, Any]:
+    path = draft_path(home, job_id, cv_id)
     if not path.exists():
-        return empty_draft(job_id)
+        return empty_draft(job_id, cv_id=cv_id)
     if path.is_symlink() or path.stat().st_mode & 0o077:
         raise RuntimeError("CV draft must be a private regular file with mode 0600")
     try:
@@ -316,6 +330,11 @@ def _clean_patch(
     status = str(value.get("status", "pending"))
     if status not in {"pending", "accepted", "rejected"}:
         raise ValueError("CV suggestion status is invalid")
+    # A patch the user typed is not a model proposal. Keeping them apart stops
+    # the editor presenting an untouched manual copy as an "AI suggestion".
+    source = str(value.get("source", "ai"))
+    if source not in {"ai", "manual"}:
+        raise ValueError("CV suggestion source is invalid")
     return {
         "id": expected_id,
         "original": original,
@@ -329,6 +348,7 @@ def _clean_patch(
             if str(item).strip()
         ],
         "status": status,
+        "source": source,
     }
 
 
@@ -346,7 +366,11 @@ def normalize_draft(
         for entry in section["entries"]
         for bullet in entry["bullets"]
     }
-    result = empty_draft(job_id, str(incoming.get("description_hash", "")))
+    result = empty_draft(
+        job_id,
+        str(incoming.get("description_hash", "")),
+        cv_id=str(incoming.get("cv_id", "") or (existing or {}).get("cv_id", "") or "master"),
+    )
     if existing:
         for key in (
             "description_hash",
@@ -399,8 +423,53 @@ def save_draft(
         incoming,
         existing=existing,
     )
-    _private_write_json(draft_path(home, job_id), value)
+    _private_write_json(draft_path(home, job_id, value.get("cv_id", "")), value)
     return value
+
+
+def facts_from_document(
+    document: dict[str, Any],
+    draft: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Return a resume_facts-shaped mapping with accepted patches applied.
+
+    Used to save the current editor state as a new CV in the library. Fact ids
+    are preserved so a saved CV can itself be reopened, tailored, and re-saved.
+    """
+    draft = draft or {}
+    summary = document.get("summary", "")
+    summary_patch = draft.get("summary")
+    if isinstance(summary_patch, dict) and summary_patch.get("status") == "accepted":
+        summary = str(summary_patch.get("proposal", summary))
+
+    bullet_patches = draft.get("bullets", {})
+    sections: list[dict[str, Any]] = []
+    for section in document.get("sections", []):
+        entries: list[dict[str, Any]] = []
+        for entry in section.get("entries", []):
+            copied = {
+                key: deepcopy(value)
+                for key, value in entry.items()
+                if key not in {"bullets", "evidence_ids"}
+            }
+            bullets = []
+            for bullet in entry.get("bullets", []):
+                text = bullet["text"]
+                patch = bullet_patches.get(bullet["id"], {})
+                if isinstance(patch, dict) and patch.get("status") == "accepted":
+                    text = str(patch.get("proposal", text))
+                bullets.append({"id": bullet["id"], "text": text})
+            copied["bullets"] = bullets
+            entries.append(copied)
+        sections.append({"name": section.get("name", ""), "entries": entries})
+
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "summary": summary,
+        "skills": deepcopy(list(document.get("skills", []))),
+        "education": deepcopy(list(document.get("education", []))),
+        "sections": sections,
+    }
 
 
 def resume_from_document(

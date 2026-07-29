@@ -16,8 +16,13 @@ from .models import Job
 
 OPENAI_ENDPOINT = "https://api.openai.com/v1/chat/completions"
 OPENAI_MODEL_DEFAULT = "gpt-4o-mini"
-MAX_DESCRIPTION_CHARS = 16000
+# Latency is dominated by how much text the model has to read and write.
+# A job description repeats itself well before 8k characters, and a patch set
+# of 3-6 rewritten bullets needs far fewer than 4k output tokens, so both caps
+# are kept tight to keep generation fast without weakening the suggestions.
+MAX_DESCRIPTION_CHARS = 8000
 MAX_FACTS = 100
+MAX_OUTPUT_TOKENS = 1500
 
 
 def openai_key_path(home: Path) -> Path:
@@ -170,7 +175,10 @@ def generate_suggestions(
                     {"role": "user", "content": user},
                 ],
                 "temperature": 0.2,
-                "max_completion_tokens": 4096,
+                "max_completion_tokens": MAX_OUTPUT_TOKENS,
+                # Constrain decoding to valid JSON so a stray prose preamble
+                # cannot waste a whole generation and force the user to retry.
+                "response_format": {"type": "json_object"},
             },
             timeout=timeout,
         )

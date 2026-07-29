@@ -62,24 +62,45 @@ border-radius:8px;padding:9px;color:var(--text);background:#07100d;resize:vertic
 .choice-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .choice.active{border-color:var(--green);color:var(--green)}
 .choice.keep.active{border-color:var(--amber);color:var(--amber)}
-/* Editable CV pane */
-.cv-section{margin-bottom:18px}
+/* Editable CV pane — a document you type into directly */
+.cv-paper{background:#0a1512;border:1px solid var(--line);border-radius:12px;
+padding:26px 30px;max-width:820px;margin:0 auto}
+.cv-name{font-size:22px;font-weight:900;letter-spacing:-.03em;margin-bottom:2px}
+.cv-contact{font-size:11px;color:var(--muted);margin-bottom:18px}
+.cv-section{margin-bottom:20px}
 .cv-section-head{font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;
-color:var(--green);border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:10px}
-.cv-entry{margin-bottom:14px}
+color:var(--green);border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:11px}
+.cv-entry{margin-bottom:15px}
 .cv-entry-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .cv-entry strong{font-size:13px;font-weight:800}
-.cv-entry .dates{font-size:11px;color:var(--muted)}
-.cv-bullet{display:flex;gap:8px;margin:5px 0;align-items:flex-start}
-.cv-bullet::before{content:"·";color:var(--green);font-size:14px;flex-shrink:0;margin-top:1px}
-.bullet-text{font-size:12px;color:#c6d5d0;flex:1;min-width:0;word-break:break-word}
-.bullet-text.patched{color:var(--green);font-style:italic}
-.bullet-text.accepted-patch{border-left:2px solid var(--green);padding-left:6px}
-.bullet-edit{min-height:22px;padding:0 6px;font-size:10px;background:transparent;
-color:var(--green);border-color:transparent}
-.cv-summary{background:#0a1710;border:1px solid var(--line);border-radius:9px;padding:10px;
-font-size:12px;color:#c6d5d0;margin-bottom:14px;cursor:pointer}
-.cv-summary:hover{border-color:var(--green2)}
+.cv-entry .dates{font-size:11px;color:var(--muted);white-space:nowrap}
+.cv-bullet{display:flex;gap:8px;margin:4px 0;align-items:flex-start}
+.cv-bullet>.dot{color:var(--green);flex-shrink:0;line-height:1.6}
+/* The editable text itself. No buttons: click and type, like a document. */
+.eq{font-size:12.5px;line-height:1.6;color:#cfdcd7;flex:1;min-width:0;
+word-break:break-word;border-radius:5px;padding:2px 5px;margin:-2px -5px;
+border:1px solid transparent;outline:none;white-space:pre-wrap}
+.eq:hover{background:#0e1d18}
+.eq:focus{background:#0e1d18;border-color:var(--green2);box-shadow:0 0 0 3px #25b87526}
+.eq.is-ai{border-left:2px solid var(--blue);padding-left:7px;margin-left:0;background:#0b1a2699}
+.eq.is-manual{border-left:2px solid var(--amber);padding-left:7px;margin-left:0}
+.eq.is-accepted{border-left:2px solid var(--green);padding-left:7px;margin-left:0}
+.cv-summary-text{font-size:12.5px;line-height:1.65}
+/* Inline AI review strip under a bullet the model wants to change */
+.inline-ai{margin:5px 0 9px 16px;border-left:2px solid var(--blue);
+background:#0b1a26;border-radius:0 8px 8px 0;padding:8px 11px}
+.inline-ai .why{font-size:11px;color:var(--muted);line-height:1.45;margin-bottom:7px}
+.inline-ai .row{display:flex;gap:6px;flex-wrap:wrap}
+.mini{min-height:28px;padding:0 10px;font-size:11px;font-weight:800;border-radius:7px}
+.mini.ok{background:var(--green2);color:#03130c;border-color:var(--green2)}
+.mini.no{background:transparent;color:var(--muted)}
+.edited-flag{font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;
+color:var(--amber);margin-left:6px;vertical-align:1px}
+.edited-flag.ai{color:var(--blue)}
+/* CV picker */
+.cv-picker{display:flex;align-items:center;gap:7px}
+.cv-picker select{background:#0b1712;color:var(--text);border:1px solid var(--line);
+border-radius:9px;min-height:34px;padding:0 8px;max-width:190px}
 /* Gap analysis */
 .gap-row{display:flex;align-items:baseline;gap:7px;padding:5px 0;border-bottom:1px solid #1a2e27}
 .gap-row:last-child{border-bottom:none}
@@ -151,16 +172,18 @@ border-radius:13px;font-size:13px}
 <!-- MIDDLE: Editable CV -->
 <main class="pane">
   <div class="pane-header">
-    <div>
-      <div class="eyebrow">Your CV</div>
-      <div style="font-weight:800;font-size:15px">Live document</div>
+    <div class="cv-picker">
+      <select id="cvSelect" title="Choose which saved CV to edit"></select>
+      <span class="muted" id="savedFlag" style="font-size:11px">Saved</span>
     </div>
-    <div style="display:flex;gap:8px">
-      <button class="secondary" id="acceptAll" disabled style="min-height:34px;font-size:12px">Accept all</button>
-      <button class="secondary" id="resetAll" disabled style="min-height:34px;font-size:12px">Reset</button>
+    <div style="display:flex;gap:6px">
+      <button class="secondary mini" id="saveAsCv">Save as new CV</button>
+      <button class="secondary mini" id="acceptAll" disabled>Accept all AI</button>
+      <button class="secondary mini" id="resetAll" disabled>Revert all</button>
     </div>
   </div>
   <div class="pane-body">
+    <p class="hint" style="margin:0 0 12px">Click any line and type to edit it, like a document. Your edits save automatically.</p>
     <div id="cvDoc"><div class="empty-state">Loading CV…</div></div>
   </div>
 </main>
@@ -216,6 +239,7 @@ const token=localStorage.getItem("autoapply_bridge_token_v1")||"";
 const params=new URLSearchParams(location.search);
 const jobUrl=params.get("url")||"";
 let state=null;
+let cvId=params.get("cv")||"master";
 const $=id=>document.getElementById(id);
 function esc(v){const d=document.createElement("div");d.textContent=v??"";return d.innerHTML}
 function toast(msg){$("toast").textContent=msg;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2600)}
@@ -313,150 +337,263 @@ function renderGaps(){
 }
 
 // ── CV document renderer ───────────────────────────────────────────────────────
-function activePatchText(bulletId){
-  const draft=state&&state.draft||{};
-  const patch=(draft.bullets||{})[bulletId];
-  if(patch&&patch.status==="accepted")return{text:patch.proposal,accepted:true};
-  return null;
+// The document is the editor. Each line is contenteditable; typing in it stores
+// a manual patch. AI proposals appear inline beneath the line they would change
+// so the model never silently overwrites what you wrote.
+function patchFor(id){return id==="summary"?(state.draft||{}).summary:((state.draft||{}).bullets||{})[id]}
+
+function currentText(id,original){
+  const p=patchFor(id);
+  if(p&&p.status==="accepted")return p.proposal;
+  if(p&&p.source==="manual")return p.proposal;
+  return original;
 }
+
+function setManualText(id,original,text){
+  const clean=(text||"").replace(/\s+/g," ").trim();
+  state.draft=state.draft||{};
+  if(!clean||clean===original.replace(/\s+/g," ").trim()){
+    // Back to the verified original — drop the patch instead of storing a no-op.
+    if(id==="summary")delete state.draft.summary;
+    else if(state.draft.bullets)delete state.draft.bullets[id];
+    return;
+  }
+  const patch={id,original,proposal:clean,rationale:"Edited by you",
+    keywords:[],status:"accepted",source:"manual"};
+  if(id==="summary")state.draft.summary=patch;
+  else{state.draft.bullets=state.draft.bullets||{};state.draft.bullets[id]=patch}
+}
+
+function editableLine(id,original,extraClass){
+  const el=document.createElement("div");
+  el.className="eq "+(extraClass||"");
+  el.contentEditable="true";
+  el.spellcheck=false;
+  el.dataset.id=id;
+  el.textContent=currentText(id,original);
+  const p=patchFor(id);
+  if(p&&p.status==="accepted"&&p.source==="ai")el.classList.add("is-accepted");
+  else if(p&&p.source==="manual")el.classList.add("is-manual");
+  el.addEventListener("blur",()=>{
+    const before=JSON.stringify(patchFor(id)||null);
+    setManualText(id,original,el.innerText);
+    if(JSON.stringify(patchFor(id)||null)!==before){renderAll();queueSave()}
+  });
+  el.addEventListener("keydown",ev=>{
+    if(ev.key==="Enter"){ev.preventDefault();el.blur()}
+    if(ev.key==="Escape"){el.textContent=currentText(id,original);el.blur()}
+  });
+  return el;
+}
+
+// An AI proposal for a line you have not resolved yet.
+function pendingAiFor(id){
+  const p=patchFor(id);
+  return p&&p.source==="ai"&&p.status==="pending"?p:null;
+}
+
+function inlineAiStrip(id,original){
+  const p=pendingAiFor(id);
+  if(!p)return null;
+  const box=document.createElement("div");box.className="inline-ai";
+  const lbl=document.createElement("div");lbl.className="label";lbl.textContent="AI suggests";
+  box.append(lbl);
+  const prop=document.createElement("div");prop.className="eq";prop.contentEditable="true";
+  prop.spellcheck=false;prop.textContent=p.proposal;
+  prop.addEventListener("blur",()=>{p.proposal=(prop.innerText||"").replace(/\s+/g," ").trim()||p.proposal});
+  box.append(prop);
+  if(p.rationale){const w=document.createElement("div");w.className="why";w.textContent=p.rationale;box.append(w)}
+  const row=document.createElement("div");row.className="row";
+  const ok=document.createElement("button");ok.className="mini ok";ok.textContent="Use this";
+  ok.onclick=()=>{p.status="accepted";renderAll();queueSave()};
+  const no=document.createElement("button");no.className="mini no";no.textContent="Dismiss";
+  no.onclick=()=>{p.status="rejected";renderAll();queueSave()};
+  row.append(ok,no);box.append(row);
+  return box;
+}
+
 function renderCV(){
   const doc=state.document,root=$("cvDoc");root.replaceChildren();
-  // Summary
-  const draft=state.draft||{};
-  const sumPatch=draft.summary;
-  const sumText=sumPatch&&sumPatch.status==="accepted"?sumPatch.proposal:doc.summary;
-  if(sumText){
-    const wrap=document.createElement("div");wrap.className="cv-section";
-    const sh=document.createElement("div");sh.className="cv-section-head";sh.textContent="Summary";wrap.append(sh);
-    const box=document.createElement("div");box.className="cv-summary";
-    box.textContent=sumText;
-    if(sumPatch&&sumPatch.status==="accepted")box.style.color="var(--green)";
-    box.title="Click to create an editable patch";
-    box.onclick=()=>addManualPatch("summary",doc.summary);
-    wrap.append(box);root.append(wrap);
+  const paper=document.createElement("div");paper.className="cv-paper";
+
+  const head=doc.header||{};
+  if(head.name){
+    const n=document.createElement("div");n.className="cv-name";n.textContent=head.name;paper.append(n);
   }
-  // Sections
+  const contact=[head.email,head.phone,head.location,...(head.links||[])].filter(Boolean).join("  ·  ");
+  if(contact){const c=document.createElement("div");c.className="cv-contact";c.textContent=contact;paper.append(c)}
+
+  if(doc.summary){
+    const wrap=document.createElement("div");wrap.className="cv-section";
+    const sh=document.createElement("div");sh.className="cv-section-head";sh.textContent="Summary";
+    const p=patchFor("summary");
+    if(p&&p.status==="accepted"){
+      const f=document.createElement("span");f.className="edited-flag"+(p.source==="ai"?" ai":"");
+      f.textContent=p.source==="ai"?"AI":"edited";sh.append(f);
+    }
+    wrap.append(sh);
+    wrap.append(editableLine("summary",doc.summary,"cv-summary-text"));
+    const strip=inlineAiStrip("summary",doc.summary);
+    if(strip)wrap.append(strip);
+    paper.append(wrap);
+  }
+
   for(const sec of doc.sections||[]){
     const wrap=document.createElement("div");wrap.className="cv-section";
     const sh=document.createElement("div");sh.className="cv-section-head";sh.textContent=sec.name;wrap.append(sh);
     for(const entry of sec.entries||[]){
       const block=document.createElement("div");block.className="cv-entry";
-      const head=document.createElement("div");head.className="cv-entry-head";
+      const hd=document.createElement("div");hd.className="cv-entry-head";
       const title=document.createElement("strong");
       title.textContent=[entry.title,entry.organization].filter(Boolean).join(" · ");
       const dates=document.createElement("span");dates.className="dates";dates.textContent=entry.dates||"";
-      head.append(title,dates);block.append(head);
-      // Supervisor / lab (academic fields)
+      hd.append(title,dates);block.append(hd);
       if(entry.supervisor){
-        const sup=document.createElement("div");sup.style.cssText="font-size:11px;color:var(--muted);margin:3px 0";
-        sup.textContent=`Supervisor: ${entry.supervisor}`;block.append(sup);
+        const sup=document.createElement("div");
+        sup.style.cssText="font-size:11px;color:var(--muted);margin:3px 0";
+        sup.textContent="Supervisor: "+entry.supervisor;block.append(sup);
       }
-      // Bullets
       for(const bullet of entry.bullets||[]){
-        const patch=activePatchText(bullet.id);
-        const text=patch?patch.text:bullet.text;
         const li=document.createElement("div");li.className="cv-bullet";
-        const dot=document.createElement("span");dot.textContent="·";dot.style.cssText="color:var(--green);flex-shrink:0;padding-top:1px";
-        const span=document.createElement("span");span.className="bullet-text"+(patch?" patched accepted-patch":"");
-        span.textContent=text;
-        const editBtn=document.createElement("button");editBtn.className="ghost bullet-edit";editBtn.textContent="edit";
-        editBtn.onclick=()=>addManualPatch(bullet.id,bullet.text);
-        li.append(dot,span,editBtn);block.append(li);
+        const dot=document.createElement("span");dot.className="dot";dot.textContent="·";
+        li.append(dot,editableLine(bullet.id,bullet.text));
+        const p=patchFor(bullet.id);
+        if(p&&p.status==="accepted"){
+          const f=document.createElement("span");f.className="edited-flag"+(p.source==="ai"?" ai":"");
+          f.textContent=p.source==="ai"?"AI":"edited";li.append(f);
+        }
+        block.append(li);
+        const strip=inlineAiStrip(bullet.id,bullet.text);
+        if(strip)block.append(strip);
       }
       wrap.append(block);
     }
-    root.append(wrap);
+    paper.append(wrap);
   }
+  root.append(paper);
 }
 
-// ── Suggestion cards ──────────────────────────────────────────────────────────
-function patchCard(patch,label){
-  const card=document.createElement("article");card.className="suggestion "+(patch.status||"pending");
-  const head=document.createElement("div");head.className="suggestion-head";
-  const lbl=document.createElement("span");lbl.className="label";lbl.textContent=label;
-  const idPill=document.createElement("span");idPill.className="pill";
-  idPill.textContent=patch.id==="summary"?"Summary":patch.id.replace(/-/g," ").slice(0,22);
-  head.append(lbl,idPill);card.append(head);
-  // Diff
-  const diff=document.createElement("div");diff.className="diff";
-  const before=document.createElement("div");before.innerHTML="<small>Original</small>";
-  const origTA=document.createElement("textarea");origTA.className="original";origTA.readOnly=true;
-  origTA.value=patch.original;before.append(origTA);
-  const after=document.createElement("div");after.innerHTML="<small>AI suggestion — editable</small>";
-  const propTA=document.createElement("textarea");propTA.className="proposal";propTA.value=patch.proposal;
-  propTA.maxLength=600;
-  propTA.addEventListener("change",()=>{patch.proposal=propTA.value;syncAndSave()});
-  after.append(propTA);diff.append(before,after);card.append(diff);
-  if(patch.rationale){const r=document.createElement("p");r.className="rationale";r.textContent=patch.rationale;card.append(r)}
-  if(patch.keywords?.length){const kw=document.createElement("div");kw.className="keywords";for(const k of patch.keywords){const i=document.createElement("i");i.textContent=k;kw.append(i)}card.append(kw)}
-  const actions=document.createElement("div");actions.className="choice-row";
-  const accept=document.createElement("button");accept.className="secondary choice";accept.textContent="Accept";
-  accept.classList.toggle("active",patch.status==="accepted");
-  const keep=document.createElement("button");keep.className="ghost choice keep";keep.textContent="Keep original";
-  keep.classList.toggle("active",patch.status==="rejected");
-  accept.onclick=()=>{patch.status="accepted";renderSuggestions();syncAndSave()};
-  keep.onclick=()=>{patch.status="rejected";renderSuggestions();syncAndSave()};
-  actions.append(accept,keep);card.append(actions);return card;
+// ── Left pane: only real, unresolved AI suggestions ───────────────────────────
+function allPatches(){
+  const d=state&&state.draft||{};
+  const out=[];
+  if(d.summary)out.push(d.summary);
+  for(const p of Object.values(d.bullets||{}))out.push(p);
+  return out;
 }
 function renderSuggestions(){
   const root=$("suggestions");root.replaceChildren();
-  const draft=state&&state.draft||{};
-  const items=[];
-  if(draft.summary)items.push([draft.summary,"Profile summary"]);
-  for(const p of Object.values(draft.bullets||{}))items.push([p,"Bullet"]);
-  if(!items.length){
-    root.innerHTML='<div class="empty-state">No suggestions yet.<br>Press <strong>Generate</strong> to analyse this role.</div>';
-    $("acceptAll").disabled=$("resetAll").disabled=true;
-    $("exportNote").textContent="Pending and rejected patches use the original wording.";
-    return;
+  const patches=allPatches();
+  const ai=patches.filter(p=>p.source==="ai");
+  const pending=ai.filter(p=>p.status==="pending");
+  const manual=patches.filter(p=>p.source==="manual");
+
+  if(!ai.length){
+    root.innerHTML='<div class="empty-state">No AI suggestions yet.<br><br>'+
+      'Edit any line in your CV directly, or press <strong>Generate</strong> to have AI propose targeted rewrites.</div>';
+  }else if(!pending.length){
+    root.innerHTML='<div class="empty-state">All '+ai.length+' AI suggestion'+(ai.length===1?"":"s")+
+      ' reviewed.<br><br>Accepted edits are marked in your CV.</div>';
+  }else{
+    const note=document.createElement("p");note.className="hint";
+    note.textContent=pending.length+" suggestion"+(pending.length===1?"":"s")+
+      " awaiting review — each one is shown inline in your CV.";
+    root.append(note);
+    for(const p of pending){
+      const card=document.createElement("article");card.className="suggestion";
+      const h=document.createElement("div");h.className="suggestion-head";
+      const l=document.createElement("span");l.className="label";
+      l.textContent=p.id==="summary"?"Summary":"Bullet";
+      h.append(l);card.append(h);
+      const before=document.createElement("div");before.className="rationale";
+      before.textContent="Now: "+p.original;card.append(before);
+      const after=document.createElement("div");after.className="rationale";
+      after.style.color="var(--blue)";after.textContent="AI: "+p.proposal;card.append(after);
+      const row=document.createElement("div");row.className="choice-row";
+      const ok=document.createElement("button");ok.className="mini ok";ok.textContent="Use this";
+      ok.onclick=()=>{p.status="accepted";renderAll();queueSave()};
+      const no=document.createElement("button");no.className="mini no";no.textContent="Dismiss";
+      no.onclick=()=>{p.status="rejected";renderAll();queueSave()};
+      row.append(ok,no);card.append(row);
+      root.append(card);
+    }
   }
-  for(const [p,lbl] of items)root.append(patchCard(p,lbl));
-  $("acceptAll").disabled=$("resetAll").disabled=false;
-  const accepted=items.filter(([p])=>p.status==="accepted").length;
-  $("acceptedCount").textContent=`${accepted} accepted`;
-  $("acceptedCount").style.display=accepted?"":"none";
-  $("exportNote").textContent=`${accepted} accepted edit${accepted===1?"":"s"} will be applied. Everything else stays original.`;
-  const rejected=Object.keys(draft.rejected_by_validator||{}).length;
+
+  const acceptedAi=ai.filter(p=>p.status==="accepted").length;
+  const total=acceptedAi+manual.length;
+  $("acceptAll").disabled=!pending.length;
+  $("resetAll").disabled=!patches.length;
+  $("acceptedCount").textContent=total+" edit"+(total===1?"":"s");
+  $("acceptedCount").style.display=total?"":"none";
+  $("exportNote").textContent=total
+    ?`${manual.length} of your edits and ${acceptedAi} AI edit${acceptedAi===1?"":"s"} will be applied. Everything else stays original.`
+    :"Your CV exports unchanged until you edit a line or accept a suggestion.";
+
+  const rejected=Object.keys((state.draft||{}).rejected_by_validator||{}).length;
   if(rejected)notice(`${rejected} unsafe model suggestion${rejected===1?" was":"s were"} automatically discarded.`,"");
-  // Advice
-  const advice=(draft.advice||[]).filter(Boolean);
+
+  const advice=((state.draft||{}).advice||[]).filter(Boolean);
   if(advice.length){
     $("adviceSection").style.display="";
     const ul=$("adviceList");ul.replaceChildren();
     for(const a of advice){const li=document.createElement("li");li.textContent=a;ul.append(li)}
   }else $("adviceSection").style.display="none";
-  renderCV();renderGaps();renderFitPill();
 }
 
-// ── Manual patches ────────────────────────────────────────────────────────────
-function addManualPatch(id,original){
-  if(id==="summary"){
-    state.draft.summary=state.draft.summary||{id,original,proposal:original,rationale:"Manual edit",keywords:[],status:"pending"};
-  }else{
-    state.draft.bullets=state.draft.bullets||{};
-    state.draft.bullets[id]=state.draft.bullets[id]||{id,original,proposal:original,rationale:"Manual edit",keywords:[],status:"pending"};
-  }
-  renderSuggestions();syncAndSave();
-  toast("Editable patch created — scroll up to the suggestions panel");
-}
+function renderAll(){renderCV();renderSuggestions();renderGaps();renderFitPill()}
 
 // ── API helpers ───────────────────────────────────────────────────────────────
+let saveTimer=null,saving=false;
+function flag(text){$("savedFlag").textContent=text}
+function queueSave(){
+  flag("Saving…");
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(syncAndSave,500);
+}
 async function syncAndSave(){
-  renderCV();renderGaps();renderFitPill();
+  if(saving){queueSave();return}
+  saving=true;
   try{
     state.draft.instructions=$("instructions").value;
-    const result=await api("/api/draft",{method:"POST",body:JSON.stringify({url:jobUrl,draft:state.draft})});
-    state.draft=result.draft;
-  }catch(err){notice(err.message,"error")}
+    state.draft.cv_id=cvId;
+    const result=await api("/api/draft",{method:"POST",
+      body:JSON.stringify({url:jobUrl,cv_id:cvId,draft:state.draft})});
+    state.draft=result.draft;flag("Saved");
+  }catch(err){flag("Not saved");notice(err.message,"error")}
+  finally{saving=false}
 }
 async function generate(){
   $("generate").disabled=true;$("busy").classList.add("show");notice("");
-  $("busyText").textContent="AI is comparing the role and your full CV…";
+  $("busyText").textContent="Reading the job description…";
+  const tick=setTimeout(()=>{$("busyText").textContent="AI is drafting targeted edits…"},1800);
   try{
-    const result=await api("/api/suggest",{method:"POST",body:JSON.stringify({url:jobUrl,instructions:$("instructions").value})});
+    const result=await api("/api/suggest",{method:"POST",
+      body:JSON.stringify({url:jobUrl,cv_id:cvId,instructions:$("instructions").value})});
     state.draft=result.draft;$("instructions").value=state.draft.instructions||"";
-    renderSuggestions();toast("Suggestions ready — review each one below");
-  }catch(err){notice(err.message,"error")}finally{$("generate").disabled=false;$("busy").classList.remove("show")}
+    renderAll();
+    const n=allPatches().filter(p=>p.source==="ai"&&p.status==="pending").length;
+    toast(n?`${n} suggestion${n===1?"":"s"} ready — review them in your CV`:"No new suggestions");
+  }catch(err){notice(err.message,"error")}
+  finally{clearTimeout(tick);$("generate").disabled=false;$("busy").classList.remove("show")}
+}
+async function saveAsCv(){
+  const label=prompt("Name this CV (e.g. \"ML research CV\")","");
+  if(!label)return;
+  try{
+    const result=await api("/api/cv/save",{method:"POST",
+      body:JSON.stringify({url:jobUrl,cv_id:cvId,label,save_as:label.toLowerCase().replace(/[^a-z0-9]+/g,"-")})});
+    state.cvs=result.cvs;renderCvPicker();
+    toast("Saved as \""+result.cv.label+"\"");
+  }catch(err){notice(err.message,"error")}
+}
+function renderCvPicker(){
+  const sel=$("cvSelect");sel.replaceChildren();
+  for(const cv of state.cvs||[]){
+    const o=document.createElement("option");o.value=cv.id;
+    o.textContent=cv.label+(cv.is_master?" (master)":"");
+    if(cv.id===cvId)o.selected=true;
+    sel.append(o);
+  }
 }
 async function saveKey(){
   const key=$("keyInput").value;
@@ -474,8 +611,10 @@ function renderKey(){
 async function exportPdf(){
   $("exportPdf").disabled=true;
   try{
+    clearTimeout(saveTimer);
     await syncAndSave();
-    const result=await api("/api/export",{method:"POST",body:JSON.stringify({url:jobUrl})});
+    const result=await api("/api/export",{method:"POST",
+      body:JSON.stringify({url:jobUrl,cv_id:cvId})});
     const link=document.createElement("a");link.href=result.resume_download_url;link.download="";
     document.body.append(link);link.click();link.remove();
     toast(`Downloaded CV · ${result.accepted_patch_count} accepted edits applied`);
@@ -491,31 +630,47 @@ function showInitError(msg){
     '<strong>CV not loaded</strong><br><br>'+msg+'<br><br>'+
     'Double-click <code>start-autoapply.command</code> in the project folder, then reload this page.</div>';
 }
+async function loadCv(id){
+  cvId=id;
+  try{localStorage.setItem("autoapply_last_cv",id)}catch(e){}
+  state=await api(`/api/editor?url=${encodeURIComponent(jobUrl)}&cv=${encodeURIComponent(cvId)}`);
+  cvId=state.cv_id||cvId;
+  $("jobTitle").textContent=`${state.job.role} · ${state.job.company}`;
+  $("jobMeta").textContent=[state.job.location,state.job.description?"description ready":"description loads on Generate"].filter(Boolean).join(" · ");
+  $("factCount").textContent=`${state.document.fact_ids.length} facts`;
+  $("applyTop").href=$("applySide").href=state.job.application_url;
+  $("instructions").value=state.draft.instructions||"";
+  flag("Saved");
+  renderCvPicker();renderKey();renderAll();
+}
 async function init(){
   if(token.length<32){showInitError("Browser connection missing — open start-autoapply.command once, then reload.");return}
   if(!jobUrl){showInitError("No job URL was supplied.");return}
-  try{
-    state=await api(`/api/editor?url=${encodeURIComponent(jobUrl)}`);
-    $("jobTitle").textContent=`${state.job.role} · ${state.job.company}`;
-    $("jobMeta").textContent=[state.job.location,state.job.description?"description ready":"description loads on Generate"].filter(Boolean).join(" · ");
-    $("factCount").textContent=`${state.document.fact_ids.length} facts`;
-    $("applyTop").href=$("applySide").href=state.job.application_url;
-    $("instructions").value=state.draft.instructions||"";
-    renderKey();renderCV();renderSuggestions();renderGaps();renderFitPill();
-  }catch(err){showInitError(err.message)}
+  let start="master";
+  try{start=localStorage.getItem("autoapply_last_cv")||"master"}catch(e){}
+  try{await loadCv(start)}
+  catch(err){
+    // A remembered CV may have been renamed or removed since last time.
+    if(start!=="master"){try{await loadCv("master");return}catch(e){}}
+    showInitError(err.message);
+  }
 }
 $("generate").onclick=generate;
 $("saveKey").onclick=saveKey;
 $("exportPdf").onclick=exportPdf;
+$("saveAsCv").onclick=saveAsCv;
+$("cvSelect").onchange=async e=>{
+  try{await loadCv(e.target.value);toast("Switched CV")}
+  catch(err){notice(err.message,"error")}
+};
 $("acceptAll").onclick=()=>{
-  if(state.draft.summary)state.draft.summary.status="accepted";
-  for(const p of Object.values(state.draft.bullets||{}))p.status="accepted";
-  renderSuggestions();syncAndSave();
+  for(const p of allPatches())if(p.source==="ai"&&p.status==="pending")p.status="accepted";
+  renderAll();queueSave();
 };
 $("resetAll").onclick=()=>{
-  if(state.draft.summary)state.draft.summary.status="pending";
-  for(const p of Object.values(state.draft.bullets||{}))p.status="pending";
-  renderSuggestions();syncAndSave();
+  if(!confirm("Discard every edit and AI suggestion for this CV and job?"))return;
+  state.draft.summary=null;state.draft.bullets={};
+  renderAll();queueSave();
 };
 init();
 </script></body></html>"""
