@@ -17,6 +17,8 @@ DEFAULT_OLLAMA_ENDPOINT = "http://127.0.0.1:11434"
 MAX_DESCRIPTION_CHARS = 12000
 MIN_BULLET_CHARS = 24
 MAX_BULLET_CHARS = 360
+# Above this, an entry is a prose paragraph rather than a bullet.
+LONG_ENTRY_CHARS = 800
 
 RISKY_CLAIMS = {
     "award-winning",
@@ -77,37 +79,167 @@ def _named_tokens(value: str) -> set[str]:
     return values
 
 
-def _length_bounds(original: str) -> tuple[int, int]:
+def _proper_tokens(value: str) -> set[str]:
+    """Ordinary capitalised words: Python, Docker, Unity, Neuralink, fMRI.
+
+    ``_named_tokens`` only catches acronyms, CamelCase, and tokens carrying
+    digits or symbols, so a plainly capitalised technology named in the posting
+    could be written into an entry that never claimed it.
+
+    A word opening a sentence is capitalised by grammar, not because it names
+    anything, so those positions are skipped: otherwise rewriting "Built a
+    Python controller" as "Developed a Python controller" is rejected for
+    introducing the entity "Developed".
+    """
+    text = value or ""
+    found = set()
+    for match in re.finditer(r"\b[A-Z][a-z][A-Za-z0-9+#.-]*\b", text):
+        before = text[: match.start()].rstrip()
+        if not before or before[-1] in ".!?":
+            continue
+        found.add(match.group(0).casefold())
+    return found
+
+
+def _length_bounds(original: str, *, strict: bool = True) -> tuple[int, int]:
     """Allowed rewrite length, measured against the line being rewritten.
 
     A CV entry may be a one-line bullet or a full prose paragraph. A fixed cap
     sized for bullets rejects every rewrite of a paragraph, so the band tracks
-    the original: a rewrite may tighten or expand it, but not replace a
-    paragraph with a sentence.
+    the original. Tightening prose is a legitimate result of rewriting for a
+    job, so a deliberate rewrite may cut further than a touch-up may — but not
+    so far that a paragraph becomes a sentence.
     """
     length = len(re.sub(r"\s+", " ", original or "").strip())
+    if strict:
+        floor = 0.6
+    else:
+        # Tightening is the point of a rewrite, and the longest paragraphs have
+        # the most slack in them, so they may lose proportionally more. The
+        # floor still keeps a paragraph a paragraph.
+        floor = 0.45 if length < LONG_ENTRY_CHARS else 0.33
+    ceiling = 1.25 if strict else 1.35
     return (
-        max(MIN_BULLET_CHARS, int(length * 0.6)),
-        max(MAX_BULLET_CHARS, int(length * 1.25)),
+        # Never demand more than the original itself has: "SAT: 1500 (Dec 2023):"
+        # is 21 characters, and a floor above that rejects every rewrite of it.
+        min(length, max(MIN_BULLET_CHARS, int(length * floor))),
+        max(MAX_BULLET_CHARS if strict else 420, int(length * ceiling)),
     )
 
 
-def _validate_rewrite(original: str, candidate: str) -> str:
+# How much of the original's vocabulary a rewrite must still carry. The strict
+# figure suits a light touch-up. A deliberate rewrite for a specific job
+# reorders and re-words heavily on purpose, so holding it to the same figure
+# rejects exactly the work that was asked for; the anti-fabrication checks
+# above are what keep it honest, not this one.
+STRICT_OVERLAP = 0.3
+REWRITE_OVERLAP = 0.15
+
+
+# Vocabulary a requirement is phrased in rather than vocabulary it names. A
+# rewrite may freely say "ability" or "experience"; barring those would reject
+# ordinary English, and they assert no domain the candidate has not worked in.
+GENERIC_REQUIREMENT_WORDS = {
+    "ability", "able", "academic", "advanced", "analysing", "analyzing",
+    "applicant", "applied", "apply",
+    "background", "candidate", "career", "collaborate", "collaboration",
+    "communication", "company", "complex", "degree", "deliver", "demonstrate",
+    "demonstrated", "detail", "develop", "development", "domain", "drive",
+    "dynamic", "environment", "evidence", "excellent", "exceptional",
+    "execution", "experience", "expertise",
+    "experienced", "familiarity", "field", "focus", "fluency", "fluent",
+    "graduate", "hands", "impact", "industry", "innovative", "internship",
+    "knowledge", "language", "level", "master", "masters", "modern",
+    "opportunity", "particularly", "principle", "principles",
+    "phd", "position", "practical", "preferred", "proficiency", "proficient",
+    "program", "project", "qualification", "quality", "related", "relevant",
+    "requirement", "responsibility", "role", "skill", "solid", "strong",
+    "student", "study", "team", "technical", "technique", "technology", "tool",
+    "track", "understanding", "university", "work", "working", "year", "years",
+}
+
+
+# Words that assert a level of qualification. Unlike a technology, a
+# credential cannot be inferred from anywhere else in the CV: this fact bank
+# mentions "PhD" only as a category of posting its tracker watches, and that
+# was enough for a rewrite to award its author a doctorate. A credential may
+# therefore only appear in a rewrite if it appears in the exact line replaced.
+CREDENTIAL_PATTERN = re.compile(
+    r"\b(ph\.?d|d\.?phil|doctoral|doctorate|post-?doc(?:toral)?|"
+    r"m\.?sc|m\.?eng|m\.?ba|master'?s?|bachelor'?s?|b\.?sc|b\.?eng|"
+    r"professor|faculty|tenured|chartered|licen[cs]ed|accredited|"
+    r"graduated|alumnus|alumna)\b",
+    re.IGNORECASE,
+)
+
+
+def _credential_claims(value: str) -> set[str]:
+    return {
+        match.group(0).casefold().replace(".", "").replace("'", "")
+        for match in CREDENTIAL_PATTERN.finditer(value or "")
+    }
+
+
+def borrowed_terms(requirements: Any, evidence: str) -> set[str]:
+    """Domain vocabulary a requirement names that the CV never uses.
+
+    The characteristic fabrication is not an invented number, it is echoing a
+    requirement back as a credential: a posting asks for neuroscience, and the
+    rewrite reports "a strong foundation in neuroscience". Lowercase domain
+    nouns pass every other check here, so the words themselves are barred —
+    but only the ones naming a subject, not the boilerplate around them.
+    """
+    lacking = concepts(evidence or "")
+    wanted: set[str] = set()
+    for requirement in requirements or []:
+        wanted |= concepts(str(requirement))
+    return {
+        term
+        for term in wanted - lacking
+        if term not in GENERIC_REQUIREMENT_WORDS and len(term) > 2
+    }
+
+
+def _validate_rewrite(
+    original: str,
+    candidate: str,
+    *,
+    strict: bool = True,
+    evidence: str = "",
+    forbidden: set[str] | None = None,
+) -> str:
+    """Check a proposed rewrite of one CV line.
+
+    ``evidence`` is everything the CV already asserts about this person: the
+    entry's heading and sibling lines, and the rest of the document. A rewrite
+    may move a fact the CV states elsewhere into the line where it answers the
+    posting — that is what tailoring is — but it may not name a technology,
+    employer, or qualification the CV never claims anywhere.
+    """
     value = re.sub(r"\s+", " ", candidate or "").strip().lstrip("•- ").strip()
-    low, high = _length_bounds(original)
+    supported = f"{evidence} {original}" if evidence else original
+    low, high = _length_bounds(original, strict=strict)
     if not low <= len(value) <= high:
         raise ValueError("length")
-    if _number_tokens(value) - _number_tokens(original):
+    if _number_tokens(value) - _number_tokens(supported):
         raise ValueError("new_numeric_claim")
-    if _named_tokens(value) - _named_tokens(original):
+    if _named_tokens(value) - _named_tokens(supported):
         raise ValueError("new_named_technology_or_entity")
-    original_lower = original.casefold()
+    if _proper_tokens(value) - _proper_tokens(supported):
+        raise ValueError("new_named_technology_or_entity")
+    # Scoped to the line replaced, never the wider document.
+    if _credential_claims(value) - _credential_claims(original):
+        raise ValueError("new_credential_claim")
+    supported_lower = supported.casefold()
     for phrase in RISKY_CLAIMS:
-        if phrase in value.casefold() and phrase not in original_lower:
+        if phrase in value.casefold() and phrase not in supported_lower:
             raise ValueError("new_unsupported_qualification")
     original_terms = concepts(original)
     candidate_terms = concepts(value)
-    if original_terms and len(original_terms & candidate_terms) / len(original_terms) < 0.3:
+    if forbidden and candidate_terms & forbidden:
+        raise ValueError("borrowed_requirement_not_in_cv")
+    floor = STRICT_OVERLAP if strict else REWRITE_OVERLAP
+    if original_terms and len(original_terms & candidate_terms) / len(original_terms) < floor:
         raise ValueError("insufficient_evidence_overlap")
     return value
 
@@ -117,10 +249,15 @@ def _validate_summary(
     candidate: str,
     *,
     max_chars: int = 420,
+    strict: bool = True,
+    forbidden: set[str] | None = None,
+    original: str = "",
 ) -> str:
     value = re.sub(r"\s+", " ", candidate or "").strip().lstrip("•- ").strip()
     if not 40 <= len(value) <= max(420, max_chars):
         raise ValueError("length")
+    if _credential_claims(value) - _credential_claims(original or evidence):
+        raise ValueError("new_credential_claim")
     if _number_tokens(value) - _number_tokens(evidence):
         raise ValueError("new_numeric_claim")
     if _named_tokens(value) - _named_tokens(evidence):
@@ -131,9 +268,16 @@ def _validate_summary(
             raise ValueError("new_unsupported_qualification")
     evidence_terms = concepts(evidence)
     candidate_terms = concepts(value)
+    if forbidden and candidate_terms & forbidden:
+        raise ValueError("borrowed_requirement_not_in_cv")
+    # How much of the new summary must already appear in the evidence. A
+    # summary written for one job leans on the posting's vocabulary, so a
+    # deliberate rewrite is held to a lower share than a touch-up; the
+    # fabrication checks above are what keep the claims themselves honest.
+    floor = 0.7 if strict else 0.5
     if (
         candidate_terms
-        and len(evidence_terms & candidate_terms) / len(candidate_terms) < 0.7
+        and len(evidence_terms & candidate_terms) / len(candidate_terms) < floor
     ):
         raise ValueError("insufficient_evidence_coverage")
     return value

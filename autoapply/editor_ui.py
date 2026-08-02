@@ -110,6 +110,25 @@ border:1px solid #14324f26;border-radius:5px;padding:5px 7px;background:#fff;whi
 .mini{min-height:28px;padding:0 10px;font-size:11px;font-weight:800;border-radius:7px}
 .mini.ok{background:var(--green2);color:#03130c;border-color:var(--green2)}
 .mini.no{background:transparent;color:var(--muted)}
+.entry-tools{display:flex;gap:4px;align-items:center;opacity:0;transition:opacity .12s}
+.cv-entry:hover .entry-tools,.cv-section:hover .entry-tools{opacity:1}
+.entry-tools button{min-height:20px;padding:0 6px;font-size:10px;font-weight:800;border-radius:5px;
+border:1px solid #14324f33;background:#14324f0d;color:var(--accent);cursor:pointer}
+.entry-tools button:hover{background:#14324f1f}
+.entry-tools button.drop{color:#9c3a33;border-color:#9c3a3333}
+.cv-section-head-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.left-out{margin-top:18px;border-top:1px dashed var(--rule);padding-top:11px}
+.left-out h4{font:800 11px/1.3 var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--meta);margin:0 0 7px}
+.left-out div{display:flex;align-items:center;justify-content:space-between;gap:10px;
+padding:4px 0;font-size:13px;color:#7b8792}
+.left-out button{min-height:22px;padding:0 8px;font-size:10px;font-weight:800;border-radius:5px;
+border:1px solid #14324f33;background:transparent;color:var(--accent);cursor:pointer}
+.modes{display:flex;gap:5px;margin:9px 0 4px}
+.modes button{flex:1;min-height:32px;padding:0 6px;font-size:11px;font-weight:800;border-radius:8px;
+background:#0b1712;color:var(--muted);border:1px solid var(--line)}
+.modes button.on{border-color:var(--green2);color:var(--green);background:#12291f}
+.mode-note{font-size:11px;color:var(--muted);margin:2px 0 0;min-height:30px}
 .doc-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .cv-picker select{background:#0b1712;color:var(--text);border:1px solid var(--line);
 border-radius:9px;min-height:34px;padding:0 8px;max-width:200px}
@@ -148,6 +167,10 @@ border-radius:13px;font-size:13px}
 .req-list li,.advice-list li{padding:6px 0;border-bottom:1px solid #1a2e27;font-size:12px;color:var(--muted)}
 .req-list li:last-child,.advice-list li:last-child{border-bottom:none}
 .req-list li::before{content:"◆ ";color:var(--blue)}
+.reject-list{list-style:none;padding:0;margin:0}
+.reject-list li{padding:6px 0;border-bottom:1px solid #1a2e27;font-size:12px;color:var(--muted)}
+.reject-list li:last-child{border-bottom:none}
+.reject-list li::before{content:"⊘ ";color:var(--amber)}
 .advice-list li::before{content:"💡 "}
 @media(max-width:1180px){.layout{grid-template-columns:290px minmax(0,1fr) 270px}
   .cv-paper{padding:38px 34px 46px}}
@@ -189,6 +212,10 @@ border-radius:13px;font-size:13px}
       <h3 style="margin-top:16px">Gaps &amp; application advice</h3>
       <ul class="advice-list" id="adviceList"></ul>
     </div>
+    <div id="rejectSection" style="display:none">
+      <h3 style="margin-top:16px">Lines the model was not allowed to change</h3>
+      <ul class="reject-list" id="rejectList"></ul>
+    </div>
   </div>
 </aside>
 
@@ -225,8 +252,14 @@ border-radius:13px;font-size:13px}
       <textarea class="instruction" id="instructions" maxlength="4000"
         placeholder="Optional: e.g. Lead with the robot-learning infrastructure work. Keep my academic tone."></textarea>
       <p class="hint">Sends this posting and your CV to OpenAI through your own key — never via GitHub.</p>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <button class="primary" id="generate">Generate suggestions</button>
+      <div class="modes">
+        <button data-mode="targeted">Touch up</button>
+        <button data-mode="full" class="on">Full rewrite</button>
+        <button data-mode="aggressive">Go hard</button>
+      </div>
+      <p class="mode-note" id="modeNote"></p>
+      <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+        <button class="primary" id="generate">Rewrite for this job</button>
       </div>
       <div class="busy" id="busy"><span class="spinner"></span><span id="busyText">Reading the posting…</span></div>
     </div>
@@ -278,6 +311,11 @@ const jobUrl=params.get("url")||"";
 let state=null;
 let cvId=params.get("cv")||"master";
 let nameTouched=false;
+let mode="full";
+const MODE_NOTES={
+  targeted:"A few wording patches on the lines that already answer this posting. Nothing moves.",
+  full:"Rewrites every line for this posting, rewrites the summary, and reorders sections and entries so the most relevant work reads first.",
+  aggressive:"Full rewrite, plus entries with nothing to say about this posting are left out of this job's CV. You can put any of them back."};
 const $=id=>document.getElementById(id);
 function toast(msg){$("toast").textContent=msg;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2800)}
 function notice(msg,type=""){const box=$("notice");box.replaceChildren();if(!msg)return;
@@ -285,6 +323,65 @@ function notice(msg,type=""){const box=$("notice");box.replaceChildren();if(!msg
 async function api(path,options={}){
   const r=await fetch(path,{...options,headers:{"Content-Type":"application/json","X-Autoapply-Token":token,...(options.headers||{})}});
   const result=await r.json();if(!r.ok)throw new Error(result.error||`Bridge returned ${r.status}`);return result
+}
+// Mirrors cv_editor.ordered_sections: the draft decides the running order and
+// what this job's CV leaves out; anything it does not mention keeps its master
+// position and stays visible, so a partial order can never hide work silently.
+function draftOrder(){
+  state.draft=state.draft||{};
+  state.draft.order=state.draft.order||{sections:[],entries:{}};
+  state.draft.hidden=state.draft.hidden||[];
+  return state.draft;
+}
+function orderedSections(){
+  const d=draftOrder(),hidden=new Set(d.hidden);
+  const rank=(ids,id,fallback)=>{const i=ids.indexOf(id);return i<0?[ids.length,fallback]:[i,0]};
+  const all=state.document.sections||[];
+  const secIds=d.order.sections||[];
+  const sections=all.map((sec,i)=>({sec,key:rank(secIds,sec.id,i)}))
+    .sort((a,b)=>a.key[0]-b.key[0]||a.key[1]-b.key[1]).map(x=>x.sec);
+  const out=[];
+  for(const sec of sections){
+    const wanted=(d.order.entries||{})[sec.id]||[];
+    const kept=(sec.entries||[]).map((e,i)=>({e,key:rank(wanted,e.id,i)}))
+      .filter(x=>!hidden.has(x.e.id))
+      .sort((a,b)=>a.key[0]-b.key[0]||a.key[1]-b.key[1]).map(x=>x.e);
+    if(kept.length)out.push({...sec,entries:kept});
+  }
+  return out;
+}
+function hiddenEntries(){
+  const hidden=new Set(draftOrder().hidden);
+  const out=[];
+  for(const sec of state.document.sections||[])
+    for(const e of sec.entries||[])
+      if(hidden.has(e.id))out.push({section:sec.name,entry:e});
+  return out;
+}
+function moveSection(id,delta){
+  const d=draftOrder();
+  const ids=orderedSections().map(s=>s.id);
+  const from=ids.indexOf(id),to=from+delta;
+  if(from<0||to<0||to>=ids.length)return;
+  ids.splice(to,0,ids.splice(from,1)[0]);
+  d.order.sections=ids;renderAll();queueSave();
+}
+function moveEntry(sectionId,entryId,delta){
+  const d=draftOrder();
+  const sec=orderedSections().find(s=>s.id===sectionId);
+  if(!sec)return;
+  const ids=sec.entries.map(e=>e.id);
+  const from=ids.indexOf(entryId),to=from+delta;
+  if(from<0||to<0||to>=ids.length)return;
+  ids.splice(to,0,ids.splice(from,1)[0]);
+  d.order.entries={...d.order.entries,[sectionId]:ids};
+  renderAll();queueSave();
+}
+function setHidden(entryId,hide){
+  const d=draftOrder();
+  const set=new Set(d.hidden);
+  hide?set.add(entryId):set.delete(entryId);
+  d.hidden=[...set];renderAll();queueSave();
 }
 function allBullets(){
   const out=[];
@@ -442,11 +539,21 @@ function entryLinks(entry){
   });
   return box;
 }
-function sectionShell(name){
+function toolButton(label,title,onclick,cls){
+  const b=document.createElement("button");b.textContent=label;b.title=title;
+  if(cls)b.className=cls;b.onclick=onclick;b.tabIndex=-1;return b;
+}
+function sectionShell(name,sectionId){
   const wrap=document.createElement("div");wrap.className="cv-section";
+  const row=document.createElement("div");row.className="cv-section-head-row";
   const head=document.createElement("div");head.className="cv-section-head";head.textContent=name;
+  const tools=document.createElement("div");tools.className="entry-tools";
+  tools.append(
+    toolButton("↑","Move this section up",()=>moveSection(sectionId,-1)),
+    toolButton("↓","Move this section down",()=>moveSection(sectionId,1)));
+  row.append(head,tools);
   const rule=document.createElement("div");rule.className="cv-section-rule";
-  wrap.append(head,rule);
+  wrap.append(row,rule);
   return wrap;
 }
 function renderCV(){
@@ -467,9 +574,9 @@ function renderCV(){
     paper.append(wrap);
   }
 
-  for(const sec of doc.sections||[]){
+  for(const sec of orderedSections()){
     const layout=sec.layout||"entries";
-    const wrap=sectionShell(sec.name);
+    const wrap=sectionShell(sec.name,sec.id);
 
     if(layout==="skills"){
       const grid=document.createElement("div");grid.className="cv-skills";
@@ -492,9 +599,18 @@ function renderCV(){
         const hd=document.createElement("div");hd.className="cv-entry-head";
         const title=document.createElement("div");title.className="cv-entry-title";
         title.textContent=entry.title||"";
+        const right=document.createElement("div");
+        right.style.cssText="display:flex;align-items:baseline;gap:8px";
+        const tools=document.createElement("div");tools.className="entry-tools";
+        tools.append(
+          toolButton("↑","Move up",()=>moveEntry(sec.id,entry.id,-1)),
+          toolButton("↓","Move down",()=>moveEntry(sec.id,entry.id,1)),
+          toolButton("✕","Leave this entry out of this job's CV",
+            ()=>setHidden(entry.id,true),"drop"));
         const dates=document.createElement("div");dates.className="cv-entry-dates";
         dates.textContent=entry.dates||"";
-        hd.append(title,dates);block.append(hd);
+        right.append(tools,dates);
+        hd.append(title,right);block.append(hd);
       }
       if(layout!=="notes"&&entry.organization){
         const sub=document.createElement("div");sub.className="cv-entry-sub";
@@ -517,6 +633,22 @@ function renderCV(){
     }
     paper.append(wrap);
   }
+
+  const left=hiddenEntries();
+  if(left.length){
+    const box=document.createElement("div");box.className="left-out";
+    const h=document.createElement("h4");
+    h.textContent=`Left out of this job's CV (${left.length})`;box.append(h);
+    for(const {section,entry} of left){
+      const row=document.createElement("div");
+      const label=document.createElement("span");
+      label.textContent=`${entry.title||"(untitled)"} · ${section}`;
+      row.append(label,toolButton("Put back","Include this entry again",
+        ()=>setHidden(entry.id,false)));
+      box.append(row);
+    }
+    paper.append(box);
+  }
   root.append(paper);
 }
 
@@ -527,6 +659,32 @@ function allPatches(){
   if(d.summary)out.push(d.summary);
   for(const p of Object.values(d.bullets||{}))out.push(p);
   return out;
+}
+// Why a line was left alone. "N suggestions discarded" reads like the tool is
+// broken; naming the reason shows the guard doing its job on a specific line.
+const REJECT_REASONS={
+  new_named_technology_or_entity:"named a technology or employer your CV never claims",
+  new_numeric_claim:"invented a number",
+  new_credential_claim:"awarded you a degree or title you do not hold",
+  new_unsupported_qualification:"claimed a qualification your CV cannot evidence",
+  length:"came back too short or too long, twice",
+  insufficient_evidence_overlap:"drifted off what that line is actually about",
+  borrowed_requirement_not_in_cv:"echoed a requirement your CV never mentions back as a credential",
+  unknown_fact_id:"referred to a line that does not exist"};
+function renderRejected(){
+  const rejected=(state.draft||{}).rejected_by_validator||{};
+  const box=$("rejectSection"),list=$("rejectList");
+  const groups={};
+  for(const reason of Object.values(rejected))groups[reason]=(groups[reason]||0)+1;
+  const keys=Object.keys(groups);
+  if(!keys.length){box.style.display="none";return}
+  box.style.display="";list.replaceChildren();
+  for(const key of keys.sort((a,b)=>groups[b]-groups[a])){
+    const li=document.createElement("li");
+    li.textContent=`${groups[key]} rewrite${groups[key]===1?"":"s"} kept out: `+
+      (REJECT_REASONS[key]||key);
+    list.append(li);
+  }
 }
 function renderRequirements(){
   const reqs=((state.draft||{}).requirements||[]).filter(Boolean);
@@ -551,8 +709,9 @@ function renderSuggestions(){
       ' reviewed.<br><br>Accepted edits are marked in the document.</div>';
   }else{
     const note=document.createElement("p");note.className="hint";
-    note.textContent=pending.length+" suggestion"+(pending.length===1?"":"s")+
-      " awaiting review — each is shown inline in the document.";
+    note.textContent=pending.length+" of "+state.document.fact_ids.length+
+      " lines rewritten for this posting. Each is shown inline in the document; "+
+      "press Accept all AI to take the whole rewrite.";
     root.append(note);
     for(const p of pending){
       const card=document.createElement("article");card.className="suggestion";
@@ -580,14 +739,23 @@ function renderSuggestions(){
   const total=acceptedAi+manual.length;
   $("acceptAll").disabled=!pending.length;
   $("resetAll").disabled=!patches.length;
-  $("acceptedCount").textContent=total+" edit"+(total===1?"":"s");
-  $("acceptedCount").style.display=total?"":"none";
-  $("exportNote").textContent=total
-    ?`${manual.length} of your edits and ${acceptedAi} AI edit${acceptedAi===1?"":"s"} will be applied. Everything else stays original.`
+  const rewritten=ai.length;
+  $("acceptedCount").textContent=rewritten
+    ?`${rewritten}/${state.document.fact_ids.length} rewritten`
+    :total+" edit"+(total===1?"":"s");
+  $("acceptedCount").style.display=(total||rewritten)?"":"none";
+  const dropped=(state.draft&&state.draft.hidden||[]).length;
+  const moved=((state.draft&&state.draft.order||{}).sections||[]).length;
+  const parts=[];
+  if(manual.length)parts.push(`${manual.length} of your edits`);
+  if(acceptedAi)parts.push(`${acceptedAi} AI rewrite${acceptedAi===1?"":"s"}`);
+  if(moved)parts.push("a reordered running order");
+  if(dropped)parts.push(`${dropped} entr${dropped===1?"y":"ies"} left out`);
+  $("exportNote").textContent=parts.length
+    ?parts.join(", ")+" will be applied. Everything else stays original."
     :"Your CV exports unchanged until you edit a line or accept a suggestion.";
 
-  const rejected=Object.keys((state.draft||{}).rejected_by_validator||{}).length;
-  if(rejected)notice(`${rejected} unsafe model suggestion${rejected===1?" was":"s were"} automatically discarded.`,"");
+  renderRejected();
 
   const advice=((state.draft||{}).advice||[]).filter(Boolean);
   if(advice.length){
@@ -608,6 +776,7 @@ async function syncAndSave(){
   try{
     state.draft.instructions=$("instructions").value;
     state.draft.cv_id=cvId;
+    state.draft.mode=mode;
     const result=await api("/api/draft",{method:"POST",
       body:JSON.stringify({url:jobUrl,cv_id:cvId,draft:state.draft})});
     state.draft=result.draft;flag("Saved");
@@ -617,15 +786,18 @@ async function syncAndSave(){
 async function generate(){
   $("generate").disabled=true;$("busy").classList.add("show");notice("");
   $("busyText").textContent="Reading the posting…";
-  const t1=setTimeout(()=>{$("busyText").textContent="Matching your evidence to its requirements…"},2500);
-  const t2=setTimeout(()=>{$("busyText").textContent="Rewriting the lines that answer it…"},9000);
+  const t1=setTimeout(()=>{$("busyText").textContent="Planning the running order…"},2500);
+  const t2=setTimeout(()=>{$("busyText").textContent="Rewriting every section in parallel…"},7000);
   try{
     const result=await api("/api/suggest",{method:"POST",
-      body:JSON.stringify({url:jobUrl,cv_id:cvId,instructions:$("instructions").value})});
+      body:JSON.stringify({url:jobUrl,cv_id:cvId,mode,instructions:$("instructions").value})});
     state.draft=result.draft;$("instructions").value=state.draft.instructions||"";
     renderAll();
     const n=allPatches().filter(p=>p.source!=="manual"&&p.status==="pending").length;
-    toast(n?`${n} suggestion${n===1?"":"s"} ready — review them in the document`:"No new suggestions");
+    const dropped=(state.draft.hidden||[]).length;
+    toast(n?`${n} of ${state.document.fact_ids.length} lines rewritten`+
+      (dropped?`, ${dropped} entr${dropped===1?"y":"ies"} left out`:"")+" — review below"
+      :"No new suggestions");
   }catch(err){notice(err.message,"error")}
   finally{clearTimeout(t1);clearTimeout(t2);$("generate").disabled=false;$("busy").classList.remove("show")}
 }
@@ -737,10 +909,11 @@ async function loadCv(id){
   $("jobTitle").textContent=`${state.job.role} · ${state.job.company}`;
   $("jobMeta").textContent=[state.job.location,
     state.job.description?"description ready":"description loads on Generate"].filter(Boolean).join(" · ");
-  $("factCount").textContent=`${state.document.fact_ids.length} facts`;
+  $("factCount").textContent=`${state.document.fact_ids.length} lines`;
   $("docMeta").textContent=`${state.document.fact_ids.length} editable lines`;
   $("applyTop").href=$("applySide").href=state.job.application_url;
   $("instructions").value=state.draft.instructions||"";
+  if(state.draft.mode&&MODE_NOTES[state.draft.mode]){mode=state.draft.mode;renderMode()}
   if(state.cv_storage)$("cvStorage").textContent=state.cv_storage;
   // Pre-name the CV after this job; the user edits it before pressing Save.
   if(!nameTouched)$("newCvName").value=state.suggested_cv_name||"";
@@ -775,9 +948,24 @@ $("acceptAll").onclick=()=>{
   renderAll();queueSave();
 };
 $("resetAll").onclick=()=>{
-  if(!confirm("Discard every edit and AI suggestion for this CV and job?"))return;
+  if(!confirm("Discard every edit, rewrite, and reordering for this CV and job?"))return;
   state.draft.summary=null;state.draft.bullets={};
+  state.draft.order={sections:[],entries:{}};state.draft.hidden=[];
   renderAll();queueSave();
 };
+function renderMode(){
+  document.querySelectorAll(".modes button").forEach(b=>
+    b.classList.toggle("on",b.dataset.mode===mode));
+  $("modeNote").textContent=MODE_NOTES[mode]||"";
+}
+document.querySelector(".modes").onclick=e=>{
+  if(!e.target.dataset.mode)return;
+  mode=e.target.dataset.mode;
+  try{localStorage.setItem("autoapply_mode",mode)}catch(err){}
+  renderMode();
+};
+try{mode=localStorage.getItem("autoapply_mode")||"full"}catch(err){}
+if(!MODE_NOTES[mode])mode="full";
+renderMode();
 init();
 </script></body></html>"""

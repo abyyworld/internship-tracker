@@ -21,6 +21,7 @@ from .config import (
     reject_placeholders,
 )
 from .cv_editor import (
+    TAILORING_MODES,
     facts_from_document,
     load_draft,
     master_document,
@@ -523,11 +524,15 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     job.description = description
                 document, _profile = self._document(cv_id)
                 instructions = str(payload.get("instructions", ""))[:4000]
+                mode = str(payload.get("mode", "") or "full")
+                if mode not in TAILORING_MODES:
+                    raise ValueError("Unknown tailoring mode")
                 generated = generate_suggestions(
                     job,
                     document,
                     api_key=load_openai_key(self.server.home),
                     instructions=instructions,
+                    mode=mode,
                 )
                 generated["cv_id"] = cv_id
                 saved = save_draft(
