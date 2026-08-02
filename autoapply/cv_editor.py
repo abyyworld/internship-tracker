@@ -217,18 +217,23 @@ def master_document(
     contact = profile.get("contact", {})
     seen: set[str] = set()
     sections: list[dict[str, Any]] = []
-    for section in facts.get("sections", []):
+    for section_index, section in enumerate(facts.get("sections", [])):
+        section_id = f"s{section_index}"
         copied_section = {
+            "id": section_id,
             "name": str(section.get("name", "")).strip(),
             "layout": str(section.get("layout", "") or "entries"),
             "entries": [],
         }
-        for entry in section.get("entries", []):
+        for entry_index, entry in enumerate(section.get("entries", [])):
             copied_entry = {
                 key: deepcopy(value)
                 for key, value in entry.items()
-                if key != "bullets"
+                if key not in {"bullets", "id"}
             }
+            # Positional ids let a draft reorder or hide entries for one job
+            # without touching the fact bank they came from.
+            copied_entry["id"] = f"{section_id}e{entry_index}"
             copied_entry["bullets"] = []
             for bullet in entry.get("bullets", []):
                 fact_id = str(bullet.get("id", "")).strip()
@@ -342,6 +347,9 @@ def master_document(
     }
 
 
+TAILORING_MODES = ("targeted", "full", "aggressive")
+
+
 def empty_draft(
     job_id: str,
     description_hash: str = "",
@@ -354,14 +362,66 @@ def empty_draft(
         "description_hash": description_hash,
         "provider": "openai",
         "model": "gpt-4o-mini",
+        "mode": "full",
         "instructions": "",
         "summary": None,
         "bullets": {},
+        # Which order this job's CV presents its sections and entries in, and
+        # which entries it leaves out. Reordering is the strongest tailoring
+        # move available and claims nothing that was not already true.
+        "order": {"sections": [], "entries": {}},
+        "hidden": [],
         "requirements": [],
         "advice": [],
         "rejected_by_validator": {},
         "updated_at": _now_iso(),
     }
+
+
+def ordered_sections(
+    document: dict[str, Any],
+    draft: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    """The document's sections and entries as this draft presents them.
+
+    Anything the draft does not mention keeps its master order and stays
+    visible, so a partial or stale order can never drop content silently.
+    """
+    draft = draft or {}
+    order = draft.get("order") or {}
+    hidden = set(order.get("hidden") or draft.get("hidden") or [])
+
+    def sort_key(ids: list[str], identifier: str, fallback: int) -> tuple[int, int]:
+        return (ids.index(identifier), 0) if identifier in ids else (len(ids), fallback)
+
+    section_ids = [str(value) for value in (order.get("sections") or [])]
+    sections = sorted(
+        document.get("sections", []),
+        key=lambda section: sort_key(
+            section_ids,
+            str(section.get("id", "")),
+            document["sections"].index(section),
+        ),
+    )
+    result: list[dict[str, Any]] = []
+    entry_order = order.get("entries") or {}
+    for section in sections:
+        wanted = [str(value) for value in (entry_order.get(section.get("id", "")) or [])]
+        entries = [
+            entry
+            for entry in section.get("entries", [])
+            if str(entry.get("id", "")) not in hidden
+        ]
+        entries.sort(
+            key=lambda entry: sort_key(
+                wanted,
+                str(entry.get("id", "")),
+                section["entries"].index(entry),
+            )
+        )
+        if entries:
+            result.append({**section, "entries": entries})
+    return result
 
 
 def load_draft(home: Path, job_id: str, cv_id: str = "master") -> dict[str, Any]:
@@ -449,6 +509,47 @@ def normalize_draft(
     result["instructions"] = str(incoming.get("instructions", ""))[
         :MAX_INSTRUCTION_CHARS
     ]
+    mode = str(incoming.get("mode", "") or (existing or {}).get("mode", "") or "full")
+    if mode not in TAILORING_MODES:
+        raise ValueError("Unknown tailoring mode")
+    result["mode"] = mode
+
+    section_ids = {str(section.get("id", "")) for section in document["sections"]}
+    entry_ids = {
+        str(entry.get("id", ""))
+        for section in document["sections"]
+        for entry in section["entries"]
+    }
+    raw_order = incoming.get("order") or (existing or {}).get("order") or {}
+    if not isinstance(raw_order, dict):
+        raise ValueError("CV order must be an object")
+    raw_entries = raw_order.get("entries") or {}
+    if not isinstance(raw_entries, dict):
+        raise ValueError("CV entry order must be an object")
+    result["order"] = {
+        # Unknown ids are dropped rather than rejected: a saved CV has fewer
+        # entries than the master it came from, so its order legitimately
+        # references entries this document no longer has.
+        "sections": [
+            str(value) for value in list(raw_order.get("sections") or [])[:64]
+            if str(value) in section_ids
+        ],
+        "entries": {
+            str(key): [
+                str(value) for value in list(values or [])[:128]
+                if str(value) in entry_ids
+            ]
+            for key, values in list(raw_entries.items())[:64]
+            if str(key) in section_ids
+        },
+    }
+    result["hidden"] = [
+        str(value)
+        for value in list(
+            incoming.get("hidden", (existing or {}).get("hidden", [])) or []
+        )[:128]
+        if str(value) in entry_ids
+    ]
 
     raw_summary = incoming.get("summary")
     if raw_summary:
@@ -510,13 +611,15 @@ def facts_from_document(
 
     bullet_patches = draft.get("bullets", {})
     sections: list[dict[str, Any]] = []
-    for section in document.get("sections", []):
+    # Saving bakes in the order and omissions this job's draft settled on, so
+    # reopening the saved CV shows the document that was actually exported.
+    for section in ordered_sections(document, draft):
         entries: list[dict[str, Any]] = []
         for entry in section.get("entries", []):
             copied = {
                 key: deepcopy(value)
                 for key, value in entry.items()
-                if key not in {"bullets", "evidence_ids"}
+                if key not in {"bullets", "evidence_ids", "id"}
             }
             bullets = []
             for bullet in entry.get("bullets", []):
@@ -569,7 +672,11 @@ def resume_from_document(
     sections: list[dict[str, Any]] = []
     all_ids: list[str] = []
     accepted_ids: list[str] = []
-    for section in document["sections"]:
+    visible = ordered_sections(document, draft)
+    hidden_entries = sum(
+        len(section["entries"]) for section in document["sections"]
+    ) - sum(len(section["entries"]) for section in visible)
+    for section in visible:
         copied_section = {
             "name": section["name"],
             "layout": section.get("layout", "entries"),
@@ -610,7 +717,9 @@ def resume_from_document(
             "master_fact_count": len(all_ids),
             "accepted_patch_ids": accepted_ids,
             "summary_patch_accepted": summary != document["summary"],
-            "untouched_content_preserved": True,
+            "reordered": bool((draft.get("order") or {}).get("sections")),
+            "entries_left_out": hidden_entries,
+            "untouched_content_preserved": not hidden_entries,
             "review_required": True,
         },
     )

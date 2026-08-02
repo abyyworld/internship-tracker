@@ -1,6 +1,28 @@
+"""Tailor a CV to one posting through the OpenAI API.
+
+Three levels of intervention, chosen by the caller:
+
+``targeted``    a handful of wording patches on the strongest lines.
+``full``        every line rewritten for this posting, plus a rewritten
+                summary and a section and entry order that leads with the
+                most relevant work.
+``aggressive``  as ``full``, and entries with nothing to say about this
+                posting are left out of this job's CV.
+
+Rewriting is unrestricted; inventing is not. The validators reject a proposal
+that introduces a number, a named technology, an employer, or a qualification
+the verified original did not contain, because a claim that collapses at
+interview costs the offer that the rest of the tailoring won.
+
+A full rewrite of this CV is far more text than one response can hold, so
+generation runs as a small strategy call followed by one request per section,
+issued in parallel. Wall time is roughly two round trips regardless of CV size.
+"""
+
 from __future__ import annotations
 
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 from pathlib import Path
@@ -9,21 +31,31 @@ from typing import Any
 
 import requests
 
-from .ai_tailoring import _validate_rewrite, _validate_summary
-from .cv_editor import empty_draft
+from .ai_tailoring import (
+    _length_bounds,
+    _validate_rewrite,
+    _validate_summary,
+    borrowed_terms,
+)
+from .cv_editor import empty_draft, ordered_sections
 from .models import Job
 
 
 OPENAI_ENDPOINT = "https://api.openai.com/v1/chat/completions"
 OPENAI_MODEL_DEFAULT = "gpt-4o-mini"
-# Latency is dominated by how much text the model has to read and write. A job
-# description repeats itself well before 8k characters, so the input stays
-# capped. The output cap cannot be: entries in this CV are prose paragraphs, and
-# 3-6 rewrites of them do not fit in a bullet-sized budget — a short cap would
-# truncate the JSON mid-string and waste the whole call.
+# A job description repeats itself well before 8k characters. The strategy call
+# reads it in full; the section calls receive only the requirements it found,
+# which keeps every parallel request small and fast.
 MAX_DESCRIPTION_CHARS = 8000
-MAX_FACTS = 100
-MAX_OUTPUT_TOKENS = 4000
+MAX_SECTION_OUTPUT_TOKENS = 4000
+# The strategy call returns requirements, a full running order, and a
+# rewritten summary; 1200 tokens truncated it on postings with many
+# requirements, and a truncated plan is a lost generation.
+MAX_STRATEGY_OUTPUT_TOKENS = 2600
+MAX_PARALLEL_REQUESTS = 6
+# Rewriting whole prose entries at temperature 0 produces near-copies; a little
+# freedom is what makes a rewrite actually read differently.
+TEMPERATURE = 0.35
 
 
 def openai_key_path(home: Path) -> Path:
@@ -77,105 +109,111 @@ def save_openai_key(home: Path, value: str) -> None:
     path.chmod(0o600)
 
 
+def _salvage_json(text: str) -> dict[str, Any] | None:
+    """Recover the complete part of a response that was cut off mid-value.
+
+    Hitting the output token cap truncates the JSON, and discarding the whole
+    response loses every rewrite that had already been written. Rewinding to
+    the last finished element and closing the open brackets keeps them.
+    """
+    depth: list[str] = []
+    in_string = escaped = False
+    rewind: tuple[int, tuple[str, ...]] | None = None
+    for index, character in enumerate(text):
+        if in_string:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                in_string = False
+            continue
+        if character == '"':
+            in_string = True
+        elif character in "{[":
+            depth.append("}" if character == "{" else "]")
+        elif character in "}]":
+            if depth:
+                depth.pop()
+        elif character == "," and depth:
+            rewind = (index, tuple(depth))
+    if rewind is None:
+        return None
+    index, open_brackets = rewind
+    try:
+        parsed = json.loads(text[:index] + "".join(reversed(open_brackets)))
+    except json.JSONDecodeError:
+        return None
+    return parsed if isinstance(parsed, dict) else None
+
+
 def _json_object(value: str) -> dict[str, Any]:
     cleaned = re.sub(r"<think>.*?</think>", "", value or "", flags=re.S).strip()
     cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.I)
     cleaned = re.sub(r"\s*```$", "", cleaned)
     start = cleaned.find("{")
     end = cleaned.rfind("}")
-    if start < 0 or end <= start:
+    if start < 0:
         raise RuntimeError("OpenAI returned no JSON suggestion object")
-    try:
-        parsed = json.loads(cleaned[start : end + 1])
-    except json.JSONDecodeError as exc:
-        raise RuntimeError("OpenAI returned malformed suggestion JSON") from exc
-    if not isinstance(parsed, dict):
-        raise RuntimeError("OpenAI returned an invalid suggestion object")
-    return parsed
+    if end > start:
+        try:
+            parsed = json.loads(cleaned[start : end + 1])
+            if not isinstance(parsed, dict):
+                raise RuntimeError("OpenAI returned an invalid suggestion object")
+            return parsed
+        except json.JSONDecodeError:
+            pass
+    salvaged = _salvage_json(cleaned[start:])
+    if salvaged is None:
+        raise RuntimeError("OpenAI returned malformed suggestion JSON")
+    return salvaged
 
 
-def _master_facts(document: dict[str, Any]) -> list[dict[str, Any]]:
+def _clean_list(values: Any, *, limit: int, chars: int) -> list[str]:
     return [
-        {
-            "id": bullet["id"],
-            "verified_text": bullet["text"],
-            # The model must match the rewrite to the shape of what it replaces:
-            # a bold opening claim stays a claim, a prose body stays prose.
-            "role_in_entry": "opening claim" if bullet.get("style") == "lead" else "body",
-            "approx_chars": len(bullet["text"]),
-            "entry": str(entry.get("title", "")),
-            "organization": str(entry.get("organization", "")),
-            "section": str(section.get("name", "")),
-        }
-        for section in document["sections"]
-        for entry in section["entries"]
-        for bullet in entry["bullets"]
-    ][:MAX_FACTS]
+        re.sub(r"\s+", " ", str(item)).strip()[:chars]
+        for item in list(values or [])[:limit]
+        if str(item).strip()
+    ]
 
 
-def _prompt(
-    job: Job,
-    document: dict[str, Any],
-    instructions: str,
-) -> tuple[str, str]:
-    system = (
-        "You are a meticulous CV editor. Suggest a small patch, never a replacement "
-        "CV. Return JSON only, with no markdown.\n"
-        "METHOD. First read the posting and list the concrete requirements it "
-        "states: named technologies, methods, domains, degree level, and "
-        "responsibilities. Then pick the 3 to 6 verified facts whose existing "
-        "evidence already speaks to those requirements, and rewrite only those so "
-        "the matching evidence is stated plainly and early. Every rewrite must name "
-        "the requirement it addresses in its rationale, quoting the posting's own "
-        "wording. If the CV holds no evidence for a requirement, do not patch "
-        "anything for it — report it in advice instead.\n"
-        "RULES. The complete master CV is immutable: do not delete, merge, or omit "
-        "any entry. Never invent or infer a skill, tool, metric, employer, date, "
-        "responsibility, qualification, award, or result. A job requirement is not "
-        "candidate evidence. Preserve every number and named technology exactly. "
-        "Keep each proposal within roughly 20 percent of its original's "
-        "approx_chars: a prose body stays a prose paragraph of similar depth, and "
-        "an opening claim stays one or two sentences. Keep all material meaning of "
-        "the verified original, write in natural language, and never keyword-stuff. "
-        "The summary is optional and must rest only on the supplied evidence.\n"
-        "Return exactly: "
-        '{"requirements":["requirement quoted from the posting"],'
-        '"summary":{"proposal":"...","rationale":"..."} or null,'
-        '"bullets":[{"fact_id":"exact-id","proposal":"...",'
-        '"rationale":"addresses <requirement> because ...","keywords":["..."]}],'
-        '"advice":["gap the CV cannot evidence, or a short application note"]}.'
-    )
-    user = json.dumps(
-        {
-            "target_job": {
-                "company": job.company,
-                "role": job.role,
-                "location": job.location,
-                "description": job.description[:MAX_DESCRIPTION_CHARS],
-            },
-            "candidate_master_cv": {
-                "existing_summary": document["summary"],
-                "existing_summary_chars": len(document["summary"]),
-                "education": document["education"],
-                "verified_facts": _master_facts(document),
-            },
-            "candidate_instructions": instructions[:4000],
-        },
-        ensure_ascii=False,
-    )
-    return system, user
-
-
-def generate_suggestions(
-    job: Job,
-    document: dict[str, Any],
+def _ask(
+    system: str,
+    user: str,
     *,
     api_key: str,
-    instructions: str = "",
-    model: str = OPENAI_MODEL_DEFAULT,
-    timeout: int = 120,
+    model: str,
+    max_tokens: int,
+    timeout: int,
 ) -> dict[str, Any]:
-    system, user = _prompt(job, document, instructions)
+    """One chat completion, decoded as a JSON object.
+
+    A timeout is retried once. The API's latency for a long prose generation
+    varies by more than an order of magnitude minute to minute, and losing a
+    whole section's rewrite to one slow response is worth a second attempt.
+    """
+    for attempt in (1, 2):
+        try:
+            return _ask_once(
+                system, user,
+                api_key=api_key, model=model,
+                max_tokens=max_tokens, timeout=timeout,
+            )
+        except RuntimeError as exc:
+            if attempt == 2 or "timed out" not in str(exc):
+                raise
+    raise RuntimeError("OpenAI request failed")
+
+
+def _ask_once(
+    system: str,
+    user: str,
+    *,
+    api_key: str,
+    model: str,
+    max_tokens: int,
+    timeout: int,
+) -> dict[str, Any]:
     try:
         response = requests.post(
             OPENAI_ENDPOINT,
@@ -189,8 +227,8 @@ def generate_suggestions(
                     {"role": "system", "content": system},
                     {"role": "user", "content": user},
                 ],
-                "temperature": 0.2,
-                "max_completion_tokens": MAX_OUTPUT_TOKENS,
+                "temperature": TEMPERATURE,
+                "max_completion_tokens": max_tokens,
                 # Constrain decoding to valid JSON so a stray prose preamble
                 # cannot waste a whole generation and force the user to retry.
                 "response_format": {"type": "json_object"},
@@ -198,15 +236,14 @@ def generate_suggestions(
             timeout=timeout,
         )
         response.raise_for_status()
-        payload = response.json()
-        content = payload["choices"][0]["message"]["content"]
+        content = response.json()["choices"][0]["message"]["content"]
         if isinstance(content, list):
             content = "".join(
                 str(part.get("text", ""))
                 for part in content
                 if isinstance(part, dict)
             )
-        generated = _json_object(str(content))
+        return _json_object(str(content))
     except requests.Timeout as exc:
         raise RuntimeError(
             "OpenAI timed out. Retry once; no CV changes were saved."
@@ -227,40 +264,358 @@ def generate_suggestions(
     except (requests.RequestException, KeyError, IndexError, TypeError, ValueError) as exc:
         raise RuntimeError(f"OpenAI request failed: {exc}") from exc
 
+
+# ── Rules every call shares ──────────────────────────────────────────────────
+
+_TRUTH_RULES = (
+    "TRUTH. Rewrite as freely as the evidence allows, but never introduce a "
+    "skill, tool, metric, employer, date, responsibility, qualification, "
+    "award, or result the verified text does not already contain. A "
+    "requirement in the posting is not evidence the candidate meets it. Keep "
+    "every number and named technology exactly as written, and never add one. "
+    "Claiming what cannot be evidenced loses the offer at interview, which "
+    "costs more than the wording gains."
+)
+
+
+def _entry_index(document: dict[str, Any]) -> list[dict[str, Any]]:
+    """A compact map of the CV: enough to plan an order, small enough to be fast."""
+    index: list[dict[str, Any]] = []
+    for section in document["sections"]:
+        entries = []
+        for entry in section["entries"]:
+            gist = " ".join(bullet["text"] for bullet in entry["bullets"])
+            entries.append({
+                "entry_id": entry.get("id", ""),
+                "title": entry.get("title", ""),
+                "context": entry.get("organization", ""),
+                "gist": gist[:260],
+            })
+        index.append({
+            "section_id": section.get("id", ""),
+            "section": section.get("name", ""),
+            "entries": entries,
+        })
+    return index
+
+
+def _strategy(
+    job: Job,
+    document: dict[str, Any],
+    instructions: str,
+    mode: str,
+    *,
+    api_key: str,
+    model: str,
+    timeout: int,
+) -> dict[str, Any]:
+    """Read the posting once: requirements, running order, and the summary."""
+    drop_rule = (
+        "Also list in `drop` the entry_ids that say nothing about this posting "
+        "and would only dilute the CV. Never drop education, and leave at "
+        "least half the entries of any section in place."
+        if mode == "aggressive"
+        else "Leave `drop` empty."
+    )
+    system = (
+        "You are a CV strategist. Return JSON only, no markdown.\n"
+        "Read the posting and extract the concrete requirements it states: "
+        "named technologies, methods, domains, degree level, and "
+        "responsibilities, quoting its own wording. Then decide how this "
+        "candidate's CV should be ordered so a reader who spends thirty "
+        "seconds on it sees the most relevant evidence first. Order sections "
+        "by relevance to this posting, and entries within each section the "
+        "same way. Include every section_id and every entry_id you are given "
+        "exactly once. " + drop_rule + "\n"
+        "Write `priorities`: three short notes telling the rewriter what to "
+        "foreground across the whole CV for this role.\n"
+        "Rewrite the summary so it opens on the candidate's evidence that "
+        "matters most for this posting. It describes the CANDIDATE, never the "
+        "company or the vacancy: do not name the employer, do not restate the "
+        "advert, and do not write that anyone is seeking or hiring anyone. "
+        "Keep the original's third-person voice and stay within about 20 "
+        "percent of its length.\n"
+        + _TRUTH_RULES + "\n"
+        "Return exactly: "
+        '{"requirements":["..."],"section_order":["s0",...],'
+        '"entry_order":{"s0":["s0e1",...]},"drop":["s2e3"],'
+        '"priorities":["..."],'
+        '"summary":{"proposal":"...","rationale":"..."},'
+        '"advice":["<name a requirement this CV cannot evidence, or omit>"]}'
+    )
+    user = json.dumps(
+        {
+            "target_job": {
+                "company": job.company,
+                "role": job.role,
+                "location": job.location,
+                "description": job.description[:MAX_DESCRIPTION_CHARS],
+            },
+            "candidate_summary": document["summary"],
+            "candidate_summary_chars": len(document["summary"]),
+            "cv_map": _entry_index(document),
+            "candidate_instructions": instructions[:4000],
+        },
+        ensure_ascii=False,
+    )
+    return _ask(
+        system, user,
+        api_key=api_key, model=model,
+        max_tokens=MAX_STRATEGY_OUTPUT_TOKENS, timeout=timeout,
+    )
+
+
+def _rewrite_section(
+    section: dict[str, Any],
+    job: Job,
+    requirements: list[str],
+    priorities: list[str],
+    instructions: str,
+    mode: str,
+    *,
+    api_key: str,
+    model: str,
+    timeout: int,
+) -> dict[str, Any]:
+    """Rewrite every line of one section against the posting's requirements."""
+    scope = (
+        "Rewrite EVERY fact you are given. Return one entry per fact_id, with "
+        "no omissions."
+        if mode != "targeted"
+        else "Rewrite only the three or four facts that most answer the "
+             "requirements. Leave the rest alone."
+    )
+    system = (
+        "You are rewriting one section of a CV for one job. Return JSON only, "
+        "no markdown.\n" + scope + "\n"
+        "Lead each line with the evidence this posting cares about, use the "
+        "posting's own vocabulary wherever the verified text already supports "
+        "it, and cut throat-clearing. Match the shape of what you replace: a "
+        "fact whose role is `opening claim` stays one or two sentences and a "
+        "`body` stays a paragraph of comparable depth. Every proposal MUST be "
+        "between its own min_chars and max_chars; a shorter one is discarded "
+        "unread, so keep the supporting detail rather than summarising it "
+        "away. Write natural prose; never produce a keyword list.\n"
+        "In each rationale, name the requirement the rewrite answers.\n"
+        + _TRUTH_RULES + "\n"
+        'Return exactly: {"bullets":[{"fact_id":"exact-id","proposal":"...",'
+        '"rationale":"answers <requirement> ...","keywords":["..."]}]}'
+    )
+    facts = []
+    for entry in section["entries"]:
+        for bullet in entry["bullets"]:
+            low, high = _length_bounds(bullet["text"], strict=mode == "targeted")
+            facts.append({
+                "fact_id": bullet["id"],
+                "verified_text": bullet["text"],
+                "role": "opening claim" if bullet.get("style") == "lead" else "body",
+                # The exact band the validator enforces. Told a percentage, the
+                # model compresses past the floor and the rewrite is discarded.
+                "min_chars": low,
+                "max_chars": high,
+                "entry": entry.get("title", ""),
+                "context": entry.get("organization", ""),
+            })
+    user = json.dumps(
+        {
+            "target_job": {"company": job.company, "role": job.role},
+            "requirements": requirements,
+            "priorities": priorities,
+            "candidate_instructions": instructions[:2000],
+            "section": section.get("name", ""),
+            "facts": facts,
+        },
+        ensure_ascii=False,
+    )
+    return _ask(
+        system, user,
+        api_key=api_key, model=model,
+        max_tokens=MAX_SECTION_OUTPUT_TOKENS, timeout=timeout,
+    )
+
+
+# Rejections worth a second attempt. A proposal that was the wrong length or
+# drifted off its own subject is badly shaped, not dishonest, and the model can
+# fix it when told exactly what was wrong. The fabrication rejections are never
+# retried: asking again for a claim the CV cannot support is asking for a
+# better-disguised version of the same claim.
+REPAIRABLE = {"length", "insufficient_evidence_overlap"}
+
+
+def _repair(
+    job: Job,
+    broken: list[dict[str, Any]],
+    requirements: list[str],
+    *,
+    api_key: str,
+    model: str,
+    timeout: int,
+) -> dict[str, Any]:
+    """Re-request the rewrites that came back the wrong shape."""
+    system = (
+        "Your previous rewrites of these CV lines were rejected. Return JSON "
+        "only, no markdown. For each one, produce a replacement that fixes the "
+        "stated problem while still answering the posting's requirements.\n"
+        "`length` means your text fell outside min_chars..max_chars. Count "
+        "characters: below the floor, keep the original's supporting detail "
+        "instead of summarising it away.\n"
+        "`insufficient_evidence_overlap` means you drifted off the subject of "
+        "the verified text. Stay on what that line is actually about.\n"
+        + _TRUTH_RULES + "\n"
+        'Return exactly: {"bullets":[{"fact_id":"exact-id","proposal":"...",'
+        '"rationale":"...","keywords":["..."]}]}'
+    )
+    user = json.dumps(
+        {
+            "target_job": {"company": job.company, "role": job.role},
+            "requirements": requirements,
+            "rejected": broken,
+        },
+        ensure_ascii=False,
+    )
+    return _ask(
+        system, user,
+        api_key=api_key, model=model,
+        max_tokens=MAX_SECTION_OUTPUT_TOKENS, timeout=timeout,
+    )
+
+
+def generate_suggestions(
+    job: Job,
+    document: dict[str, Any],
+    *,
+    api_key: str,
+    instructions: str = "",
+    mode: str = "full",
+    model: str = OPENAI_MODEL_DEFAULT,
+    timeout: int = 120,
+) -> dict[str, Any]:
+    if mode not in {"targeted", "full", "aggressive"}:
+        raise ValueError("Unknown tailoring mode")
+
+    plan = _strategy(
+        job, document, instructions, mode,
+        api_key=api_key, model=model, timeout=timeout,
+    )
+    requirements = _clean_list(plan.get("requirements"), limit=14, chars=200)
+    priorities = _clean_list(plan.get("priorities"), limit=5, chars=200)
+
+    sections = document["sections"]
+    with ThreadPoolExecutor(max_workers=MAX_PARALLEL_REQUESTS) as pool:
+        futures = [
+            pool.submit(
+                _rewrite_section,
+                section, job, requirements, priorities, instructions, mode,
+                api_key=api_key, model=model, timeout=timeout,
+            )
+            for section in sections
+        ]
+        results: list[dict[str, Any] | None] = []
+        failures: list[str] = []
+        for future in futures:
+            try:
+                results.append(future.result())
+            except RuntimeError as exc:
+                # One section failing must not discard the rest of the rewrite.
+                results.append(None)
+                failures.append(str(exc))
+
     originals = {
         bullet["id"]: bullet["text"]
-        for section in document["sections"]
+        for section in sections
         for entry in section["entries"]
         for bullet in entry["bullets"]
     }
+    # An entry's heading and sibling lines are already-verified evidence for
+    # any line inside it.
+    # Requirement words the CV never uses may not appear in any rewrite.
+    forbidden = borrowed_terms(requirements, " ".join([
+        document["summary"],
+        *(str(skill) for skill in document.get("skills", [])),
+        *(str(entry.get("title", "")) for section in sections for entry in section["entries"]),
+        *(str(entry.get("organization", "")) for section in sections for entry in section["entries"]),
+        *originals.values(),
+    ]))
+    document_evidence = " ".join([
+        document["summary"],
+        *(str(skill) for skill in document.get("skills", [])),
+        *(str(entry.get("title", "")) for section in sections for entry in section["entries"]),
+        *(str(entry.get("organization", "")) for section in sections for entry in section["entries"]),
+        *originals.values(),
+    ])
+    entry_evidence = {
+        bullet["id"]: document_evidence
+        for section in sections
+        for entry in section["entries"]
+        for bullet in entry["bullets"]
+    }
+    section_ids = [str(section.get("id", "")) for section in sections]
+    entry_ids = {
+        str(entry.get("id", ""))
+        for section in sections
+        for entry in section["entries"]
+    }
+
     draft = empty_draft(job.id, job.description_hash)
+    draft["mode"] = mode
     draft["instructions"] = instructions[:4000]
-    draft["requirements"] = [
-        re.sub(r"\s+", " ", str(item)).strip()[:200]
-        for item in list(generated.get("requirements") or [])[:12]
-        if str(item).strip()
-    ]
-    draft["advice"] = [
-        re.sub(r"\s+", " ", str(item)).strip()[:300]
-        for item in list(generated.get("advice") or [])[:5]
-        if str(item).strip()
-    ]
+    draft["requirements"] = requirements
+    draft["advice"] = _clean_list(plan.get("advice"), limit=6, chars=300)
+    if failures:
+        draft["advice"].append(
+            f"{len(failures)} section(s) could not be rewritten: {failures[0]}"
+        )
+
+    # Ordering. Anything the model omitted keeps its master position, so a
+    # partial answer reorders what it named and leaves the rest alone.
+    if mode != "targeted":
+        wanted = [
+            str(value) for value in list(plan.get("section_order") or [])[:64]
+            if str(value) in section_ids
+        ]
+        draft["order"]["sections"] = wanted + [
+            identifier for identifier in section_ids if identifier not in wanted
+        ]
+        raw_entries = plan.get("entry_order")
+        if isinstance(raw_entries, dict):
+            draft["order"]["entries"] = {
+                str(key): [
+                    str(value) for value in list(values or [])[:128]
+                    if str(value) in entry_ids
+                ]
+                for key, values in list(raw_entries.items())[:64]
+                if str(key) in section_ids
+            }
+    if mode == "aggressive":
+        draft["hidden"] = [
+            str(value) for value in list(plan.get("drop") or [])[:64]
+            if str(value) in entry_ids
+        ]
+
     rejected: dict[str, str] = {}
-    for raw in list(generated.get("bullets") or [])[:12]:
+
+    def accept(raw: Any) -> None:
         if not isinstance(raw, dict):
-            continue
+            return
         fact_id = str(raw.get("fact_id", "")).strip()
         if fact_id not in originals:
             rejected[fact_id or "<missing>"] = "unknown_fact_id"
-            continue
+            return
         try:
             proposal = _validate_rewrite(
                 originals[fact_id],
                 str(raw.get("proposal", "")),
+                strict=mode == "targeted",
+                evidence=entry_evidence.get(fact_id, ""),
+                forbidden=forbidden,
             )
         except ValueError as exc:
             rejected[fact_id] = str(exc)
-            continue
+            return
+        if proposal == originals[fact_id]:
+            rejected.pop(fact_id, None)
+            return
+        rejected.pop(fact_id, None)
         draft["bullets"][fact_id] = {
             "id": fact_id,
             "original": originals[fact_id],
@@ -268,39 +623,80 @@ def generate_suggestions(
             "rationale": re.sub(
                 r"\s+", " ", str(raw.get("rationale", ""))
             ).strip()[:800],
-            "keywords": [
-                re.sub(r"\s+", " ", str(item)).strip()[:80]
-                for item in list(raw.get("keywords") or [])[:12]
-                if str(item).strip()
-            ],
+            "keywords": _clean_list(raw.get("keywords"), limit=12, chars=80),
             "status": "pending",
+            "source": "ai",
         }
 
-    raw_summary = generated.get("summary")
-    if isinstance(raw_summary, dict) and str(raw_summary.get("proposal", "")).strip():
-        all_evidence = " ".join(
-            [document["summary"], *originals.values(), *document["skills"]]
-        )
+    for result in results:
+        if not result:
+            continue
+        for raw in list(result.get("bullets") or [])[:80]:
+            accept(raw)
+
+    # One repair round for the badly-shaped ones, so a rewrite is not lost to a
+    # character count the model can simply be told to correct.
+    broken = [
+        {
+            "fact_id": fact_id,
+            "verified_text": originals[fact_id],
+            "problem": reason,
+            "min_chars": _length_bounds(originals[fact_id], strict=mode == "targeted")[0],
+            "max_chars": _length_bounds(originals[fact_id], strict=mode == "targeted")[1],
+        }
+        for fact_id, reason in list(rejected.items())
+        if reason in REPAIRABLE and fact_id in originals
+    ]
+    if broken:
         try:
-            proposal = _validate_summary(
-                all_evidence,
-                str(raw_summary.get("proposal", "")),
-                max_chars=int(len(document["summary"]) * 1.25),
+            repaired = _repair(
+                job, broken[:16], requirements,
+                api_key=api_key, model=model, timeout=timeout,
             )
+        except RuntimeError:
+            repaired = {}
+        for raw in list(repaired.get("bullets") or [])[:32]:
+            accept(raw)
+
+    raw_summary = plan.get("summary")
+    if isinstance(raw_summary, dict) and str(raw_summary.get("proposal", "")).strip():
+        all_evidence = " ".join([document["summary"], *originals.values()])
+        try:
             draft["summary"] = {
                 "id": "summary",
                 "original": document["summary"],
-                "proposal": proposal,
+                "proposal": _validate_summary(
+                    all_evidence,
+                    str(raw_summary.get("proposal", "")),
+                    max_chars=int(len(document["summary"]) * 1.25),
+                    strict=mode == "targeted",
+                    forbidden=forbidden,
+                    original=document["summary"],
+                ),
                 "rationale": re.sub(
                     r"\s+", " ", str(raw_summary.get("rationale", ""))
                 ).strip()[:800],
                 "keywords": [],
                 "status": "pending",
+                "source": "ai",
             }
         except ValueError as exc:
             rejected["summary"] = str(exc)
+
     draft["rejected_by_validator"] = rejected
-    if not draft["bullets"] and not draft["summary"]:
+    # A running order identical to the master is not a suggestion. Compare the
+    # order the draft actually produces, not merely whether one was recorded.
+    master = [
+        entry.get("id", "")
+        for section in sections
+        for entry in section["entries"]
+    ]
+    tailored = [
+        entry.get("id", "")
+        for section in ordered_sections(document, draft)
+        for entry in section["entries"]
+    ]
+    if not draft["bullets"] and not draft["summary"] and tailored == master:
         reasons = ", ".join(
             f"{reason}: {count}"
             for reason, count in sorted(Counter(rejected.values()).items())

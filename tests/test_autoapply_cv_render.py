@@ -147,8 +147,121 @@ class RewriteLengthTests(unittest.TestCase):
             _validate_rewrite(PROSE, "Built a pipeline for teleoperation data.")
 
     def test_short_bullets_keep_their_original_bounds(self):
-        self.assertEqual(_length_bounds("Built a controller."), (24, 360))
+        self.assertEqual(_length_bounds("Built a controller."), (19, 360))
+
+    def test_the_floor_never_exceeds_the_line_being_rewritten(self):
+        # "SAT: 1500 (Dec 2023):" is 21 characters; a 24-character floor would
+        # reject every possible rewrite of it.
+        for original in ("SAT: 1500 (Dec 2023):", "IELTS: 8.0 (Apr 2024):"):
+            low, high = _length_bounds(original, strict=False)
+            self.assertLessEqual(low, len(original), original)
+            self.assertGreater(high, len(original), original)
 
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FabricationGuardTests(unittest.TestCase):
+    """The rewrite is unrestricted; the claims inside it are not."""
+
+    ORIGINAL = "Built a controller for a mobile robot and evaluated it in simulation."
+    # The fact bank names PhD only as a category of posting the tracker watches.
+    CV = ORIGINAL + " Tracks research, PhD, and postdoc positions across Python tooling."
+
+    def _rewrite(self, candidate, **kwargs):
+        from autoapply.ai_tailoring import _validate_rewrite
+
+        return _validate_rewrite(
+            self.ORIGINAL, candidate, strict=False, evidence=self.CV, **kwargs
+        )
+
+    def test_a_faithful_rewrite_is_accepted(self):
+        value = self._rewrite(
+            "Developed a controller for a mobile robot and evaluated it in simulation."
+        )
+        self.assertTrue(value.startswith("Developed"))
+
+    def test_a_degree_cannot_be_awarded_by_a_rewrite(self):
+        with self.assertRaises(ValueError) as caught:
+            self._rewrite(
+                "Holds a PhD and built a controller for a mobile robot, "
+                "evaluated in simulation."
+            )
+        self.assertEqual(str(caught.exception), "new_credential_claim")
+
+    def test_a_summary_cannot_award_a_degree_named_elsewhere_in_the_cv(self):
+        from autoapply.ai_tailoring import _validate_summary
+
+        original = (
+            "Researcher and engineer reading Artificial Intelligence at Birmingham, "
+            "building robot controllers and evaluating them in simulation."
+        )
+        with self.assertRaises(ValueError) as caught:
+            _validate_summary(
+                original + " Tracks research, PhD, and postdoc positions.",
+                "Researcher and engineer with a PhD in Artificial Intelligence, "
+                "building robot controllers and evaluating them in simulation.",
+                strict=False,
+                original=original,
+            )
+        self.assertEqual(str(caught.exception), "new_credential_claim")
+
+    def test_a_requirement_the_cv_never_mentions_cannot_be_echoed_back(self):
+        from autoapply.ai_tailoring import borrowed_terms
+
+        forbidden = borrowed_terms(
+            ["Strong background in neuroscience and neural decoding"], self.CV
+        )
+        self.assertIn("neuroscience", forbidden)
+        with self.assertRaises(ValueError) as caught:
+            self._rewrite(
+                "Built a neuroscience controller for a mobile robot, "
+                "evaluated in simulation.",
+                forbidden=forbidden,
+            )
+        self.assertEqual(str(caught.exception), "borrowed_requirement_not_in_cv")
+
+    def test_generic_requirement_words_are_not_barred(self):
+        from autoapply.ai_tailoring import borrowed_terms
+
+        forbidden = borrowed_terms(
+            ["Demonstrated ability and strong communication over several years"],
+            self.CV,
+        )
+        self.assertEqual(forbidden & {"ability", "communication", "years"}, set())
+
+    def test_a_technology_the_cv_names_elsewhere_may_move_into_a_line(self):
+        # Python is in the CV, so a rewrite may bring it to where it answers
+        # the posting. That is tailoring, not invention.
+        self.assertTrue(
+            self._rewrite(
+                "Built a Python controller for a mobile robot, evaluated in simulation."
+            )
+        )
+
+    def test_a_technology_absent_from_the_whole_cv_is_rejected(self):
+        with self.assertRaises(ValueError) as caught:
+            self._rewrite(
+                "Built a Kubernetes controller for a mobile robot, "
+                "evaluated in simulation."
+            )
+        self.assertEqual(str(caught.exception), "new_named_technology_or_entity")
+
+
+class TruncatedResponseTests(unittest.TestCase):
+    def test_a_response_cut_off_mid_value_keeps_its_finished_entries(self):
+        from autoapply.openai_tailoring import _json_object
+
+        whole = (
+            '{"bullets":[{"fact_id":"a","proposal":"one"},'
+            '{"fact_id":"b","proposal":"two"}]}'
+        )
+        salvaged = _json_object(whole[:52])
+        self.assertEqual(salvaged["bullets"], [{"fact_id": "a", "proposal": "one"}])
+
+    def test_an_intact_response_is_parsed_whole(self):
+        from autoapply.openai_tailoring import _json_object
+
+        whole = '{"bullets":[{"fact_id":"a","proposal":"one"}],"advice":[]}'
+        self.assertEqual(len(_json_object(whole)["bullets"]), 1)
