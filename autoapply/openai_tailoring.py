@@ -16,13 +16,14 @@ from .models import Job
 
 OPENAI_ENDPOINT = "https://api.openai.com/v1/chat/completions"
 OPENAI_MODEL_DEFAULT = "gpt-4o-mini"
-# Latency is dominated by how much text the model has to read and write.
-# A job description repeats itself well before 8k characters, and a patch set
-# of 3-6 rewritten bullets needs far fewer than 4k output tokens, so both caps
-# are kept tight to keep generation fast without weakening the suggestions.
+# Latency is dominated by how much text the model has to read and write. A job
+# description repeats itself well before 8k characters, so the input stays
+# capped. The output cap cannot be: entries in this CV are prose paragraphs, and
+# 3-6 rewrites of them do not fit in a bullet-sized budget — a short cap would
+# truncate the JSON mid-string and waste the whole call.
 MAX_DESCRIPTION_CHARS = 8000
 MAX_FACTS = 100
-MAX_OUTPUT_TOKENS = 1500
+MAX_OUTPUT_TOKENS = 4000
 
 
 def openai_key_path(home: Path) -> Path:
@@ -93,11 +94,15 @@ def _json_object(value: str) -> dict[str, Any]:
     return parsed
 
 
-def _master_facts(document: dict[str, Any]) -> list[dict[str, str]]:
+def _master_facts(document: dict[str, Any]) -> list[dict[str, Any]]:
     return [
         {
             "id": bullet["id"],
             "verified_text": bullet["text"],
+            # The model must match the rewrite to the shape of what it replaces:
+            # a bold opening claim stays a claim, a prose body stays prose.
+            "role_in_entry": "opening claim" if bullet.get("style") == "lead" else "body",
+            "approx_chars": len(bullet["text"]),
             "entry": str(entry.get("title", "")),
             "organization": str(entry.get("organization", "")),
             "section": str(section.get("name", "")),
@@ -115,20 +120,30 @@ def _prompt(
 ) -> tuple[str, str]:
     system = (
         "You are a meticulous CV editor. Suggest a small patch, never a replacement "
-        "CV. Return JSON only, with no markdown. The complete master CV is immutable: "
-        "do not delete, merge, shorten, or omit any entry. Suggest wording changes "
-        "for only 3 to 6 of the strongest existing bullets, referencing their exact "
-        "fact ids. Never invent or infer a skill, tool, metric, employer, date, "
-        "responsibility, qualification, award, or result. Job requirements are not "
+        "CV. Return JSON only, with no markdown.\n"
+        "METHOD. First read the posting and list the concrete requirements it "
+        "states: named technologies, methods, domains, degree level, and "
+        "responsibilities. Then pick the 3 to 6 verified facts whose existing "
+        "evidence already speaks to those requirements, and rewrite only those so "
+        "the matching evidence is stated plainly and early. Every rewrite must name "
+        "the requirement it addresses in its rationale, quoting the posting's own "
+        "wording. If the CV holds no evidence for a requirement, do not patch "
+        "anything for it — report it in advice instead.\n"
+        "RULES. The complete master CV is immutable: do not delete, merge, or omit "
+        "any entry. Never invent or infer a skill, tool, metric, employer, date, "
+        "responsibility, qualification, award, or result. A job requirement is not "
         "candidate evidence. Preserve every number and named technology exactly. "
-        "A proposal should keep all material meaning of its verified original, use "
-        "strong natural language, avoid keyword stuffing, and stay under 45 words. "
-        "The summary is optional and must be based only on the supplied evidence. "
+        "Keep each proposal within roughly 20 percent of its original's "
+        "approx_chars: a prose body stays a prose paragraph of similar depth, and "
+        "an opening claim stays one or two sentences. Keep all material meaning of "
+        "the verified original, write in natural language, and never keyword-stuff. "
+        "The summary is optional and must rest only on the supplied evidence.\n"
         "Return exactly: "
-        '{"summary":{"proposal":"...","rationale":"..."} or null,'
+        '{"requirements":["requirement quoted from the posting"],'
+        '"summary":{"proposal":"...","rationale":"..."} or null,'
         '"bullets":[{"fact_id":"exact-id","proposal":"...",'
-        '"rationale":"...","keywords":["..."]}],'
-        '"advice":["short optional note"]}.'
+        '"rationale":"addresses <requirement> because ...","keywords":["..."]}],'
+        '"advice":["gap the CV cannot evidence, or a short application note"]}.'
     )
     user = json.dumps(
         {
@@ -140,7 +155,7 @@ def _prompt(
             },
             "candidate_master_cv": {
                 "existing_summary": document["summary"],
-                "skills": document["skills"],
+                "existing_summary_chars": len(document["summary"]),
                 "education": document["education"],
                 "verified_facts": _master_facts(document),
             },
@@ -220,6 +235,11 @@ def generate_suggestions(
     }
     draft = empty_draft(job.id, job.description_hash)
     draft["instructions"] = instructions[:4000]
+    draft["requirements"] = [
+        re.sub(r"\s+", " ", str(item)).strip()[:200]
+        for item in list(generated.get("requirements") or [])[:12]
+        if str(item).strip()
+    ]
     draft["advice"] = [
         re.sub(r"\s+", " ", str(item)).strip()[:300]
         for item in list(generated.get("advice") or [])[:5]
@@ -265,6 +285,7 @@ def generate_suggestions(
             proposal = _validate_summary(
                 all_evidence,
                 str(raw_summary.get("proposal", "")),
+                max_chars=int(len(document["summary"]) * 1.25),
             )
             draft["summary"] = {
                 "id": "summary",

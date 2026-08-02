@@ -78,8 +78,11 @@ class CvEditorTests(unittest.TestCase):
         bullets = resume.sections[0]["entries"][0]["bullets"]
         self.assertEqual(len(resume.selected_fact_ids), 2)
         self.assertEqual(len(bullets), 2)
-        self.assertTrue(bullets[0].startswith("Developed"))
-        self.assertEqual(bullets[1], facts()["sections"][0]["entries"][0]["bullets"][1]["text"])
+        self.assertTrue(bullets[0]["text"].startswith("Developed"))
+        self.assertEqual(
+            bullets[1]["text"],
+            facts()["sections"][0]["entries"][0]["bullets"][1]["text"],
+        )
         self.assertEqual(resume.skills, facts()["skills"])
         self.assertTrue(
             resume.selection_audit["untouched_content_preserved"]

@@ -1,7 +1,7 @@
 """Multiple saved CVs.
 
 The fact bank at ``private/resume_facts.yaml`` is the master CV. Additional
-saved CVs live in ``private/cv-library/<id>.yaml`` and use the same schema, so
+saved CVs live in ``private/Saved CVs/<name>.yaml`` and use the same schema, so
 any of them can be opened in the editor, tailored for a job, and saved back as
 a new CV without touching the master.
 """
@@ -20,7 +20,8 @@ from .config import facts_path, load_yaml
 
 
 MASTER_CV_ID = "master"
-LIBRARY_DIRECTORY = "cv-library"
+LIBRARY_DIRECTORY = "Saved CVs"
+LEGACY_LIBRARY_DIRECTORY = "cv-library"
 MAX_LABEL_CHARS = 80
 
 
@@ -29,12 +30,23 @@ def _now_iso() -> str:
 
 
 def safe_cv_id(value: str) -> str:
-    cleaned = re.sub(r"[^A-Za-z0-9._-]+", "-", str(value or "")).strip(".-")
+    """Turn a CV name into a filename that still reads like the name.
+
+    Case and spacing-as-hyphens are kept so ``Saved CVs/`` lists files a person
+    can identify at a glance, rather than opaque slugs.
+    """
+    cleaned = re.sub(r"[^A-Za-z0-9._ -]+", "-", str(value or ""))
+    cleaned = re.sub(r"[\s-]+", "-", cleaned).strip("._-")
     return cleaned[:64]
 
 
 def library_directory(home: Path) -> Path:
-    return home / LIBRARY_DIRECTORY
+    """The folder holding every saved CV, migrating the old name once."""
+    directory = home / LIBRARY_DIRECTORY
+    legacy = home / LEGACY_LIBRARY_DIRECTORY
+    if legacy.is_dir() and not legacy.is_symlink() and not directory.exists():
+        legacy.rename(directory)
+    return directory
 
 
 def cv_path(home: Path, cv_id: str) -> Path:
@@ -69,6 +81,7 @@ def list_cvs(home: Path) -> list[dict[str, Any]]:
                 "label": _label_of(loaded, "Master CV"),
                 "is_master": True,
                 "updated_at": str(loaded.get("saved_at", "")),
+                "file": str(master),
             }
         )
     directory = library_directory(home)
@@ -87,6 +100,7 @@ def list_cvs(home: Path) -> list[dict[str, Any]]:
                     "label": _label_of(loaded, path.stem),
                     "is_master": False,
                     "updated_at": str(loaded.get("saved_at", "")),
+                    "file": str(path),
                 }
             )
         saved.sort(key=lambda item: item["updated_at"], reverse=True)
@@ -108,15 +122,30 @@ def delete_cv(home: Path, cv_id: str) -> None:
 
 
 def rename_cv(home: Path, cv_id: str, label: str) -> dict[str, Any]:
-    """Change a saved CV's display label, keeping its id and file stable."""
+    """Rename a saved CV, moving its file so the folder stays browsable.
+
+    The file on disk is named after the CV, so a rename that left the filename
+    behind would defeat the point of naming it. The returned ``previous_id``
+    lets the caller move any drafts that were scoped to the old name.
+    """
     identifier = safe_cv_id(cv_id)
     if not identifier or identifier == MASTER_CV_ID:
         raise ValueError("The master CV cannot be renamed")
     cleaned = str(label or "").strip()
     if not cleaned:
         raise ValueError("Choose a name for the saved CV")
+    target = safe_cv_id(cleaned) or identifier
+    if target == MASTER_CV_ID:
+        raise ValueError("'master' is reserved for the master CV")
+    if target != identifier and cv_path(home, target).exists():
+        raise ValueError(f"A saved CV called '{cleaned}' already exists")
+
     facts = load_cv(home, identifier)
-    return save_cv(home, identifier, cleaned, facts)
+    info = save_cv(home, target, cleaned, facts)
+    if target != identifier:
+        cv_path(home, identifier).unlink(missing_ok=True)
+    info["previous_id"] = identifier
+    return info
 
 
 def load_cv(home: Path, cv_id: str) -> dict[str, Any]:
@@ -168,4 +197,9 @@ def save_cv(
             os.close(descriptor)
     os.replace(temporary, path)
     path.chmod(0o600)
-    return {"id": identifier, "label": payload["label"], "is_master": False}
+    return {
+        "id": identifier,
+        "label": payload["label"],
+        "is_master": False,
+        "file": str(path),
+    }
