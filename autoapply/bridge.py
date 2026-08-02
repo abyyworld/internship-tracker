@@ -10,7 +10,7 @@ from pathlib import Path
 import re
 import secrets
 from typing import Any
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, quote, urlparse
 
 from .config import (
     academic_path,
@@ -24,6 +24,7 @@ from .cv_editor import (
     facts_from_document,
     load_draft,
     master_document,
+    rename_drafts,
     resume_from_document,
     save_draft,
 )
@@ -61,6 +62,34 @@ def _now() -> datetime:
 def _safe_filename(value: str) -> str:
     cleaned = re.sub(r"[^A-Za-z0-9._-]+", "-", value).strip(".-")
     return (cleaned[:100] or "tailored-resume") + ".pdf"
+
+
+def _download_name(person: str, job: Any) -> str:
+    """Name a downloaded CV after the job it was tailored for.
+
+    The Downloads folder fills up with one PDF per application, so the company
+    and role have to be readable in the filename without opening anything.
+    """
+    parts = [
+        part
+        for part in (
+            str(person or "").strip(),
+            str(getattr(job, "company", "")).strip(),
+            str(getattr(job, "role", "")).strip(),
+        )
+        if part
+    ]
+    name = " - ".join(parts) + " - CV"
+    name = re.sub(r'[\\/:*?"<>|\x00-\x1f]+', " ", name)
+    return re.sub(r"\s+", " ", name).strip()[:150] + ".pdf"
+
+
+def _suggested_cv_name(job: Any) -> str:
+    """A default name for saving this tailoring as its own CV."""
+    company = str(getattr(job, "company", "")).strip()
+    role = str(getattr(job, "role", "")).strip()
+    name = " - ".join(part for part in (company, role) if part)
+    return re.sub(r"\s+", " ", name).strip()[:80]
 
 
 def _application_url(job: Any) -> str:
@@ -261,6 +290,16 @@ class BridgeHandler(BaseHTTPRequestHandler):
         with Store(database_path(self.server.home)) as store:
             return store.find_job_by_url(url)
 
+    def _person_name(self) -> str:
+        try:
+            identity = load_yaml(profile_path(self.server.home)).get("identity", {})
+        except (OSError, ValueError):
+            return ""
+        return " ".join(
+            str(identity.get(key, "")).strip()
+            for key in ("first_name", "last_name")
+        ).strip()
+
     def _document(
         self,
         cv_id: str = MASTER_CV_ID,
@@ -333,6 +372,9 @@ class BridgeHandler(BaseHTTPRequestHandler):
                         "cv_id": cv_id,
                         "cvs": list_cvs(self.server.home),
                         "cv_storage": str(library_directory(self.server.home)),
+                        # Pre-fills the "save as" box so the CV is named after
+                        # the job by default; the user edits it before saving.
+                        "suggested_cv_name": _suggested_cv_name(job),
                         "ai_configured": openai_key_configured(
                             self.server.home
                         ),
@@ -384,9 +426,15 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 "Content-Type",
                 mimetypes.guess_type(download.filename)[0] or "application/pdf",
             )
+            ascii_name = (
+                download.filename.encode("ascii", "replace")
+                .decode("ascii")
+                .replace('"', "")
+            )
             self.send_header(
                 "Content-Disposition",
-                f'attachment; filename="{download.filename}"',
+                f'attachment; filename="{ascii_name}"; '
+                f"filename*=UTF-8''{quote(download.filename)}",
             )
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-store")
@@ -443,6 +491,9 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     self.server.home,
                     payload.get("target", ""),
                     payload.get("label", ""),
+                )
+                rename_drafts(
+                    self.server.home, info.get("previous_id", ""), info["id"]
                 )
                 self._json(
                     200,
@@ -530,17 +581,18 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     document, _profile = self._document(cv_id)
                     draft = load_draft(self.server.home, job.id, cv_id)
                     resume = resume_from_document(document, draft)
+                    person = str(document.get("header", {}).get("name", ""))
+                    filename = _download_name(person, job)
                     output = (
                         self.server.home
                         / "generated"
                         / _safe_filename(job.id).removesuffix(".pdf")
                         / "full-tailored-resume.pdf"
                     )
-                    resume_hash = render_resume(resume, output)
-                    ticket = self.server.new_download(
-                        output,
-                        _safe_filename(f"{job.company}-{job.role}"),
+                    resume_hash = render_resume(
+                        resume, output, title=filename.removesuffix(".pdf")
                     )
+                    ticket = self.server.new_download(output, filename)
                     host, port = self.server.server_address
                     self._json(
                         200,
@@ -550,6 +602,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                             "resume_download_url": (
                                 f"http://{host}:{port}/resume/{ticket}"
                             ),
+                            "resume_filename": filename,
                             "accepted_patch_count": len(
                                 resume.selection_audit["accepted_patch_ids"]
                             )
@@ -571,7 +624,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
             resume_path = Path(result["resume_path"]).resolve()
             ticket = self.server.new_download(
                 resume_path,
-                _safe_filename(f"{refreshed.company}-{refreshed.role}"),
+                _download_name(self._person_name(), refreshed),
             )
             host, port = self.server.server_address
             self._json(

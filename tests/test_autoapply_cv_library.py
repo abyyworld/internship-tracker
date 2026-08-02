@@ -62,7 +62,7 @@ class CvLibraryTests(unittest.TestCase):
             )
             save_cv(home, "ml-cv", "ML CV", FACTS)
             self.assertEqual(
-                stat.S_IMODE((home / "cv-library" / "ml-cv.yaml").stat().st_mode),
+                stat.S_IMODE((home / "Saved CVs" / "ml-cv.yaml").stat().st_mode),
                 0o600,
             )
             listed = list_cvs(home)
@@ -81,17 +81,50 @@ class CvLibraryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             home = Path(directory)
             escaped = cv_path(home, "../../etc/passwd")
-            self.assertEqual(escaped.parent, (home / "cv-library").resolve())
+            self.assertEqual(escaped.parent, (home / "Saved CVs").resolve())
             self.assertEqual(safe_cv_id("../../etc/passwd"), "etc-passwd")
 
-    def test_rename_keeps_the_id_and_content(self):
+    def test_saved_file_is_named_after_the_cv(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            info = save_cv(
+                home,
+                safe_cv_id("Google - Research Intern"),
+                "Google - Research Intern",
+                FACTS,
+            )
+            self.assertEqual(Path(info["file"]).name, "Google-Research-Intern.yaml")
+
+    def test_an_existing_cv_library_folder_is_migrated_once(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            legacy = home / "cv-library"
+            legacy.mkdir()
+            (legacy / "old.yaml").write_text(yaml.safe_dump(FACTS), encoding="utf-8")
+            self.assertEqual(load_cv(home, "old")["summary"], FACTS["summary"])
+            self.assertTrue((home / "Saved CVs" / "old.yaml").exists())
+            self.assertFalse(legacy.exists())
+
+    def test_rename_moves_the_file_and_keeps_the_content(self):
         with tempfile.TemporaryDirectory() as directory:
             home = Path(directory)
             save_cv(home, "ml-cv", "ML CV", FACTS)
-            rename_cv(home, "ml-cv", "Research CV")
-            reloaded = load_cv(home, "ml-cv")
+            info = rename_cv(home, "ml-cv", "Research CV")
+            self.assertEqual(info["id"], "Research-CV")
+            self.assertEqual(info["previous_id"], "ml-cv")
+            self.assertFalse(cv_path(home, "ml-cv").exists())
+            reloaded = load_cv(home, "Research-CV")
             self.assertEqual(reloaded["label"], "Research CV")
             self.assertEqual(len(reloaded["sections"]), len(FACTS["sections"]))
+
+    def test_rename_refuses_to_overwrite_another_saved_cv(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            save_cv(home, "one", "One", FACTS)
+            save_cv(home, "Two", "Two", FACTS)
+            with self.assertRaises(ValueError):
+                rename_cv(home, "one", "Two")
+            self.assertTrue(cv_path(home, "one").exists())
 
     def test_delete_removes_only_the_named_cv(self):
         with tempfile.TemporaryDirectory() as directory:

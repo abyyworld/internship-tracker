@@ -1,17 +1,25 @@
 from __future__ import annotations
 
 
+# The middle pane is a live preview of the printed CV, not a second design.
+# Every size below is the PDF's point size multiplied by 1.44 (the ratio of the
+# 736px editable paper to the 510pt print column), and the colours, fonts, rules
+# and letterspacing are the same constants autoapply/cv_render.py prints with,
+# so what you edit is what the exported PDF looks like.
 EDITOR_PAGE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI CV Studio</title>
+<title>CV Studio</title>
 <style>
 :root{color-scheme:dark;--bg:#07110f;--panel:#0d1b17;--panel2:#13251f;
 --line:#29473d;--text:#f3f8f6;--muted:#9fb5ad;--green:#71efae;
---green2:#27bd79;--blue:#7db6ff;--red:#ff938b;--amber:#ffcf70;--purple:#c4a0ff}
+--green2:#27bd79;--blue:#7db6ff;--red:#ff938b;--amber:#ffcf70;--purple:#c4a0ff;
+--ink:#111111;--accent:#14324F;--date:#2B3A47;--sub:#3D4A56;--meta:#6B6B6B;
+--rule:#9DB2C2;--hair:#D8E0E6;--serif:"Times New Roman",Times,Georgia,serif;
+--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 18% -10%,#15533a77,
-transparent 38rem),var(--bg);color:var(--text);font:14px/1.5 -apple-system,
-BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,textarea,select{font:inherit}
+transparent 38rem),var(--bg);color:var(--text);font:14px/1.5 var(--sans)}
+button,input,textarea,select{font:inherit}
 button,a.button{border:1px solid var(--line);border-radius:10px;min-height:40px;padding:0 14px;
 font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;
 justify-content:center}.primary{background:var(--green2);color:#03130c}.secondary{background:#152821;
@@ -27,92 +35,100 @@ font-weight:900;white-space:nowrap;color:var(--muted)}
 .fit-pill.good{border-color:#2a7455;color:var(--green)}
 .fit-pill.medium{border-color:#7a6030;color:var(--amber)}
 .fit-pill.low{border-color:#6f3430;color:var(--red)}
-/* 3-column layout */
-.layout{display:grid;grid-template-columns:340px minmax(0,1.4fr) 300px;gap:0;height:calc(100vh - 57px);overflow:hidden}
+.layout{display:grid;grid-template-columns:330px minmax(0,1.5fr) 300px;gap:0;
+height:calc(100vh - 57px);overflow:hidden}
 .pane{height:100%;overflow-y:auto;display:flex;flex-direction:column}
 .pane-header{position:sticky;top:0;z-index:5;background:#07110f;border-bottom:1px solid var(--line);
 padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0}
 .pane-left{border-right:1px solid var(--line)}
 .pane-right{border-left:1px solid var(--line)}
 .pane-body{padding:14px 16px;flex:1}
+.pane-doc{background:#0a1210;padding:22px 16px 60px}
 .card{background:linear-gradient(145deg,var(--panel2),var(--panel));border:1px solid var(--line);
 border-radius:14px;padding:16px;margin-bottom:12px}
 .eyebrow{color:var(--green);font-size:10px;font-weight:950;letter-spacing:.14em;text-transform:uppercase}
-.eyebrow.purple{color:var(--purple)}
+.eyebrow.purple{color:var(--purple)}.eyebrow.blue{color:var(--blue)}
 h1,h2,h3,p{margin-top:0}h1{font-size:24px;letter-spacing:-.04em;margin:4px 0 5px}
 h2{font-size:17px}h3{font-size:13px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
 .muted{color:var(--muted)}
 .notice{border:1px solid #66552b;background:#2b2414;padding:11px 13px;border-radius:11px;
 color:#ffe1a1;margin-bottom:12px}.notice.error{border-color:#6f3430;background:#2a1715;
 color:var(--red)}.notice.ok{border-color:#285f49;background:#10271e;color:var(--green)}
-.notice.info{border-color:#2d4a7a;background:#0e1f38;color:var(--blue)}
-/* Suggestion cards */
 .suggestion{border:1px solid var(--line);background:#091410;border-radius:13px;padding:13px;margin-top:10px}
-.suggestion.accepted{border-color:#2f8c64}.suggestion.rejected{opacity:.65}
 .suggestion-head{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px}
 .label{font-size:10px;font-weight:900;color:var(--blue);letter-spacing:.08em;text-transform:uppercase}
-.rationale{color:var(--muted);font-size:11px;line-height:1.45;margin:8px 0}
-.keywords{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}
-.keywords i{font-style:normal;border-radius:99px;background:#172c25;padding:2px 6px;font-size:10px;color:var(--green)}
-.diff{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
-.diff small{display:block;color:var(--muted);font-weight:800;font-size:10px;margin-bottom:4px}
-.original,.proposal{width:100%;min-height:90px;border:1px solid var(--line);
-border-radius:8px;padding:9px;color:var(--text);background:#07100d;resize:vertical;font-size:12px}
-.original{color:#b6c6c0}.proposal{border-color:#376455}
+.rationale{color:var(--muted);font-size:11.5px;line-height:1.5;margin:6px 0}
 .choice-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.choice.active{border-color:var(--green);color:var(--green)}
-.choice.keep.active{border-color:var(--amber);color:var(--amber)}
-/* Editable CV pane — a document you type into directly */
-.cv-paper{background:#0a1512;border:1px solid var(--line);border-radius:12px;
-padding:26px 30px;max-width:820px;margin:0 auto}
-.cv-name{font-size:22px;font-weight:900;letter-spacing:-.03em;margin-bottom:2px}
-.cv-contact{font-size:11px;color:var(--muted);margin-bottom:18px}
-.cv-section{margin-bottom:20px}
-.cv-section-head{font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;
-color:var(--green);border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:11px}
-.cv-entry{margin-bottom:15px}
-.cv-entry-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-.cv-entry strong{font-size:13px;font-weight:800}
-.cv-entry .dates{font-size:11px;color:var(--muted);white-space:nowrap}
-.cv-bullet{display:flex;gap:8px;margin:4px 0;align-items:flex-start}
-.cv-bullet>.dot{color:var(--green);flex-shrink:0;line-height:1.6}
-/* The editable text itself. No buttons: click and type, like a document. */
-.eq{font-size:12.5px;line-height:1.6;color:#cfdcd7;flex:1;min-width:0;
-word-break:break-word;border-radius:5px;padding:2px 5px;margin:-2px -5px;
-border:1px solid transparent;outline:none;white-space:pre-wrap}
-.eq:hover{background:#0e1d18}
-.eq:focus{background:#0e1d18;border-color:var(--green2);box-shadow:0 0 0 3px #25b87526}
-.eq.is-ai{border-left:2px solid var(--blue);padding-left:7px;margin-left:0;background:#0b1a2699}
-.eq.is-manual{border-left:2px solid var(--amber);padding-left:7px;margin-left:0}
-.eq.is-accepted{border-left:2px solid var(--green);padding-left:7px;margin-left:0}
-.cv-summary-text{font-size:12.5px;line-height:1.65}
-/* Inline AI review strip under a bullet the model wants to change */
-.inline-ai{margin:5px 0 9px 16px;border-left:2px solid var(--blue);
-background:#0b1a26;border-radius:0 8px 8px 0;padding:8px 11px}
-.inline-ai .why{font-size:11px;color:var(--muted);line-height:1.45;margin-bottom:7px}
+
+/* ── The paper. Sizes are print points x 1.44, colours are the PDF's. ────── */
+.cv-paper{background:#fff;color:var(--ink);font-family:var(--serif);
+width:100%;max-width:840px;margin:0 auto;padding:50px 52px 60px;border-radius:4px;
+box-shadow:0 24px 70px #000a,0 0 0 1px #ffffff14}
+.cv-name{font:700 34.5px/1.15 var(--serif);text-align:center;letter-spacing:.2em;
+text-transform:uppercase;padding-left:.2em}
+.cv-tagline{font:italic 16.5px/1.25 var(--serif);text-align:center;color:var(--accent);margin-top:9px}
+.cv-contact{font:12px/1.35 var(--sans);text-align:center;color:var(--meta);margin-top:7px}
+.cv-rule-strong{height:2.3px;background:var(--accent);margin:12px 0 14px}
+.cv-summary{font-size:14.4px;line-height:1.32;text-align:center}
+.cv-section{margin-top:19px}
+.cv-section-head{font:800 14.4px/1.2 var(--sans);letter-spacing:.36em;text-transform:uppercase;
+color:var(--accent)}
+.cv-section-rule{height:1.4px;background:var(--rule);margin:7px 0 10px}
+.cv-entry{margin-bottom:7px}
+.cv-entry-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+.cv-entry-title{font-weight:700;font-size:15.5px;line-height:1.2}
+.cv-entry-dates{font:700 12px/1.5 var(--sans);color:var(--date);white-space:nowrap}
+.cv-entry-sub{font:italic 14px/1.35 var(--serif);color:var(--sub);margin-top:1px}
+.cv-para{font-size:14px;line-height:1.26;margin:3px 0 0}
+.cv-links{display:inline;font-size:14px}
+.cv-links a{color:var(--accent);font-weight:700;text-decoration:none}
+.cv-skills{display:grid;grid-template-columns:125px minmax(0,1fr);align-items:start;
+column-gap:0;row-gap:0}
+.cv-skills>div{padding:4.5px 0;border-bottom:1px solid var(--hair)}
+.cv-skills>div:nth-last-child(-n+2){border-bottom:none}
+.cv-skill-label{font:800 12px/1.35 var(--sans);letter-spacing:.05em;text-transform:uppercase;
+color:var(--accent)}
+/* Every editable line is a document line: click and type, no widgets. */
+.eq{display:inline;font-size:14px;line-height:1.26;outline:none;border-radius:3px;
+padding:1px 2px;margin:0 -2px;box-decoration-break:clone;-webkit-box-decoration-break:clone;
+transition:background .12s}
+.eq.lead{font-weight:700}
+.eq:hover{background:#14324f0f}
+.eq:focus{background:#14324f14;box-shadow:0 0 0 2px #14324f2e}
+.eq.is-accepted{background:#27bd7924}
+.eq.is-manual{background:#d99a2b26}
+.cv-skills .eq{font-size:13.8px}
+/* An AI proposal sits under the line it would change, inside the paper. */
+.inline-ai{margin:7px 0 11px;border-left:3px solid var(--accent);background:#14324f0d;
+border-radius:0 6px 6px 0;padding:9px 12px;font-family:var(--sans)}
+.inline-ai .label{color:var(--accent)}
+.inline-ai .prop{font:14px/1.3 var(--serif);color:var(--ink);margin:5px 0;outline:none;
+border:1px solid #14324f26;border-radius:5px;padding:5px 7px;background:#fff;white-space:pre-wrap}
+.inline-ai .why{font-size:11.5px;color:#4a5a68;line-height:1.45;margin-bottom:7px}
 .inline-ai .row{display:flex;gap:6px;flex-wrap:wrap}
+.inline-ai .mini.no{color:#4a5a68;border-color:#14324f33}
 .mini{min-height:28px;padding:0 10px;font-size:11px;font-weight:800;border-radius:7px}
 .mini.ok{background:var(--green2);color:#03130c;border-color:var(--green2)}
 .mini.no{background:transparent;color:var(--muted)}
-.edited-flag{font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;
-color:var(--amber);margin-left:6px;vertical-align:1px}
-.edited-flag.ai{color:var(--blue)}
-/* CV picker */
-.cv-picker{display:flex;align-items:center;gap:7px}
+.doc-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .cv-picker select{background:#0b1712;color:var(--text);border:1px solid var(--line);
-border-radius:9px;min-height:34px;padding:0 8px;max-width:190px}
-/* Gap analysis */
+border-radius:9px;min-height:34px;padding:0 8px;max-width:200px}
+.page-meta{max-width:840px;margin:0 auto 10px;display:flex;justify-content:space-between;
+color:var(--muted);font-size:11px}
 .gap-row{display:flex;align-items:baseline;gap:7px;padding:5px 0;border-bottom:1px solid #1a2e27}
 .gap-row:last-child{border-bottom:none}
-.gap-skill{font-size:12px;flex:1}
-.gap-badge{font-size:10px;padding:2px 7px;border-radius:99px}
+.gap-skill{font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.gap-badge{font-size:10px;padding:2px 7px;border-radius:99px;white-space:nowrap}
 .gap-missing{background:#2a1715;color:var(--red);border:1px solid #6f3430}
 .gap-partial{background:#2b2414;color:var(--amber);border:1px solid #66552b}
 .gap-covered{background:#0f2318;color:var(--green);border:1px solid #2a7455}
-/* Right pane */
+.cv-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #1a2e27}
+.cv-row:last-child{border-bottom:none}
+.cv-row .name{flex:1;min-width:0;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cv-row .file{display:block;font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis}
 .export-section{display:flex;flex-direction:column;gap:10px}
 textarea.instruction{width:100%;border:1px solid var(--line);background:#07100d;
-color:var(--text);padding:10px;border-radius:10px;min-height:90px;resize:vertical;font-size:13px}
+color:var(--text);padding:10px;border-radius:10px;min-height:80px;resize:vertical;font-size:13px}
 input.key{width:100%;border:1px solid var(--line);background:#07100d;
 color:var(--text);padding:10px;border-radius:10px;font-size:13px}
 .hint{font-size:11px;color:var(--muted);margin:5px 0}
@@ -125,20 +141,22 @@ color:var(--text);padding:10px;border-radius:10px;font-size:13px}
 border-radius:50%;animation:spin .75s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#172c25;
 border:1px solid var(--line);padding:10px 15px;border-radius:9px;display:none;z-index:20;
-font-size:13px;max-width:400px;text-align:center}
-.empty-state{text-align:center;padding:40px 16px;color:var(--muted);border:1px dashed var(--line);
+font-size:13px;max-width:420px;text-align:center}
+.empty-state{text-align:center;padding:34px 16px;color:var(--muted);border:1px dashed var(--line);
 border-radius:13px;font-size:13px}
-.advice-list{list-style:none;padding:0;margin:0}
-.advice-list li{padding:6px 0;border-bottom:1px solid #1a2e27;font-size:12px;color:var(--muted)}
-.advice-list li:last-child{border-bottom:none}
+.req-list,.advice-list{list-style:none;padding:0;margin:0}
+.req-list li,.advice-list li{padding:6px 0;border-bottom:1px solid #1a2e27;font-size:12px;color:var(--muted)}
+.req-list li:last-child,.advice-list li:last-child{border-bottom:none}
+.req-list li::before{content:"◆ ";color:var(--blue)}
 .advice-list li::before{content:"💡 "}
-@media(max-width:1100px){.layout{grid-template-columns:290px minmax(0,1fr) 260px}}
-@media(max-width:800px){.layout{grid-template-columns:1fr;height:auto;overflow:visible}
+@media(max-width:1180px){.layout{grid-template-columns:290px minmax(0,1fr) 270px}
+  .cv-paper{padding:38px 34px 46px}}
+@media(max-width:900px){.layout{grid-template-columns:1fr;height:auto;overflow:visible}
   .pane{height:auto;overflow-y:visible}.pane-left,.pane-right{border:none;border-top:1px solid var(--line)}}
 </style></head>
 <body><div class="shell">
 <header>
-  <div class="brand"><b>AI</b> CV Studio</div>
+  <div class="brand"><b>CV</b> Studio</div>
   <div class="job"><strong id="jobTitle">Loading…</strong><span id="jobMeta">Private localhost editor</span></div>
   <span class="fit-pill" id="fitPill" style="display:none"></span>
   <a class="button ghost" href="https://abyyworld.github.io/internship-tracker/" style="white-space:nowrap">Dashboard</a>
@@ -146,11 +164,11 @@ border-radius:13px;font-size:13px}
 </header>
 <div class="layout">
 
-<!-- LEFT: AI suggestions -->
+<!-- LEFT: what the posting asks for, and the AI patches answering it -->
 <aside class="pane pane-left">
   <div class="pane-header">
     <div>
-      <div class="eyebrow">AI suggestions</div>
+      <div class="eyebrow">Job match</div>
       <div style="font-weight:800;font-size:15px">Suggested edits</div>
     </div>
     <div class="stats"><span class="pill" id="factCount">— facts</span>
@@ -158,21 +176,26 @@ border-radius:13px;font-size:13px}
   </div>
   <div class="pane-body">
     <div id="notice"></div>
+    <div id="reqSection" style="display:none">
+      <div class="eyebrow blue">Requirements read from this posting</div>
+      <ul class="req-list" id="reqList"></ul>
+    </div>
     <div id="suggestions">
-      <div class="empty-state">Open a job, press <strong>Generate</strong> in the right panel.<br><br>
-      AI will suggest a handful of targeted edits while your complete CV stays intact.</div>
+      <div class="empty-state">Open a job, then press <strong>Generate</strong> on the right.<br><br>
+      The model reads the posting's requirements first, then rewrites only the
+      lines your CV already has evidence for.</div>
     </div>
     <div id="adviceSection" style="display:none">
-      <h3 style="margin-top:16px">Application advice</h3>
+      <h3 style="margin-top:16px">Gaps &amp; application advice</h3>
       <ul class="advice-list" id="adviceList"></ul>
     </div>
   </div>
 </aside>
 
-<!-- MIDDLE: Editable CV -->
+<!-- MIDDLE: the CV itself, laid out exactly as it prints -->
 <main class="pane">
   <div class="pane-header">
-    <div class="cv-picker">
+    <div class="doc-toolbar cv-picker">
       <select id="cvSelect" title="Choose which saved CV to edit"></select>
       <span class="muted" id="savedFlag" style="font-size:11px">Saved</span>
     </div>
@@ -181,13 +204,16 @@ border-radius:13px;font-size:13px}
       <button class="secondary mini" id="resetAll" disabled>Revert all</button>
     </div>
   </div>
-  <div class="pane-body">
-    <p class="hint" style="margin:0 0 12px">Click any line and type to edit it, like a document. Your edits save automatically.</p>
+  <div class="pane-body pane-doc">
+    <div class="page-meta">
+      <span>Click any line and type — this is exactly how the PDF prints.</span>
+      <span id="docMeta"></span>
+    </div>
     <div id="cvDoc"><div class="empty-state">Loading CV…</div></div>
   </div>
 </main>
 
-<!-- RIGHT: Controls + gap analysis + export -->
+<!-- RIGHT: controls, saved CVs, gaps, export -->
 <aside class="pane pane-right">
   <div class="pane-header">
     <div class="eyebrow">Controls</div>
@@ -197,36 +223,37 @@ border-radius:13px;font-size:13px}
     <div class="card">
       <div class="eyebrow">Instructions</div>
       <textarea class="instruction" id="instructions" maxlength="4000"
-        placeholder="Optional: e.g. Emphasise Python and systems programming. Keep my academic tone."></textarea>
-      <p class="hint">Sending triggers an OpenAI call through your key — never via GitHub.</p>
+        placeholder="Optional: e.g. Lead with the robot-learning infrastructure work. Keep my academic tone."></textarea>
+      <p class="hint">Sends this posting and your CV to OpenAI through your own key — never via GitHub.</p>
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
         <button class="primary" id="generate">Generate suggestions</button>
       </div>
-      <div class="busy" id="busy"><span class="spinner"></span><span id="busyText">AI is reviewing your CV…</span></div>
+      <div class="busy" id="busy"><span class="spinner"></span><span id="busyText">Reading the posting…</span></div>
     </div>
 
     <div class="card">
       <div class="eyebrow">Saved CVs</div>
       <div id="cvList"></div>
       <div style="display:flex;gap:6px;margin-top:9px">
-        <input class="key" id="newCvName" placeholder="Name a new CV…" maxlength="80" style="flex:1">
+        <input class="key" id="newCvName" placeholder="Name this CV…" maxlength="80" style="flex:1">
         <button class="secondary mini" id="saveAsCv">Save</button>
       </div>
-      <p class="hint">Saves the CV you are editing, with your edits applied.
-      Stored as private files in <code id="cvStorage">private/cv-library/</code></p>
+      <p class="hint">Named for this job by default — edit the name, then Save.
+      Each CV is one private file in <code id="cvStorage">private/Saved CVs/</code></p>
     </div>
 
     <div class="card" id="gapCard" style="display:none">
       <div class="eyebrow purple">Gap analysis</div>
-      <p class="muted" style="font-size:12px;margin-bottom:8px">Keywords in the job not yet in your CV draft:</p>
+      <p class="muted" style="font-size:12px;margin-bottom:8px">Technologies named in the posting, against your current draft:</p>
       <div id="gapList"></div>
     </div>
 
     <div class="card">
       <div class="eyebrow">Export</div>
       <div class="export-section">
-        <p class="muted" style="font-size:12px" id="exportNote">Accepted patches will be applied. Everything else stays original.</p>
+        <p class="muted" style="font-size:12px" id="exportNote">Accepted edits are applied. Everything else stays original.</p>
         <button class="primary" id="exportPdf">Download tailored PDF</button>
+        <p class="hint" id="exportName"></p>
         <a class="button secondary" id="applySide" target="_blank" rel="noopener">Apply with Simplify</a>
       </div>
     </div>
@@ -250,120 +277,103 @@ const params=new URLSearchParams(location.search);
 const jobUrl=params.get("url")||"";
 let state=null;
 let cvId=params.get("cv")||"master";
+let nameTouched=false;
 const $=id=>document.getElementById(id);
-function esc(v){const d=document.createElement("div");d.textContent=v??"";return d.innerHTML}
-function toast(msg){$("toast").textContent=msg;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2600)}
-function notice(msg,type=""){const box=$("notice");box.replaceChildren();if(!msg)return;const d=document.createElement("div");d.className="notice "+type;d.textContent=msg;box.append(d)}
+function toast(msg){$("toast").textContent=msg;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2800)}
+function notice(msg,type=""){const box=$("notice");box.replaceChildren();if(!msg)return;
+  const d=document.createElement("div");d.className="notice "+type;d.textContent=msg;box.append(d)}
 async function api(path,options={}){
   const r=await fetch(path,{...options,headers:{"Content-Type":"application/json","X-Autoapply-Token":token,...(options.headers||{})}});
   const result=await r.json();if(!r.ok)throw new Error(result.error||`Bridge returned ${r.status}`);return result
 }
+function allBullets(){
+  const out=[];
+  for(const sec of (state&&state.document.sections)||[])
+    for(const ent of sec.entries||[])
+      for(const b of ent.bullets||[])out.push(b);
+  return out;
+}
 
-// ── Fit score ──────────────────────────────────────────────────────────────────
+// ── Fit score ────────────────────────────────────────────────────────────────
+function cvText(){
+  const draftBullets=((state||{}).draft||{}).bullets||{};
+  return allBullets().map(b=>{
+    const patch=draftBullets[b.id];
+    return patch&&patch.status==="accepted"?patch.proposal:b.text;
+  }).join(" ").toLowerCase();
+}
 function computeFit(){
   if(!state)return null;
   const desc=((state.job&&state.job.raw_description)||"").toLowerCase();
   if(!desc)return null;
-  const skills=(state.document.skills||[]).map(s=>s.toLowerCase());
-  const bullets=[];
-  for(const sec of state.document.sections||[])
-    for(const ent of sec.entries||[])
-      for(const b of ent.bullets||[])
-        bullets.push((b.text||"").toLowerCase());
-  const words=[...skills,...bullets].join(" ");
+  const words=cvText();
   const jobWords=desc.match(/\b[a-z][a-z0-9\+\#\.]{2,}\b/g)||[];
-  const unique=[...new Set(jobWords)].filter(w=>w.length>3&&!["with","from","that","this","will","have","your","their","they","into","been","each","when","than","such","also","must","able","more","some","most","only","very","both","well","over","just","even","then","much","need","make","about","using","these","other","which","after","where"].includes(w));
+  const stop=["with","from","that","this","will","have","your","their","they","into","been","each","when","than","such","also","must","able","more","some","most","only","very","both","well","over","just","even","then","much","need","make","about","using","these","other","which","after","where"];
+  const unique=[...new Set(jobWords)].filter(w=>w.length>3&&!stop.includes(w));
   if(!unique.length)return null;
-  const matched=unique.filter(w=>words.includes(w));
-  return Math.round((matched.length/unique.length)*100);
+  return Math.round((unique.filter(w=>words.includes(w)).length/unique.length)*100);
 }
 function renderFitPill(){
-  const score=computeFit();
-  const pill=$("fitPill");
+  const score=computeFit(),pill=$("fitPill");
   if(score===null){pill.style.display="none";return}
-  pill.style.display="";
-  pill.textContent=`Fit: ${score}%`;
+  pill.style.display="";pill.textContent=`Fit: ${score}%`;
   pill.className="fit-pill "+(score>=70?"good":score>=45?"medium":"low");
 }
 
-// ── Gap analysis ───────────────────────────────────────────────────────────────
+// ── Gap analysis ─────────────────────────────────────────────────────────────
+const TECH=[
+  /\b(python|java|javascript|typescript|c\+\+|c#|rust|go|golang|swift|kotlin|ruby|scala|matlab|julia)\b/gi,
+  /\b(pytorch|tensorflow|keras|sklearn|numpy|pandas|jax|huggingface|transformers)\b/gi,
+  /\b(react|vue|angular|node\.?js|express|django|flask|fastapi|spring|unity|unreal)\b/gi,
+  /\b(aws|gcp|azure|kubernetes|docker|terraform|kafka|spark|flink)\b/gi,
+  /\b(machine learning|deep learning|computer vision|nlp|llm|reinforcement learning|imitation learning)\b/gi,
+  /\b(sql|postgresql|mysql|mongodb|redis|cassandra|elasticsearch)\b/gi,
+  /\b(git|ci\/cd|devops|agile|rest api|grpc|graphql)\b/gi,
+  /\b(ros|slam|perception|autonomy|control systems|mechatronics|teleoperation)\b/gi,
+  /\b(fpga|vhdl|verilog|embedded|firmware|rtos)\b/gi,
+  /\b(hci|user study|eye tracking|vr|ar|xr|quest|openxr)\b/gi,
+  /\b(linux|unix|bash|shell)\b/gi];
 function computeGaps(){
   if(!state)return[];
   const desc=((state.job&&state.job.raw_description)||"").toLowerCase();
   if(!desc)return[];
-  // Build current draft text (use accepted proposals where available)
-  const draft=state.draft||{};
-  const draftBullets=draft.bullets||{};
-  const cvText=(state.document.skills||[]).join(" ")+" "+
-    (state.document.sections||[]).flatMap(s=>s.entries||[]).flatMap(e=>{
-      return(e.bullets||[]).map(b=>{
-        const patch=draftBullets[b.id];
-        return patch&&patch.status==="accepted"?patch.proposal:b.text;
-      });
-    }).join(" ");
-  const lower=cvText.toLowerCase();
-  // Extract technical keywords from job description
-  const techPatterns=[
-    /\b(python|java|javascript|typescript|c\+\+|c#|rust|go|golang|swift|kotlin|ruby|scala|r\b|matlab|julia)\b/gi,
-    /\b(pytorch|tensorflow|keras|sklearn|numpy|pandas|jax|huggingface|transformers)\b/gi,
-    /\b(react|vue|angular|node\.?js|express|django|flask|fastapi|spring)\b/gi,
-    /\b(aws|gcp|azure|kubernetes|docker|terraform|kafka|spark|flink)\b/gi,
-    /\b(machine learning|deep learning|computer vision|nlp|llm|rl|reinforcement)\b/gi,
-    /\b(sql|postgresql|mysql|mongodb|redis|cassandra|elasticsearch)\b/gi,
-    /\b(git|ci\/cd|devops|agile|scrum|rest api|grpc|graphql)\b/gi,
-    /\b(ros|slam|perception|autonomy|control systems|mechatronics)\b/gi,
-    /\b(fpga|vhdl|verilog|embedded|firmware|arm|rtos)\b/gi,
-    /\b(linux|unix|bash|shell)\b/gi,
-  ];
+  const lower=cvText();
   const found=new Set();
-  for(const pat of techPatterns){
-    for(const m of desc.matchAll(pat)){found.add(m[0].toLowerCase().trim())}
-  }
-  const gaps=[];
-  for(const kw of found){
-    if(lower.includes(kw))gaps.push({kw,status:"covered"});
-    else{
-      const partial=kw.split(/\s+/).some(part=>part.length>3&&lower.includes(part));
-      gaps.push({kw,status:partial?"partial":"missing"});
-    }
-  }
-  gaps.sort((a,b)=>{const r={missing:0,partial:1,covered:2};return r[a.status]-r[b.status]||a.kw.localeCompare(b.kw)});
+  for(const pat of TECH)for(const m of desc.matchAll(pat))found.add(m[0].toLowerCase().trim());
+  const gaps=[...found].map(kw=>{
+    if(lower.includes(kw))return{kw,status:"covered"};
+    const partial=kw.split(/\s+/).some(part=>part.length>3&&lower.includes(part));
+    return{kw,status:partial?"partial":"missing"};
+  });
+  const rank={missing:0,partial:1,covered:2};
+  gaps.sort((a,b)=>rank[a.status]-rank[b.status]||a.kw.localeCompare(b.kw));
   return gaps.slice(0,24);
 }
 function renderGaps(){
-  const gaps=computeGaps();
-  const card=$("gapCard"),list=$("gapList");
+  const gaps=computeGaps(),card=$("gapCard"),list=$("gapList");
   if(!gaps.length){card.style.display="none";return}
-  card.style.display="";
-  list.replaceChildren();
+  card.style.display="";list.replaceChildren();
   for(const g of gaps){
     const row=document.createElement("div");row.className="gap-row";
     const skill=document.createElement("span");skill.className="gap-skill";skill.textContent=g.kw;
-    const badge=document.createElement("span");
-    badge.className="gap-badge gap-"+g.status;
+    const badge=document.createElement("span");badge.className="gap-badge gap-"+g.status;
     badge.textContent=g.status==="covered"?"✓ covered":g.status==="partial"?"~ partial":"✗ missing";
     row.append(skill,badge);list.append(row);
   }
 }
 
-// ── CV document renderer ───────────────────────────────────────────────────────
-// The document is the editor. Each line is contenteditable; typing in it stores
-// a manual patch. AI proposals appear inline beneath the line they would change
-// so the model never silently overwrites what you wrote.
+// ── The paper ────────────────────────────────────────────────────────────────
 function patchFor(id){return id==="summary"?(state.draft||{}).summary:((state.draft||{}).bullets||{})[id]}
-
 function currentText(id,original){
   const p=patchFor(id);
-  if(p&&p.status==="accepted")return p.proposal;
-  if(p&&p.source==="manual")return p.proposal;
+  if(p&&(p.status==="accepted"||p.source==="manual"))return p.proposal;
   return original;
 }
-
 function setManualText(id,original,text){
   const clean=(text||"").replace(/\s+/g," ").trim();
   state.draft=state.draft||{};
   if(!clean||clean===original.replace(/\s+/g," ").trim()){
-    // Back to the verified original — drop the patch instead of storing a no-op.
+    // Back to the verified original — drop the patch rather than store a no-op.
     if(id==="summary")delete state.draft.summary;
     else if(state.draft.bullets)delete state.draft.bullets[id];
     return;
@@ -373,42 +383,39 @@ function setManualText(id,original,text){
   if(id==="summary")state.draft.summary=patch;
   else{state.draft.bullets=state.draft.bullets||{};state.draft.bullets[id]=patch}
 }
-
+// A span, not a block: the printed CV runs the bold opening claim straight into
+// the body paragraph, and the editor has to break the line in the same places.
 function editableLine(id,original,extraClass){
-  const el=document.createElement("div");
+  const el=document.createElement("span");
   el.className="eq "+(extraClass||"");
-  el.contentEditable="true";
-  el.spellcheck=false;
-  el.dataset.id=id;
+  el.contentEditable="true";el.spellcheck=false;el.dataset.id=id;
   el.textContent=currentText(id,original);
   const p=patchFor(id);
-  if(p&&p.status==="accepted"&&p.source==="ai")el.classList.add("is-accepted");
-  else if(p&&p.source==="manual")el.classList.add("is-manual");
+  if(p&&p.status==="accepted")el.classList.add(p.source==="manual"?"is-manual":"is-accepted");
   el.addEventListener("blur",()=>{
     const before=JSON.stringify(patchFor(id)||null);
     setManualText(id,original,el.innerText);
     if(JSON.stringify(patchFor(id)||null)!==before){renderAll();queueSave()}
   });
   el.addEventListener("keydown",ev=>{
+    // One line here is one paragraph in print, so Enter commits rather than
+    // splitting the element into markup the exporter would have to guess at.
     if(ev.key==="Enter"){ev.preventDefault();el.blur()}
     if(ev.key==="Escape"){el.textContent=currentText(id,original);el.blur()}
   });
   return el;
 }
-
-// An AI proposal for a line you have not resolved yet.
 function pendingAiFor(id){
   const p=patchFor(id);
-  return p&&p.source==="ai"&&p.status==="pending"?p:null;
+  return p&&p.source!=="manual"&&p.status==="pending"?p:null;
 }
-
-function inlineAiStrip(id,original){
+function inlineAiStrip(id){
   const p=pendingAiFor(id);
   if(!p)return null;
   const box=document.createElement("div");box.className="inline-ai";
   const lbl=document.createElement("div");lbl.className="label";lbl.textContent="AI suggests";
   box.append(lbl);
-  const prop=document.createElement("div");prop.className="eq";prop.contentEditable="true";
+  const prop=document.createElement("div");prop.className="prop";prop.contentEditable="true";
   prop.spellcheck=false;prop.textContent=p.proposal;
   prop.addEventListener("blur",()=>{p.proposal=(prop.innerText||"").replace(/\s+/g," ").trim()||p.proposal});
   box.append(prop);
@@ -421,61 +428,91 @@ function inlineAiStrip(id,original){
   row.append(ok,no);box.append(row);
   return box;
 }
-
+function entryLinks(entry){
+  const links=[];
+  if(entry.link_extra_url)links.push([entry.link_extra_url,entry.link_extra_text||"Link"]);
+  if(entry.url)links.push([entry.url,entry.link_text||"GitHub"]);
+  if(!links.length)return null;
+  const box=document.createElement("div");box.className="cv-links";
+  if(entry.link_prefix)box.append(document.createTextNode(entry.link_prefix));
+  links.forEach(([href,text],i)=>{
+    if(i)box.append(document.createTextNode(" · "));
+    const a=document.createElement("a");a.href=href;a.target="_blank";a.rel="noopener";
+    a.textContent=text;box.append(a);
+  });
+  return box;
+}
+function sectionShell(name){
+  const wrap=document.createElement("div");wrap.className="cv-section";
+  const head=document.createElement("div");head.className="cv-section-head";head.textContent=name;
+  const rule=document.createElement("div");rule.className="cv-section-rule";
+  wrap.append(head,rule);
+  return wrap;
+}
 function renderCV(){
   const doc=state.document,root=$("cvDoc");root.replaceChildren();
   const paper=document.createElement("div");paper.className="cv-paper";
-
   const head=doc.header||{};
-  if(head.name){
-    const n=document.createElement("div");n.className="cv-name";n.textContent=head.name;paper.append(n);
-  }
-  const contact=[head.email,head.phone,head.location,...(head.links||[])].filter(Boolean).join("  ·  ");
+
+  if(head.name){const n=document.createElement("div");n.className="cv-name";n.textContent=head.name;paper.append(n)}
+  if(head.tagline){const t=document.createElement("div");t.className="cv-tagline";t.textContent=head.tagline;paper.append(t)}
+  const contact=(head.contact_line||[]).filter(Boolean).join("  |  ");
   if(contact){const c=document.createElement("div");c.className="cv-contact";c.textContent=contact;paper.append(c)}
+  const rule=document.createElement("div");rule.className="cv-rule-strong";paper.append(rule);
 
   if(doc.summary){
-    const wrap=document.createElement("div");wrap.className="cv-section";
-    const sh=document.createElement("div");sh.className="cv-section-head";sh.textContent="Summary";
-    const p=patchFor("summary");
-    if(p&&p.status==="accepted"){
-      const f=document.createElement("span");f.className="edited-flag"+(p.source==="ai"?" ai":"");
-      f.textContent=p.source==="ai"?"AI":"edited";sh.append(f);
-    }
-    wrap.append(sh);
-    wrap.append(editableLine("summary",doc.summary,"cv-summary-text"));
-    const strip=inlineAiStrip("summary",doc.summary);
-    if(strip)wrap.append(strip);
+    const wrap=document.createElement("div");wrap.className="cv-summary";
+    wrap.append(editableLine("summary",doc.summary));
+    const strip=inlineAiStrip("summary");if(strip)wrap.append(strip);
     paper.append(wrap);
   }
 
   for(const sec of doc.sections||[]){
-    const wrap=document.createElement("div");wrap.className="cv-section";
-    const sh=document.createElement("div");sh.className="cv-section-head";sh.textContent=sec.name;wrap.append(sh);
+    const layout=sec.layout||"entries";
+    const wrap=sectionShell(sec.name);
+
+    if(layout==="skills"){
+      const grid=document.createElement("div");grid.className="cv-skills";
+      for(const entry of sec.entries||[]){
+        const label=document.createElement("div");label.className="cv-skill-label";
+        label.textContent=entry.title||"";
+        const value=document.createElement("div");
+        for(const b of entry.bullets||[]){
+          value.append(editableLine(b.id,b.text));
+          const strip=inlineAiStrip(b.id);if(strip)value.append(strip);
+        }
+        grid.append(label,value);
+      }
+      wrap.append(grid);paper.append(wrap);continue;
+    }
+
     for(const entry of sec.entries||[]){
       const block=document.createElement("div");block.className="cv-entry";
-      const hd=document.createElement("div");hd.className="cv-entry-head";
-      const title=document.createElement("strong");
-      title.textContent=[entry.title,entry.organization].filter(Boolean).join(" · ");
-      const dates=document.createElement("span");dates.className="dates";dates.textContent=entry.dates||"";
-      hd.append(title,dates);block.append(hd);
-      if(entry.supervisor){
-        const sup=document.createElement("div");
-        sup.style.cssText="font-size:11px;color:var(--muted);margin:3px 0";
-        sup.textContent="Supervisor: "+entry.supervisor;block.append(sup);
+      if(layout!=="notes"&&(entry.title||entry.dates)){
+        const hd=document.createElement("div");hd.className="cv-entry-head";
+        const title=document.createElement("div");title.className="cv-entry-title";
+        title.textContent=entry.title||"";
+        const dates=document.createElement("div");dates.className="cv-entry-dates";
+        dates.textContent=entry.dates||"";
+        hd.append(title,dates);block.append(hd);
       }
-      for(const bullet of entry.bullets||[]){
-        const li=document.createElement("div");li.className="cv-bullet";
-        const dot=document.createElement("span");dot.className="dot";dot.textContent="·";
-        li.append(dot,editableLine(bullet.id,bullet.text));
-        const p=patchFor(bullet.id);
-        if(p&&p.status==="accepted"){
-          const f=document.createElement("span");f.className="edited-flag"+(p.source==="ai"?" ai":"");
-          f.textContent=p.source==="ai"?"AI":"edited";li.append(f);
-        }
-        block.append(li);
-        const strip=inlineAiStrip(bullet.id,bullet.text);
-        if(strip)block.append(strip);
+      if(layout!=="notes"&&entry.organization){
+        const sub=document.createElement("div");sub.className="cv-entry-sub";
+        sub.textContent=entry.organization;block.append(sub);
       }
+      // Lead and body print as one paragraph, so they sit in one here too, and
+      // any AI proposals follow it rather than interrupting the prose.
+      const para=document.createElement("p");para.className="cv-para";
+      const strips=[];
+      (entry.bullets||[]).forEach((b,i)=>{
+        if(i)para.append(document.createTextNode(" "));
+        para.append(editableLine(b.id,b.text,b.style==="lead"?"lead":""));
+        const strip=inlineAiStrip(b.id);if(strip)strips.push(strip);
+      });
+      const links=entryLinks(entry);
+      if(links){para.append(document.createTextNode(" "));para.append(links)}
+      block.append(para);
+      for(const strip of strips)block.append(strip);
       wrap.append(block);
     }
     paper.append(wrap);
@@ -483,42 +520,52 @@ function renderCV(){
   root.append(paper);
 }
 
-// ── Left pane: only real, unresolved AI suggestions ───────────────────────────
+// ── Left pane ────────────────────────────────────────────────────────────────
 function allPatches(){
-  const d=state&&state.draft||{};
+  const d=(state&&state.draft)||{};
   const out=[];
   if(d.summary)out.push(d.summary);
   for(const p of Object.values(d.bullets||{}))out.push(p);
   return out;
 }
+function renderRequirements(){
+  const reqs=((state.draft||{}).requirements||[]).filter(Boolean);
+  const box=$("reqSection"),list=$("reqList");
+  if(!reqs.length){box.style.display="none";return}
+  box.style.display="";list.replaceChildren();
+  for(const r of reqs){const li=document.createElement("li");li.textContent=r;list.append(li)}
+}
 function renderSuggestions(){
   const root=$("suggestions");root.replaceChildren();
   const patches=allPatches();
-  const ai=patches.filter(p=>p.source==="ai");
+  const ai=patches.filter(p=>p.source!=="manual");
   const pending=ai.filter(p=>p.status==="pending");
   const manual=patches.filter(p=>p.source==="manual");
 
   if(!ai.length){
     root.innerHTML='<div class="empty-state">No AI suggestions yet.<br><br>'+
-      'Edit any line in your CV directly, or press <strong>Generate</strong> to have AI propose targeted rewrites.</div>';
+      'Edit any line in the document directly, or press <strong>Generate</strong> '+
+      'to have the model rewrite the lines that answer this posting.</div>';
   }else if(!pending.length){
-    root.innerHTML='<div class="empty-state">All '+ai.length+' AI suggestion'+(ai.length===1?"":"s")+
-      ' reviewed.<br><br>Accepted edits are marked in your CV.</div>';
+    root.innerHTML='<div class="empty-state">All '+ai.length+' suggestion'+(ai.length===1?"":"s")+
+      ' reviewed.<br><br>Accepted edits are marked in the document.</div>';
   }else{
     const note=document.createElement("p");note.className="hint";
     note.textContent=pending.length+" suggestion"+(pending.length===1?"":"s")+
-      " awaiting review — each one is shown inline in your CV.";
+      " awaiting review — each is shown inline in the document.";
     root.append(note);
     for(const p of pending){
       const card=document.createElement("article");card.className="suggestion";
       const h=document.createElement("div");h.className="suggestion-head";
       const l=document.createElement("span");l.className="label";
-      l.textContent=p.id==="summary"?"Summary":"Bullet";
+      l.textContent=p.id==="summary"?"Summary":"CV line";
       h.append(l);card.append(h);
       const before=document.createElement("div");before.className="rationale";
       before.textContent="Now: "+p.original;card.append(before);
       const after=document.createElement("div");after.className="rationale";
       after.style.color="var(--blue)";after.textContent="AI: "+p.proposal;card.append(after);
+      if(p.rationale){const why=document.createElement("div");why.className="rationale";
+        why.style.color="var(--muted)";why.textContent="Why: "+p.rationale;card.append(why)}
       const row=document.createElement("div");row.className="choice-row";
       const ok=document.createElement("button");ok.className="mini ok";ok.textContent="Use this";
       ok.onclick=()=>{p.status="accepted";renderAll();queueSave()};
@@ -549,17 +596,12 @@ function renderSuggestions(){
     for(const a of advice){const li=document.createElement("li");li.textContent=a;ul.append(li)}
   }else $("adviceSection").style.display="none";
 }
+function renderAll(){renderCV();renderRequirements();renderSuggestions();renderGaps();renderFitPill()}
 
-function renderAll(){renderCV();renderSuggestions();renderGaps();renderFitPill()}
-
-// ── API helpers ───────────────────────────────────────────────────────────────
+// ── Saving ───────────────────────────────────────────────────────────────────
 let saveTimer=null,saving=false;
 function flag(text){$("savedFlag").textContent=text}
-function queueSave(){
-  flag("Saving…");
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(syncAndSave,500);
-}
+function queueSave(){flag("Saving…");clearTimeout(saveTimer);saveTimer=setTimeout(syncAndSave,500)}
 async function syncAndSave(){
   if(saving){queueSave();return}
   saving=true;
@@ -574,46 +616,50 @@ async function syncAndSave(){
 }
 async function generate(){
   $("generate").disabled=true;$("busy").classList.add("show");notice("");
-  $("busyText").textContent="Reading the job description…";
-  const tick=setTimeout(()=>{$("busyText").textContent="AI is drafting targeted edits…"},1800);
+  $("busyText").textContent="Reading the posting…";
+  const t1=setTimeout(()=>{$("busyText").textContent="Matching your evidence to its requirements…"},2500);
+  const t2=setTimeout(()=>{$("busyText").textContent="Rewriting the lines that answer it…"},9000);
   try{
     const result=await api("/api/suggest",{method:"POST",
       body:JSON.stringify({url:jobUrl,cv_id:cvId,instructions:$("instructions").value})});
     state.draft=result.draft;$("instructions").value=state.draft.instructions||"";
     renderAll();
-    const n=allPatches().filter(p=>p.source==="ai"&&p.status==="pending").length;
-    toast(n?`${n} suggestion${n===1?"":"s"} ready — review them in your CV`:"No new suggestions");
+    const n=allPatches().filter(p=>p.source!=="manual"&&p.status==="pending").length;
+    toast(n?`${n} suggestion${n===1?"":"s"} ready — review them in the document`:"No new suggestions");
   }catch(err){notice(err.message,"error")}
-  finally{clearTimeout(tick);$("generate").disabled=false;$("busy").classList.remove("show")}
+  finally{clearTimeout(t1);clearTimeout(t2);$("generate").disabled=false;$("busy").classList.remove("show")}
 }
+
+// ── Saved CVs ────────────────────────────────────────────────────────────────
 async function saveAsCv(){
   const label=$("newCvName").value.trim();
   if(!label){notice("Type a name for the CV first.","error");$("newCvName").focus();return}
   try{
     const result=await api("/api/cv/save",{method:"POST",
-      body:JSON.stringify({url:jobUrl,cv_id:cvId,label,
-        save_as:label.toLowerCase().replace(/[^a-z0-9]+/g,"-")})});
-    state.cvs=result.cvs;$("newCvName").value="";
+      body:JSON.stringify({url:jobUrl,cv_id:cvId,label})});
+    state.cvs=result.cvs;nameTouched=false;
     renderCvPicker();renderCvList();
-    toast("Saved \""+result.cv.label+"\"");
+    toast(`Saved "${result.cv.label}" to ${result.cv.file}`);
   }catch(err){notice(err.message,"error")}
 }
 async function renameCv(cv){
-  const label=prompt("Rename this CV",cv.label);
+  const label=prompt("Rename this CV (the file is renamed too)",cv.label);
   if(!label||label===cv.label)return;
   try{
     const result=await api("/api/cv/rename",{method:"POST",
       body:JSON.stringify({target:cv.id,label})});
-    state.cvs=result.cvs;renderCvPicker();renderCvList();toast("Renamed");
+    state.cvs=result.cvs;
+    if(cvId===cv.id)await loadCv(result.cv.id);
+    else{renderCvPicker();renderCvList()}
+    toast("Renamed");
   }catch(err){notice(err.message,"error")}
 }
 async function deleteCv(cv){
   if(!confirm(`Delete the saved CV "${cv.label}"? This cannot be undone.`))return;
   try{
-    const result=await api("/api/cv/delete",{method:"POST",
-      body:JSON.stringify({target:cv.id})});
+    const result=await api("/api/cv/delete",{method:"POST",body:JSON.stringify({target:cv.id})});
     state.cvs=result.cvs;
-    if(cvId===cv.id){await loadCv("master")}
+    if(cvId===cv.id)await loadCv("master");
     else{renderCvPicker();renderCvList()}
     toast("Deleted");
   }catch(err){notice(err.message,"error")}
@@ -621,11 +667,13 @@ async function deleteCv(cv){
 function renderCvList(){
   const root=$("cvList");root.replaceChildren();
   for(const cv of state.cvs||[]){
-    const row=document.createElement("div");row.className="gap-row";
-    const name=document.createElement("span");name.className="gap-skill";
+    const row=document.createElement("div");row.className="cv-row";
+    const name=document.createElement("span");name.className="name";
     name.textContent=cv.label;
     if(cv.id===cvId)name.style.color="var(--green)";
-    row.append(name);
+    const file=document.createElement("small");file.className="file";
+    file.textContent=(cv.file||"").split("/").pop();
+    name.append(file);row.append(name);
     if(cv.is_master){
       const b=document.createElement("span");b.className="gap-badge gap-covered";
       b.textContent="master";row.append(b);
@@ -649,15 +697,13 @@ function renderCvPicker(){
   }
 }
 async function saveKey(){
-  const key=$("keyInput").value;
-  try{await api("/api/settings/openai",{method:"POST",body:JSON.stringify({api_key:key})});
+  try{await api("/api/settings/openai",{method:"POST",body:JSON.stringify({api_key:$("keyInput").value})});
     $("keyInput").value="";state.ai_configured=true;renderKey();toast("OpenAI key saved privately")}
   catch(err){notice(err.message,"error")}
 }
 function renderKey(){
   $("keyStatus").textContent=state.ai_configured?
     "Configured ✓  Replace only if needed.":"Not configured — paste your OpenAI key.";
-  $("keyStatus").className=state.ai_configured?"muted ok":"muted";
   $("keyInput").placeholder=state.ai_configured?"Paste replacement key (sk-…)":"sk-…";
   $("saveKey").textContent=state.ai_configured?"Replace key":"Save key locally";
 }
@@ -666,15 +712,15 @@ async function exportPdf(){
   try{
     clearTimeout(saveTimer);
     await syncAndSave();
-    const result=await api("/api/export",{method:"POST",
-      body:JSON.stringify({url:jobUrl,cv_id:cvId})});
-    const link=document.createElement("a");link.href=result.resume_download_url;link.download="";
+    const result=await api("/api/export",{method:"POST",body:JSON.stringify({url:jobUrl,cv_id:cvId})});
+    const link=document.createElement("a");link.href=result.resume_download_url;
+    link.download=result.resume_filename||"";
     document.body.append(link);link.click();link.remove();
-    toast(`Downloaded CV · ${result.accepted_patch_count} accepted edits applied`);
+    toast(`Downloaded ${result.resume_filename||"CV"}`);
   }catch(err){notice(err.message,"error")}finally{$("exportPdf").disabled=false}
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
+// ── Init ─────────────────────────────────────────────────────────────────────
 function showInitError(msg){
   notice(msg,"error");
   $("jobTitle").textContent="Not connected";
@@ -689,11 +735,17 @@ async function loadCv(id){
   state=await api(`/api/editor?url=${encodeURIComponent(jobUrl)}&cv=${encodeURIComponent(cvId)}`);
   cvId=state.cv_id||cvId;
   $("jobTitle").textContent=`${state.job.role} · ${state.job.company}`;
-  $("jobMeta").textContent=[state.job.location,state.job.description?"description ready":"description loads on Generate"].filter(Boolean).join(" · ");
+  $("jobMeta").textContent=[state.job.location,
+    state.job.description?"description ready":"description loads on Generate"].filter(Boolean).join(" · ");
   $("factCount").textContent=`${state.document.fact_ids.length} facts`;
+  $("docMeta").textContent=`${state.document.fact_ids.length} editable lines`;
   $("applyTop").href=$("applySide").href=state.job.application_url;
   $("instructions").value=state.draft.instructions||"";
   if(state.cv_storage)$("cvStorage").textContent=state.cv_storage;
+  // Pre-name the CV after this job; the user edits it before pressing Save.
+  if(!nameTouched)$("newCvName").value=state.suggested_cv_name||"";
+  $("exportName").textContent=state.suggested_cv_name
+    ?`Saves as “${(state.document.header.name||"").trim()} - ${state.suggested_cv_name} - CV.pdf”`:"";
   flag("Saved");
   renderCvPicker();renderCvList();renderKey();renderAll();
 }
@@ -713,12 +765,13 @@ $("generate").onclick=generate;
 $("saveKey").onclick=saveKey;
 $("exportPdf").onclick=exportPdf;
 $("saveAsCv").onclick=saveAsCv;
+$("newCvName").oninput=()=>{nameTouched=true};
 $("cvSelect").onchange=async e=>{
   try{await loadCv(e.target.value);toast("Switched CV")}
   catch(err){notice(err.message,"error")}
 };
 $("acceptAll").onclick=()=>{
-  for(const p of allPatches())if(p.source==="ai"&&p.status==="pending")p.status="accepted";
+  for(const p of allPatches())if(p.source!=="manual"&&p.status==="pending")p.status="accepted";
   renderAll();queueSave();
 };
 $("resetAll").onclick=()=>{

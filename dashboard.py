@@ -9,6 +9,8 @@ import json
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from universities import _index, annotate, load_universities
+
 
 ROOT = Path(__file__).resolve().parent
 TRACKER = ROOT / "tracker.csv"
@@ -103,6 +105,9 @@ def load_jobs() -> list[dict[str, object]]:
             if row.get("record_kind", "posting") == "posting"
             and row.get("source_status") == "open"
         ]
+    # Academic postings rarely name a supervisor, so match the institution once
+    # and let each such job carry links to its real, current faculty.
+    index = _index(load_universities())
     jobs: list[dict[str, object]] = []
     for row in rows:
         url = safe_url(row.get("url", ""))
@@ -140,6 +145,7 @@ def load_jobs() -> list[dict[str, object]]:
                 "official_ats": bool(url and ats_supported(url)),
             }
         )
+        annotate(jobs[-1], index)
     return jobs
 
 
@@ -241,6 +247,15 @@ h2{font-size:17px;line-height:1.25;margin:3px 0 0;letter-spacing:-.018em}
 .meta{display:grid;gap:7px;color:var(--muted);font-size:12px;margin-top:3px}
 .meta div{display:flex;gap:8px}.meta b{color:#cfddd8;font-weight:700;min-width:58px}
 .focus{margin:13px 0;color:#b9cbc4;font-size:12px}
+.supervisors{margin:12px 0 2px;padding:11px 12px;border:1px solid #5a3e8a;border-radius:12px;
+  background:#170f24}
+.supervisors b{display:block;color:var(--purple);font-size:11px;letter-spacing:.05em;
+  text-transform:uppercase}
+.supervisors span{display:block;color:var(--muted);font-size:11.5px;margin:4px 0 7px}
+.suplinks{display:flex;flex-wrap:wrap;gap:6px}
+.suplinks a{border:1px solid #4a356f;border-radius:999px;padding:4px 9px;font-size:11px;
+  color:#d9c8ff;text-decoration:none;font-weight:700}
+.suplinks a:hover{border-color:var(--purple);background:#20143a}
 .actions{display:flex;gap:8px;margin-top:auto;padding-top:16px}
 .btn{display:inline-flex;justify-content:center;align-items:center;min-height:40px;border-radius:10px;
   padding:0 12px;text-decoration:none;border:1px solid var(--line);font-weight:800;font-size:12px;cursor:pointer}
@@ -286,7 +301,7 @@ footer a{color:var(--green)}
     <select id="term" class="control"><option value="">All terms</option></select>
     <select id="level" class="control"><option value="">All degree levels</option></select>
     <select id="tier" class="control"><option value="">All tiers</option><option value="elite">Elite</option><option value="high">High</option><option value="standard">Standard</option></select>
-    <select id="companyType" class="control"><option value="">All company types</option></select>
+    <select id="companyType" class="control" title="Company stage, from the tracker's curated watchlist"><option value="">All company stages</option></select>
   </div>
   <div class="quick" style="margin-top:11px">
     <span class="quick-label">Category</span>
@@ -300,6 +315,7 @@ footer a{color:var(--green)}
     <label class="toggle"><input id="officialOnly" type="checkbox"> Official ATS feed</label>
     <label class="toggle"><input id="remoteOnly" type="checkbox"> Remote</label>
     <label class="toggle"><input id="startupOnly" type="checkbox"> Startups</label>
+    <label class="toggle"><input id="academicOnly" type="checkbox"> Top-100 universities</label>
     <span class="spacer"></span>
     <button class="chip" id="clear">Clear filters</button>
   </div>
@@ -323,6 +339,20 @@ const PAGE=48;
 const CATEGORY_ORDER=["All","AI / ML","Software Engineering","Quant / Finance","Robotics & Embodied AI","Security","Data","Systems & Infra","Hardware / EE","HCI / XR","Computational Science"];
 const TYPE_ORDER=["All types","intern","research-assistant","new-grad","phd-fellowship","postdoc","co-op","placement","fellowship","masters-research"];
 const TYPE_LABELS={"intern":"Internship","research-assistant":"Research Assistant","new-grad":"New Grad","phd-fellowship":"PhD Fellowship","postdoc":"Postdoc","co-op":"Co-op","placement":"Placement","fellowship":"Fellowship","masters-research":"Masters Research"};
+// Company stage comes from a curated watchlist. "Not classified" is honest: the
+// employer is simply not on it, which is different from being a large company.
+const COMPANY_TYPE_LABELS={"emerging-startup":"Early-stage startup","startup":"Startup",
+  "private-scaleup":"Private scale-up","scaleup":"Scale-up","established":"Established company",
+  "unknown":"Not classified"};
+const COMPANY_TYPE_ORDER=["emerging-startup","startup","private-scaleup","scaleup","established","unknown"];
+const prettyType=v=>COMPANY_TYPE_LABELS[v]||v;
+// "Unknown" is stored when the posting never states the field. Say that.
+const LEVEL_LABELS={"Unknown":"Degree not stated","Advanced/unknown":"Advanced or not stated"};
+const TERM_LABELS={"Unknown":"Term not stated","Ambiguous":"Term ambiguous"};
+const REGION_LABELS={"Unknown":"Region not stated"};
+const prettyLevel=v=>LEVEL_LABELS[v]||v;
+const prettyTerm=v=>TERM_LABELS[v]||v;
+const prettyRegion=v=>REGION_LABELS[v]||v;
 let category="All", posType="All types", visible=PAGE;
 const $=id=>document.getElementById(id);
 const esc=value=>{const d=document.createElement("div");d.textContent=value??"";return d.innerHTML};
@@ -331,8 +361,11 @@ const unique=key=>[...new Set(JOBS.map(j=>j[key]).filter(Boolean))].sort((a,b)=>
 const isResearch=j=>["research-assistant","phd-fellowship","postdoc","masters-research","fellowship"].includes(j.position_type);
 const isStartup=j=>["emerging-startup","startup","private-scaleup","scaleup"].includes(j.company_type);
 const rank=j=>({elite:0,high:1}[j.tier]??2);
-function optionize(id,key,label){
-  unique(key).forEach(value=>$(id).insertAdjacentHTML("beforeend",`<option value="${esc(value)}">${esc(value||label)}</option>`));
+function optionize(id,key,label,pretty,order){
+  let values=unique(key);
+  if(order)values=order.filter(v=>values.includes(v));
+  values.forEach(value=>$(id).insertAdjacentHTML("beforeend",
+    `<option value="${esc(value)}">${esc((pretty?pretty(value):value)||label)}</option>`));
 }
 function initials(name){return (name||"?").split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase()}
 function posTypeBadge(pt){
@@ -346,13 +379,31 @@ function categoryBadge(cat){
   const cls=cat==="Security"?"security":cat==="AI / ML"?"ai":"";
   return `<span class="badge ${cls}">${esc(cat)}</span>`;
 }
+// Academic postings are decided by a supervisor the advert never names. These
+// links go to the institution's own current faculty, not to a stored list of
+// people and addresses that would be out of date within a term.
+function supervisors(j){
+  const u=j.university;
+  if(!u)return "";
+  const topic=(u.terms||[]).join(", ");
+  return `<div class="supervisors">
+    <b>Supervisors · ${esc(u.name)}${u.rank?` · THE #${esc(u.rank)}`:""}</b>
+    <span>${topic?`Search its faculty for ${esc(topic)}:`:"Search its faculty:"}</span>
+    <div class="suplinks">
+      <a href="${esc(u.scholar)}" target="_blank" rel="noopener">Academics &amp; contacts ↗</a>
+      <a href="${esc(u.openalex)}" target="_blank" rel="noopener">Recent papers ↗</a>
+      <a href="${esc(u.directory)}" target="_blank" rel="noopener">Department directory ↗</a>
+    </div>
+  </div>`;
+}
 function card(j){
   const badges=[
     categoryBadge(j.category),
     posTypeBadge(j.position_type),
     j.tier?`<span class="badge ${esc(j.tier)}">${esc(j.tier)}</span>`:"",
     j.new?`<span class="badge new">new</span>`:"",
-    j.tailor?`<span class="badge ai">AI CV editor</span>`:""
+    j.tailor?`<span class="badge ai">AI CV editor</span>`:"",
+    j.university?`<span class="badge phd">supervisors listed</span>`:""
   ].filter(Boolean).join("");
   const focus=j.focus?`<p class="focus">${esc(j.focus.replaceAll(",",", "))}</p>`:"";
   const localUrl=`http://127.0.0.1:8765/editor?url=${encodeURIComponent(j.url)}`;
@@ -361,11 +412,11 @@ function card(j){
       <div class="company">${esc(j.company)}</div><h2>${esc(j.role)}</h2></div></div>
     <div class="badges">${badges}</div>
     <div class="meta">
-      <div><b>Location</b><span>${esc(j.location||j.region||"Unknown")}</span></div>
-      <div><b>Term</b><span>${esc(j.term||"Unknown")} · ${esc(j.work_mode||"unspecified")}</span></div>
-      <div><b>Degree</b><span>${esc(j.level||"Unknown")}</span></div>
-      ${j.company_type&&j.company_type!=="unknown"?`<div><b>Company</b><span>${esc(j.company_type)}</span></div>`:""}
-    </div>${focus}
+      <div><b>Location</b><span>${esc(j.location||prettyRegion(j.region)||"Not stated")}</span></div>
+      <div><b>Term</b><span>${esc(prettyTerm(j.term)||"Not stated")} · ${esc(j.work_mode||"unspecified")}</span></div>
+      <div><b>Degree</b><span>${esc(prettyLevel(j.level)||"Not stated")}</span></div>
+      ${j.company_type&&j.company_type!=="unknown"?`<div><b>Company</b><span>${esc(prettyType(j.company_type))}</span></div>`:""}
+    </div>${focus}${supervisors(j)}
     <div class="actions">
       <a class="btn primary" href="${esc(localUrl)}" target="_blank" rel="noopener">✦ Edit CV for this job</a>
       <a class="btn secondary job-link" data-no-autoapply="1" href="${esc(j.url)}" target="_blank" rel="noopener">Open only</a>
@@ -377,6 +428,7 @@ function state(){
     level:$("level").value,tier:$("tier").value,companyType:$("companyType").value,
     newOnly:$("newOnly").checked,officialOnly:$("officialOnly").checked,
     remoteOnly:$("remoteOnly").checked,startupOnly:$("startupOnly").checked,
+    academicOnly:$("academicOnly").checked,
     sort:$("sort").value,category,posType};
 }
 function matches(j,s){
@@ -388,7 +440,7 @@ function matches(j,s){
     (!s.tier||(s.tier==="standard"?!j.tier:j.tier===s.tier))&&
     (s.category==="All"||j.category===s.category)&&typeMatch&&(!s.newOnly||j.new)&&
     (!s.officialOnly||j.official_ats)&&(!s.remoteOnly||j.work_mode==="remote")&&
-    (!s.startupOnly||isStartup(j));
+    (!s.startupOnly||isStartup(j))&&(!s.academicOnly||!!j.university);
 }
 function sorted(list,mode){
   return [...list].sort((a,b)=>{
@@ -416,7 +468,7 @@ function render(){
 function restore(){
   const p=new URLSearchParams(location.search);
   ["search","region","term","level","tier","companyType","sort"].forEach(id=>{const v=p.get(id==="search"?"q":id);if(v)$(id).value=v});
-  ["newOnly","officialOnly","remoteOnly","startupOnly"].forEach(id=>$(id).checked=p.get(id)==="true");
+  ["newOnly","officialOnly","remoteOnly","startupOnly","academicOnly"].forEach(id=>$(id).checked=p.get(id)==="true");
   if(CATEGORY_ORDER.includes(p.get("category")))category=p.get("category");
   if(TYPE_ORDER.includes(p.get("posType")))posType=p.get("posType");
 }
@@ -424,8 +476,10 @@ $("totalStat").textContent=JOBS.length;
 $("researchStat").textContent=JOBS.filter(isResearch).length;
 $("newStat").textContent=JOBS.filter(j=>j.new).length;
 $("tailorStat").textContent=JOBS.filter(j=>j.tailor).length;
-optionize("region","region","Unknown");optionize("term","term","Unknown");
-optionize("level","level","Unknown");optionize("companyType","company_type","Unknown");
+optionize("region","region","Not stated",prettyRegion);
+optionize("term","term","Not stated",prettyTerm);
+optionize("level","level","Not stated",prettyLevel);
+optionize("companyType","company_type","Not classified",prettyType,COMPANY_TYPE_ORDER);
 $("categoryChips").innerHTML=CATEGORY_ORDER.map(x=>`<button class="chip" data-category="${esc(x)}">${esc(x)}</button>`).join("");
 $("typeChips").innerHTML=TYPE_ORDER.map(x=>`<button class="chip type-chip" data-postype="${esc(x)}">${esc(TYPE_LABELS[x]||x)}</button>`).join("");
 $("categoryChips").onclick=e=>{if(e.target.dataset.category){category=e.target.dataset.category;visible=PAGE;render()}};

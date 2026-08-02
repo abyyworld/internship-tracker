@@ -77,9 +77,25 @@ def _named_tokens(value: str) -> set[str]:
     return values
 
 
+def _length_bounds(original: str) -> tuple[int, int]:
+    """Allowed rewrite length, measured against the line being rewritten.
+
+    A CV entry may be a one-line bullet or a full prose paragraph. A fixed cap
+    sized for bullets rejects every rewrite of a paragraph, so the band tracks
+    the original: a rewrite may tighten or expand it, but not replace a
+    paragraph with a sentence.
+    """
+    length = len(re.sub(r"\s+", " ", original or "").strip())
+    return (
+        max(MIN_BULLET_CHARS, int(length * 0.6)),
+        max(MAX_BULLET_CHARS, int(length * 1.25)),
+    )
+
+
 def _validate_rewrite(original: str, candidate: str) -> str:
     value = re.sub(r"\s+", " ", candidate or "").strip().lstrip("•- ").strip()
-    if not MIN_BULLET_CHARS <= len(value) <= MAX_BULLET_CHARS:
+    low, high = _length_bounds(original)
+    if not low <= len(value) <= high:
         raise ValueError("length")
     if _number_tokens(value) - _number_tokens(original):
         raise ValueError("new_numeric_claim")
@@ -96,9 +112,14 @@ def _validate_rewrite(original: str, candidate: str) -> str:
     return value
 
 
-def _validate_summary(evidence: str, candidate: str) -> str:
+def _validate_summary(
+    evidence: str,
+    candidate: str,
+    *,
+    max_chars: int = 420,
+) -> str:
     value = re.sub(r"\s+", " ", candidate or "").strip().lstrip("•- ").strip()
-    if not 40 <= len(value) <= 420:
+    if not 40 <= len(value) <= max(420, max_chars):
         raise ValueError("length")
     if _number_tokens(value) - _number_tokens(evidence):
         raise ValueError("new_numeric_claim")

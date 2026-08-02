@@ -13,7 +13,10 @@ from .tailoring import TailoredResume
 
 SCHEMA_VERSION = 1
 MAX_INSTRUCTION_CHARS = 4000
-MAX_PROPOSAL_CHARS = 600
+# Entries in this CV are prose paragraphs, not one-line bullets: the longest
+# runs past 1800 characters, so a cap sized for bullet lists would reject every
+# rewrite of a research entry.
+MAX_PROPOSAL_CHARS = 2600
 
 
 def _now_iso() -> str:
@@ -38,6 +41,27 @@ def draft_path(home: Path, job_id: str, cv_id: str = "") -> Path:
     return home / "editor-drafts" / f"{name}.json"
 
 
+def rename_drafts(home: Path, old_cv_id: str, new_cv_id: str) -> int:
+    """Follow a renamed CV so its in-progress drafts are not orphaned."""
+    old = re.sub(r"[^A-Za-z0-9._-]+", "-", str(old_cv_id or "")).strip(".-")
+    new = re.sub(r"[^A-Za-z0-9._-]+", "-", str(new_cv_id or "")).strip(".-")
+    if not old or not new or old == new or "master" in (old, new):
+        return 0
+    directory = home / "editor-drafts"
+    if not directory.is_dir():
+        return 0
+    moved = 0
+    for path in directory.glob(f"*__{old}.json"):
+        if path.is_symlink() or not path.is_file():
+            continue
+        destination = path.with_name(path.name.removesuffix(f"__{old}.json") + f"__{new}.json")
+        if destination.exists():
+            continue
+        path.rename(destination)
+        moved += 1
+    return moved
+
+
 def _private_write_json(path: Path, value: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     path.parent.chmod(0o700)
@@ -59,6 +83,14 @@ def _private_write_json(path: Path, value: dict[str, Any]) -> None:
             os.close(descriptor)
     os.replace(temporary, path)
     path.chmod(0o600)
+
+
+def _display_link(value: str) -> str:
+    """Strip the scheme and www. so a URL reads as it does on a printed CV."""
+    text = str(value or "").strip()
+    text = re.sub(r"^[a-z]+://", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"^www\.", "", text, flags=re.IGNORECASE)
+    return text.rstrip("/")
 
 
 def _academic_as_sections(
@@ -188,6 +220,7 @@ def master_document(
     for section in facts.get("sections", []):
         copied_section = {
             "name": str(section.get("name", "")).strip(),
+            "layout": str(section.get("layout", "") or "entries"),
             "entries": [],
         }
         for entry in section.get("entries", []):
@@ -205,7 +238,11 @@ def master_document(
                 if fact_id in seen:
                     raise ValueError(f"Duplicate master CV fact id: {fact_id}")
                 seen.add(fact_id)
-                copied_entry["bullets"].append({"id": fact_id, "text": text})
+                copied_bullet: dict[str, Any] = {"id": fact_id, "text": text}
+                # `lead` marks the bold opening claim that runs into the body.
+                if str(bullet.get("style", "")).strip() == "lead":
+                    copied_bullet["style"] = "lead"
+                copied_entry["bullets"].append(copied_bullet)
             copied_section["entries"].append(copied_entry)
         sections.append(copied_section)
 
@@ -243,6 +280,31 @@ def master_document(
                     "relationship": str(sup.get("relationship", "")).strip(),
                 })
 
+    # The CV header prints short display forms ("akbarjuraev.com"), while
+    # profile.yaml holds the full values the application autofiller needs. A
+    # `header` block in the fact bank supplies the printed forms; without one
+    # the profile values are shortened the same way.
+    facts_header = facts.get("header") or {}
+    location = str(
+        facts_header.get("location") or contact.get("location", "")
+    ).strip()
+    contact_line = [
+        str(value).strip()
+        for value in (facts_header.get("contact") or [])
+        if str(value).strip()
+    ]
+    if not contact_line:
+        contact_line = [
+            _display_link(value)
+            for value in (
+                contact.get("email", ""),
+                contact.get("website", ""),
+                contact.get("linkedin", ""),
+                contact.get("github", ""),
+            )
+            if str(value).strip()
+        ]
+
     return {
         "schema_version": SCHEMA_VERSION,
         "header": {
@@ -250,9 +312,11 @@ def master_document(
                 f"{identity.get('first_name', '')} "
                 f"{identity.get('last_name', '')}"
             ).strip(),
+            "tagline": str(facts_header.get("tagline", "")).strip(),
             "email": str(contact.get("email", "")).strip(),
             "phone": str(contact.get("phone", "")).strip(),
-            "location": str(contact.get("location", "")).strip(),
+            "location": location,
+            "contact_line": ([location] if location else []) + contact_line,
             "links": [
                 str(value).strip()
                 for value in (
@@ -293,6 +357,7 @@ def empty_draft(
         "instructions": "",
         "summary": None,
         "bullets": {},
+        "requirements": [],
         "advice": [],
         "rejected_by_validator": {},
         "updated_at": _now_iso(),
@@ -376,6 +441,7 @@ def normalize_draft(
             "description_hash",
             "provider",
             "model",
+            "requirements",
             "advice",
             "rejected_by_validator",
         ):
@@ -458,13 +524,26 @@ def facts_from_document(
                 patch = bullet_patches.get(bullet["id"], {})
                 if isinstance(patch, dict) and patch.get("status") == "accepted":
                     text = str(patch.get("proposal", text))
-                bullets.append({"id": bullet["id"], "text": text})
+                saved: dict[str, Any] = {"id": bullet["id"], "text": text}
+                if bullet.get("style"):
+                    saved["style"] = bullet["style"]
+                bullets.append(saved)
             copied["bullets"] = bullets
             entries.append(copied)
-        sections.append({"name": section.get("name", ""), "entries": entries})
+        sections.append({
+            "name": section.get("name", ""),
+            "layout": section.get("layout", "entries"),
+            "entries": entries,
+        })
 
+    header = document.get("header") or {}
     return {
         "schema_version": SCHEMA_VERSION,
+        "header": {
+            "tagline": header.get("tagline", ""),
+            "location": header.get("location", ""),
+            "contact": list(header.get("contact_line", []))[1:],
+        },
         "summary": summary,
         "skills": deepcopy(list(document.get("skills", []))),
         "education": deepcopy(list(document.get("education", []))),
@@ -491,7 +570,11 @@ def resume_from_document(
     all_ids: list[str] = []
     accepted_ids: list[str] = []
     for section in document["sections"]:
-        copied_section = {"name": section["name"], "entries": []}
+        copied_section = {
+            "name": section["name"],
+            "layout": section.get("layout", "entries"),
+            "entries": [],
+        }
         for entry in section["entries"]:
             copied_entry = {
                 key: deepcopy(value)
@@ -507,7 +590,10 @@ def resume_from_document(
                 if isinstance(patch, dict) and patch.get("status") == "accepted":
                     text = str(patch.get("proposal", text))
                     accepted_ids.append(fact_id)
-                copied_entry["bullets"].append(text)
+                rendered: dict[str, Any] = {"id": fact_id, "text": text}
+                if bullet.get("style"):
+                    rendered["style"] = bullet["style"]
+                copied_entry["bullets"].append(rendered)
                 copied_entry["evidence_ids"].append(fact_id)
                 all_ids.append(fact_id)
             copied_section["entries"].append(copied_entry)

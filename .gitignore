@@ -17,5 +17,9 @@ apply_cockpit.html
 # Private application state and generated CVs must never be committed.
 private/
 .private/
+# The master CV PDF and its generator are personal documents. Their design is
+# already reproduced in autoapply/cv_render.py, so the repository does not need
+# the originals — and this repository is public.
+my cv and the tool/
 *.sqlite3
 autofill.local.user.js
