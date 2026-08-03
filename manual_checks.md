@@ -1,4 +1,4 @@
-# Manual Check List — 2026-08-02
+# Manual Check List — 2026-08-03
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -117,73 +117,4 @@ Use the local cockpit or private autoapply database to record your decision; per
 ## Sources that failed this run
 Roles previously seen only in these sources remain stale; they are not marked closed.
 
-- **Greenhouse/NVIDIA**: HTTP Error 404: Not Found
-- **Greenhouse/AMD**: HTTP Error 404: Not Found
-- **Greenhouse/Qualcomm**: HTTP Error 404: Not Found
-- **Greenhouse/Arm**: HTTP Error 404: Not Found
-- **Greenhouse/Intel**: HTTP Error 404: Not Found
-- **Greenhouse/IBM**: HTTP Error 404: Not Found
-- **Greenhouse/Samsung Research**: HTTP Error 404: Not Found
-- **Greenhouse/Hugging Face**: HTTP Error 404: Not Found
-- **Greenhouse/Mistral AI**: HTTP Error 404: Not Found
-- **Greenhouse/Groq**: HTTP Error 404: Not Found
-- **Greenhouse/Lambda Labs**: HTTP Error 404: Not Found
-- **Greenhouse/Modal**: HTTP Error 404: Not Found
-- **Greenhouse/Replit**: HTTP Error 404: Not Found
-- **Greenhouse/Plaid**: HTTP Error 404: Not Found
-- **Greenhouse/Snap**: HTTP Error 404: Not Found
-- **Greenhouse/Snowflake**: HTTP Error 404: Not Found
-- **Greenhouse/HashiCorp**: HTTP Error 404: Not Found
-- **Greenhouse/1Password**: HTTP Error 404: Not Found
-- **Greenhouse/Cloudsmith**: HTTP Error 404: Not Found
-- **Greenhouse/Boeing**: HTTP Error 404: Not Found
-- **Greenhouse/L3Harris**: HTTP Error 404: Not Found
-- **Greenhouse/BAE Systems**: HTTP Error 404: Not Found
-- **Greenhouse/Northrop Grumman**: HTTP Error 404: Not Found
-- **Greenhouse/Lockheed Martin**: HTTP Error 404: Not Found
-- **Greenhouse/Raytheon**: HTTP Error 404: Not Found
-- **Greenhouse/Allen Institute for AI**: HTTP Error 404: Not Found
-- **Greenhouse/Calico (Google)**: HTTP Error 404: Not Found
-- **Greenhouse/Moderna**: HTTP Error 404: Not Found
-- **Greenhouse/Genentech**: HTTP Error 404: Not Found
-- **Greenhouse/BioNTech**: HTTP Error 404: Not Found
-- **Greenhouse/DeepVariant / Google**: HTTP Error 404: Not Found
-- **Ashby/Together AI**: HTTP Error 404: Not Found
-- **Ashby/Run:AI**: HTTP Error 404: Not Found
-- **Ashby/Weights & Biases**: HTTP Error 404: Not Found
-- **Ashby/Scale AI**: HTTP Error 404: Not Found
-- **Ashby/Labelbox**: HTTP Error 404: Not Found
-- **Ashby/Landing AI**: HTTP Error 404: Not Found
-- **Ashby/Covariant**: HTTP Error 404: Not Found
-- **Ashby/Nuro**: HTTP Error 404: Not Found
-- **Ashby/Voxel51**: HTTP Error 404: Not Found
-- **Ashby/Modal Labs**: HTTP Error 404: Not Found
-- **Ashby/CoreWeave**: HTTP Error 404: Not Found
-- **Ashby/Recursion Pharmaceuticals**: HTTP Error 404: Not Found
-- **Ashby/Groq**: HTTP Error 404: Not Found
-- **Ashby/SambaNova Systems**: HTTP Error 404: Not Found
-- **Ashby/Tenstorrent**: HTTP Error 404: Not Found
-- **Lever/Linear**: HTTP Error 404: Not Found
-- **Lever/Vercel**: HTTP Error 404: Not Found
-- **Lever/Supabase**: HTTP Error 404: Not Found
-- **Lever/Retool**: HTTP Error 404: Not Found
-- **Lever/Figma**: HTTP Error 404: Not Found
-- **Lever/Notion**: HTTP Error 404: Not Found
-- **Lever/Loom**: HTTP Error 404: Not Found
-- **Lever/Asana**: HTTP Error 404: Not Found
-- **Lever/Airtable**: HTTP Error 404: Not Found
-- **Lever/Benchling**: HTTP Error 404: Not Found
-- **Lever/Prefect**: HTTP Error 404: Not Found
-- **Lever/dbt Labs**: HTTP Error 404: Not Found
-- **Lever/Airbyte**: HTTP Error 404: Not Found
-- **Lever/Astronomer**: HTTP Error 404: Not Found
-- **Lever/Temporal**: HTTP Error 404: Not Found
-- **Lever/Earthly**: HTTP Error 404: Not Found
-- **Lever/CrowdStrike**: HTTP Error 404: Not Found
-- **Lever/SentinelOne**: HTTP Error 404: Not Found
-- **Lever/Lacework**: HTTP Error 404: Not Found
-- **Lever/Snyk**: HTTP Error 404: Not Found
-- **Lever/Semgrep**: HTTP Error 404: Not Found
-- **Lever/Climate AI**: HTTP Error 404: Not Found
-- **Lever/Watershed**: HTTP Error 404: Not Found
-- **Lever/Energy Vault**: HTTP Error 404: Not Found
+- **Greenhouse/Graphcore**: degraded: parsed zero roles unexpectedly
