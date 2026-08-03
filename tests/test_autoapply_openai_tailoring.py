@@ -6,6 +6,8 @@ import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
+import requests
+
 from autoapply.cv_editor import master_document
 from autoapply.openai_tailoring import (
     OPENAI_MODEL_DEFAULT,
@@ -356,6 +358,77 @@ class ProviderCompatibilityTests(unittest.TestCase):
             "temperature",
             _request_body("s", "u", model="gpt-5.5", max_tokens=10),
         )
+
+    def test_a_thinking_model_is_told_not_to_spend_the_reply_on_thinking(self):
+        from autoapply.openai_tailoring import _request_body
+
+        body = _request_body("s", "u", model="gemini-2.5-flash", max_tokens=2600)
+        self.assertEqual(body["reasoning_effort"], "none")
+
+    def test_a_thinking_model_that_cannot_stop_is_asked_to_be_brief(self):
+        from autoapply.openai_tailoring import _request_body
+
+        body = _request_body("s", "u", model="gemini-2.5-pro", max_tokens=2600)
+        self.assertEqual(body["reasoning_effort"], "low")
+
+    def test_openais_own_reasoning_default_is_left_alone(self):
+        from autoapply.openai_tailoring import _request_body
+
+        # The measured quality of this pipeline was measured at OpenAI's
+        # default; changing it here would silently invalidate that.
+        for model in ("gpt-5.4", "gpt-5.6", "gpt-4o-mini"):
+            self.assertNotIn(
+                "reasoning_effort",
+                _request_body("s", "u", model=model, max_tokens=10),
+            )
+
+    def test_an_error_names_the_provider_actually_being_called(self):
+        from autoapply.openai_tailoring import PROVIDERS, _ask_once
+
+        response = Mock()
+        response.status_code = 401
+        response.json.return_value = {"error": {"message": "bad key"}}
+        response.raise_for_status.side_effect = requests.HTTPError(response=response)
+        with patch("autoapply.openai_tailoring.requests.post", return_value=response):
+            with self.assertRaises(RuntimeError) as caught:
+                _ask_once(
+                    "s", "u", api_key="k", model="gemini-2.5-flash",
+                    max_tokens=10, timeout=5,
+                    base_url=PROVIDERS["gemini"]["base"],
+                )
+        self.assertIn("Google AI Studio", str(caught.exception))
+        self.assertNotIn("OpenAI", str(caught.exception))
+
+    def test_a_missing_key_reported_as_a_400_is_still_a_key_problem(self):
+        from autoapply.openai_tailoring import PROVIDERS, _ask_once
+
+        # Google answers a missing key with 400, not 401.
+        response = Mock()
+        response.status_code = 400
+        response.json.return_value = {
+            "error": {"message": "Missing or invalid Authorization header."}
+        }
+        response.raise_for_status.side_effect = requests.HTTPError(response=response)
+        with patch("autoapply.openai_tailoring.requests.post", return_value=response):
+            with self.assertRaises(RuntimeError) as caught:
+                _ask_once(
+                    "s", "u", api_key="", model="gemini-2.5-flash",
+                    max_tokens=10, timeout=5,
+                    base_url=PROVIDERS["gemini"]["base"],
+                )
+        self.assertIn("key", str(caught.exception).lower())
+
+    def test_an_endpoint_rejecting_reasoning_effort_still_gets_a_request(self):
+        from autoapply.openai_tailoring import _request_body, _without_rejected
+
+        response = Mock()
+        response.json.return_value = {
+            "error": {"message": "Unrecognized request argument: reasoning_effort"}
+        }
+        body = _request_body("s", "u", model="gemini-2.5-flash", max_tokens=10)
+        reduced = _without_rejected(body, response)
+        self.assertNotIn("reasoning_effort", reduced)
+        self.assertIn("messages", reduced)
 
 
 class UsageAccountingTests(unittest.TestCase):

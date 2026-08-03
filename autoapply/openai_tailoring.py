@@ -138,6 +138,30 @@ MODEL_PREFERENCE = (
 OPENAI_MODEL_DEFAULT = MODEL_PREFERENCE[0]
 # Newer models fix sampling temperature and reject the parameter outright.
 FIXED_TEMPERATURE_MODELS = ("gpt-5.5", "gpt-5.6", "gpt-5-mini", "gpt-5-nano")
+# Thinking models spend their reply budget on reasoning before writing a word,
+# and every provider counts that against the same limit. A local Qwen3 burned
+# all 2600 tokens deliberating and returned nothing at all; the same starvation
+# is available to any hosted thinking model.
+#
+# These calls are extraction against a fixed schema, not problems that reward
+# deliberation, so the ones that allow it are asked to think briefly or not at
+# all. OpenAI's own default is deliberately left alone: it is what the measured
+# quality here was measured with.
+REASONING_EFFORT = {
+    "gemini-2.5-flash": "none",
+    # Pro cannot switch thinking off; it can be asked to keep it short.
+    "gemini-2.5-pro": "low",
+    "qwen": "none",
+    "deepseek-r1": "low",
+}
+
+
+def _reasoning_effort(model: str) -> str:
+    name = str(model or "").lower()
+    for prefix, effort in REASONING_EFFORT.items():
+        if name.startswith(prefix):
+            return effort
+    return ""
 # A job description repeats itself well before 8k characters. The strategy call
 # reads it in full; the section calls receive only the requirements it found,
 # which keeps every parallel request small and fast.
@@ -426,7 +450,9 @@ def _record_usage(payload: dict[str, Any]) -> None:
 
 # Parameters no provider is required to support. `max_completion_tokens` is
 # the newer spelling; older and third-party endpoints still expect `max_tokens`.
-OPTIONAL_PARAMS = ("response_format", "temperature", "max_completion_tokens")
+OPTIONAL_PARAMS = (
+    "response_format", "temperature", "max_completion_tokens", "reasoning_effort",
+)
 
 
 def _request_body(
@@ -445,7 +471,36 @@ def _request_body(
     }
     if not model.startswith(FIXED_TEMPERATURE_MODELS):
         body["temperature"] = TEMPERATURE
+    effort = _reasoning_effort(model)
+    if effort:
+        body["reasoning_effort"] = effort
     return body
+
+
+def provider_label(base_url: str) -> str:
+    """Name whoever is actually being called, for anything a person reads.
+
+    Every message here used to say "OpenAI" because that was the only
+    endpoint. Telling someone their OpenAI key is invalid while they are
+    pointed at Google is a small lie that costs a long debugging session.
+    """
+    for provider in PROVIDERS.values():
+        if provider["base"] == str(base_url or "").rstrip("/"):
+            return str(provider["label"]).split(" (")[0]
+    return "The AI endpoint"
+
+
+_AUTH_WORDING = re.compile(
+    r"\bauthoriz|\bauthentic|\bapi[ _-]?key\b|\bcredential|\bunauthenticated\b", re.I
+)
+
+
+def _is_auth_error(response: Any) -> bool:
+    try:
+        message = str(response.json().get("error", {}).get("message", ""))
+    except Exception:
+        return False
+    return bool(_AUTH_WORDING.search(message))
 
 
 def _without_rejected(
@@ -481,6 +536,7 @@ def _ask_once(
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
     body = _request_body(system, user, model=model, max_tokens=max_tokens)
+    who = provider_label(base_url)
     try:
         response = requests.post(
             f"{base_url}/chat/completions",
@@ -511,23 +567,26 @@ def _ask_once(
         return _json_object(str(content))
     except requests.Timeout as exc:
         raise RuntimeError(
-            "OpenAI timed out. Retry once; no CV changes were saved."
+            f"{who} timed out. Retry once; no CV changes were saved."
         ) from exc
     except requests.HTTPError as exc:
         status = exc.response.status_code if exc.response is not None else "unknown"
-        if status == 401:
+        # Not every provider answers a missing key with 401: Google returns a
+        # 400 saying so. Reporting that as a generic bad request sends someone
+        # hunting through their request instead of their key.
+        if status == 401 or (status == 400 and _is_auth_error(exc.response)):
             raise RuntimeError(
-                "OpenAI API key is invalid or expired. Check your key."
+                f"The {who} API key is missing, invalid, or expired. Check your key."
             ) from exc
         if status == 429:
             raise RuntimeError(
-                "OpenAI rate limit hit. Wait a moment and retry."
+                f"{who} rate limit hit. Wait a moment and retry."
             ) from exc
         raise RuntimeError(
-            f"OpenAI API returned HTTP {status}. Check the key and account balance."
+            f"{who} returned HTTP {status}. Check the key and account balance."
         ) from exc
     except (requests.RequestException, KeyError, IndexError, TypeError, ValueError) as exc:
-        raise RuntimeError(f"OpenAI request failed: {exc}") from exc
+        raise RuntimeError(f"{who} request failed: {exc}") from exc
 
 
 # ── Rules every call shares ──────────────────────────────────────────────────
