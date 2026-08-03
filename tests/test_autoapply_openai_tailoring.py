@@ -309,3 +309,86 @@ class ProviderEndpointTests(unittest.TestCase):
         )
         # A local runtime has no account, so no bearer token is sent.
         self.assertNotIn("Authorization", request.call_args.kwargs["headers"])
+
+
+class ProviderCompatibilityTests(unittest.TestCase):
+    """Third-party endpoints accept a different subset of the same API."""
+
+    def _body(self):
+        from autoapply.openai_tailoring import _request_body
+
+        return _request_body("s", "u", model="gpt-4o-mini", max_tokens=100)
+
+    def test_an_endpoint_wanting_the_older_token_field_gets_it(self):
+        from autoapply.openai_tailoring import _without_rejected
+
+        response = Mock()
+        response.json.return_value = {
+            "error": {"message": "Unsupported parameter: 'max_completion_tokens'"}
+        }
+        reduced = _without_rejected(self._body(), response)
+        self.assertIn("max_tokens", reduced)
+        self.assertNotIn("max_completion_tokens", reduced)
+        self.assertEqual(reduced["max_tokens"], 100)
+
+    def test_an_endpoint_without_json_mode_still_gets_a_request(self):
+        from autoapply.openai_tailoring import _without_rejected
+
+        response = Mock()
+        response.json.return_value = {
+            "error": {"message": "'response_format' is not supported"}
+        }
+        reduced = _without_rejected(self._body(), response)
+        self.assertNotIn("response_format", reduced)
+        self.assertIn("messages", reduced)
+
+    def test_an_unrelated_error_is_not_papered_over(self):
+        from autoapply.openai_tailoring import _without_rejected
+
+        response = Mock()
+        response.json.return_value = {"error": {"message": "invalid model"}}
+        self.assertIsNone(_without_rejected(self._body(), response))
+
+    def test_fixed_temperature_models_do_not_send_one(self):
+        from autoapply.openai_tailoring import _request_body
+
+        self.assertNotIn(
+            "temperature",
+            _request_body("s", "u", model="gpt-5.5", max_tokens=10),
+        )
+
+
+class UsageAccountingTests(unittest.TestCase):
+    def test_tokens_are_totalled_across_calls(self):
+        from autoapply.openai_tailoring import _ask_once, track_usage
+
+        response = Mock()
+        response.status_code = 200
+        response.raise_for_status.return_value = None
+        response.json.return_value = {
+            "choices": [{"message": {"content": '{"ok":true}'}}],
+            "usage": {"prompt_tokens": 120, "completion_tokens": 45},
+        }
+        with patch("autoapply.openai_tailoring.requests.post", return_value=response):
+            with track_usage() as usage:
+                for _ in range(3):
+                    _ask_once("s", "u", api_key="k", model="m",
+                              max_tokens=10, timeout=5)
+                counted = usage()
+        self.assertEqual(counted, {"input": 360, "output": 135, "calls": 3})
+
+    def test_usage_outside_a_tracked_block_is_not_collected(self):
+        from autoapply.openai_tailoring import _ask_once, track_usage
+
+        response = Mock()
+        response.status_code = 200
+        response.raise_for_status.return_value = None
+        response.json.return_value = {
+            "choices": [{"message": {"content": '{"ok":true}'}}],
+            "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+        }
+        with patch("autoapply.openai_tailoring.requests.post", return_value=response):
+            _ask_once("s", "u", api_key="k", model="m", max_tokens=10, timeout=5)
+            with track_usage() as usage:
+                counted = usage()
+        self.assertEqual(counted["calls"], 0)
