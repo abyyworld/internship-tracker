@@ -44,8 +44,67 @@ from .tailoring import concepts
 from .models import Job
 
 
-OPENAI_ENDPOINT = "https://api.openai.com/v1/chat/completions"
-OPENAI_MODELS_ENDPOINT = "https://api.openai.com/v1/models"
+# Any OpenAI-compatible endpoint. The wire format is the same across OpenAI,
+# Ollama, Groq, OpenRouter, Google's compatibility layer, and GitHub Models,
+# so pointing at a different base URL is the whole of switching provider —
+# including to a model running on this machine for nothing.
+OPENAI_BASE_DEFAULT = "https://api.openai.com/v1"
+PROVIDERS = {
+    "openai": {"label": "OpenAI", "base": "https://api.openai.com/v1",
+               "key": "required", "models": []},
+    "ollama": {"label": "Ollama (on this machine, free)",
+               "base": "http://127.0.0.1:11434/v1", "key": "none", "models": []},
+    "groq": {"label": "Groq (free tier)", "base": "https://api.groq.com/openai/v1",
+             "key": "required", "models": []},
+    "openrouter": {"label": "OpenRouter (has free models)",
+                   "base": "https://openrouter.ai/api/v1", "key": "required",
+                   "models": []},
+    "cerebras": {"label": "Cerebras (free tier)", "base": "https://api.cerebras.ai/v1",
+                 "key": "required", "models": []},
+    "together": {"label": "Together AI", "base": "https://api.together.xyz/v1",
+                 "key": "required", "models": []},
+    "github": {"label": "GitHub Models (free with a GitHub account)",
+               "base": "https://models.inference.ai.azure.com", "key": "required",
+               "models": []},
+    # Google serves an OpenAI-compatible chat endpoint but no model listing on
+    # it, so the picker is seeded rather than discovered.
+    "gemini": {"label": "Google AI Studio (free tier)",
+               "base": "https://generativelanguage.googleapis.com/v1beta/openai",
+               "key": "required",
+               "models": ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"]},
+}
+
+
+def base_url_path(home: Path) -> Path:
+    return home / "ai-endpoint.txt"
+
+
+def load_base_url(home: Path) -> str:
+    path = base_url_path(home)
+    if path.exists() and not path.is_symlink():
+        value = path.read_text(encoding="utf-8").strip()
+        if value.startswith(("https://", "http://127.0.0.1", "http://localhost")):
+            return value.rstrip("/")
+    return OPENAI_BASE_DEFAULT
+
+
+def save_base_url(home: Path, value: str) -> str:
+    url = str(value or "").strip().rstrip("/")
+    # Remote providers must be HTTPS; a local runtime is exempt because
+    # loopback traffic never leaves the machine.
+    if not url.startswith(("https://", "http://127.0.0.1", "http://localhost")):
+        raise ValueError("The endpoint must be HTTPS, or a local address")
+    if len(url) > 200:
+        raise ValueError("That endpoint URL is too long")
+    home.mkdir(parents=True, exist_ok=True, mode=0o700)
+    path = base_url_path(home)
+    path.write_text(url + "\n", encoding="utf-8")
+    path.chmod(0o600)
+    return url
+
+
+def is_local(base_url: str) -> bool:
+    return base_url.startswith(("http://127.0.0.1", "http://localhost"))
 # Preference order, best value first. The account decides what it actually has;
 # this only says which to reach for.
 #
@@ -108,10 +167,19 @@ def openai_key_path(home: Path) -> Path:
 
 
 def openai_key_configured(home: Path) -> bool:
+    if is_local(load_base_url(home)):
+        return True
     try:
         return bool(load_openai_key(home))
     except (FileNotFoundError, RuntimeError):
         return False
+
+
+def load_key_for(home: Path) -> str:
+    """The key for the configured endpoint, or none when it is local."""
+    if is_local(load_base_url(home)):
+        return ""
+    return load_openai_key(home)
 
 
 def load_openai_key(home: Path) -> str:
@@ -216,12 +284,17 @@ def save_model(home: Path, value: str) -> str:
     return chosen
 
 
-def available_models(api_key: str, *, timeout: int = 20) -> list[str]:
-    """Chat models on this account, best first, then the rest alphabetically."""
+def available_models(
+    api_key: str,
+    *,
+    timeout: int = 20,
+    base_url: str = OPENAI_BASE_DEFAULT,
+) -> list[str]:
+    """Chat models this endpoint offers, best first, then the rest."""
     try:
         response = requests.get(
-            OPENAI_MODELS_ENDPOINT,
-            headers={"Authorization": f"Bearer {api_key}"},
+            f"{base_url}/models",
+            headers=({"Authorization": f"Bearer {api_key}"} if api_key else {}),
             timeout=timeout,
         )
         response.raise_for_status()
@@ -229,14 +302,27 @@ def available_models(api_key: str, *, timeout: int = 20) -> list[str]:
     except (requests.RequestException, KeyError, TypeError, ValueError) as exc:
         raise RuntimeError(f"Could not list OpenAI models: {exc}") from exc
     skip = ("audio", "realtime", "transcribe", "tts", "image", "embedding",
-            "moderation", "search", "codex", "instruct")
+            "moderation", "search", "codex", "instruct", "whisper", "guard")
     usable = sorted(
         name for name in found
-        if name.startswith(("gpt-", "o3", "o4"))
-        and not any(word in name for word in skip)
+        if not any(word in name for word in skip)
     )
     preferred = [name for name in MODEL_PREFERENCE if name in found]
     return preferred + [name for name in usable if name not in preferred]
+
+
+def models_for(base_url: str, api_key: str) -> list[str]:
+    """Models to offer for an endpoint, asking it first and seeding if it cannot say."""
+    try:
+        found = available_models(api_key, base_url=base_url)
+    except RuntimeError:
+        found = []
+    if found:
+        return found
+    for provider in PROVIDERS.values():
+        if provider["base"] == base_url and provider["models"]:
+            return list(provider["models"])
+    return []
 
 
 def best_available_model(api_key: str) -> str:
@@ -285,6 +371,7 @@ def _ask(
     model: str,
     max_tokens: int,
     timeout: int,
+    base_url: str = OPENAI_BASE_DEFAULT,
 ) -> dict[str, Any]:
     """One chat completion, decoded as a JSON object.
 
@@ -297,7 +384,7 @@ def _ask(
             return _ask_once(
                 system, user,
                 api_key=api_key, model=model,
-                max_tokens=max_tokens, timeout=timeout,
+                max_tokens=max_tokens, timeout=timeout, base_url=base_url,
             )
         except RuntimeError as exc:
             if attempt == 2 or "timed out" not in str(exc):
@@ -313,14 +400,15 @@ def _ask_once(
     model: str,
     max_tokens: int,
     timeout: int,
+    base_url: str = OPENAI_BASE_DEFAULT,
 ) -> dict[str, Any]:
+    headers = {"Content-Type": "application/json"}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
     try:
         response = requests.post(
-            OPENAI_ENDPOINT,
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
+            f"{base_url}/chat/completions",
+            headers=headers,
             json={
                 "model": model,
                 "messages": [
@@ -430,6 +518,7 @@ def _strategy(
     api_key: str,
     model: str,
     timeout: int,
+    base_url: str = OPENAI_BASE_DEFAULT,
 ) -> dict[str, Any]:
     """Read the posting once: requirements, running order, and the summary."""
     drop_rule = (
@@ -497,7 +586,7 @@ def _strategy(
     return _ask(
         system, user,
         api_key=api_key, model=model,
-        max_tokens=MAX_STRATEGY_OUTPUT_TOKENS, timeout=timeout,
+        max_tokens=MAX_STRATEGY_OUTPUT_TOKENS, timeout=timeout, base_url=base_url,
     )
 
 
@@ -512,6 +601,7 @@ def _rewrite_section(
     api_key: str,
     model: str,
     timeout: int,
+    base_url: str = OPENAI_BASE_DEFAULT,
 ) -> dict[str, Any]:
     """Rewrite every line of one section against the posting's requirements."""
     scope = (
@@ -586,7 +676,7 @@ def _rewrite_section(
     return _ask(
         system, user,
         api_key=api_key, model=model,
-        max_tokens=MAX_SECTION_OUTPUT_TOKENS, timeout=timeout,
+        max_tokens=MAX_SECTION_OUTPUT_TOKENS, timeout=timeout, base_url=base_url,
     )
 
 
@@ -606,6 +696,7 @@ def _repair(
     api_key: str,
     model: str,
     timeout: int,
+    base_url: str = OPENAI_BASE_DEFAULT,
 ) -> dict[str, Any]:
     """Re-request the rewrites that came back the wrong shape."""
     system = (
@@ -632,7 +723,7 @@ def _repair(
     return _ask(
         system, user,
         api_key=api_key, model=model,
-        max_tokens=MAX_SECTION_OUTPUT_TOKENS, timeout=timeout,
+        max_tokens=MAX_SECTION_OUTPUT_TOKENS, timeout=timeout, base_url=base_url,
     )
 
 
@@ -645,13 +736,14 @@ def generate_suggestions(
     mode: str = "full",
     model: str = OPENAI_MODEL_DEFAULT,
     timeout: int = 120,
+    base_url: str = OPENAI_BASE_DEFAULT,
 ) -> dict[str, Any]:
     if mode not in {"targeted", "full", "aggressive"}:
         raise ValueError("Unknown tailoring mode")
 
     plan = _strategy(
         job, document, instructions, mode,
-        api_key=api_key, model=model, timeout=timeout,
+        api_key=api_key, model=model, timeout=timeout, base_url=base_url,
     )
     requirements = _clean_list(plan.get("requirements"), limit=14, chars=200)
     priorities = _clean_list(plan.get("priorities"), limit=5, chars=200)
@@ -662,7 +754,7 @@ def generate_suggestions(
             pool.submit(
                 _rewrite_section,
                 section, job, requirements, priorities, instructions, mode,
-                api_key=api_key, model=model, timeout=timeout,
+                api_key=api_key, model=model, timeout=timeout, base_url=base_url,
             )
             for section in sections
         ]
@@ -908,7 +1000,7 @@ def generate_suggestions(
         try:
             repaired = _repair(
                 job, broken[:16], requirements,
-                api_key=api_key, model=model, timeout=timeout,
+                api_key=api_key, model=model, timeout=timeout, base_url=base_url,
             )
         except RuntimeError:
             repaired = {}
@@ -977,6 +1069,7 @@ def find_questions(
     api_key: str,
     model: str = OPENAI_MODEL_DEFAULT,
     timeout: int = 120,
+    base_url: str = OPENAI_BASE_DEFAULT,
 ) -> list[dict[str, Any]]:
     """Pull the open-ended questions the application itself asks.
 
@@ -1006,7 +1099,7 @@ def find_questions(
     found = _ask(
         system, user,
         api_key=api_key, model=model,
-        max_tokens=MAX_STRATEGY_OUTPUT_TOKENS, timeout=timeout,
+        max_tokens=MAX_STRATEGY_OUTPUT_TOKENS, timeout=timeout, base_url=base_url,
     )
     questions = []
     for index, item in enumerate(list(found.get("questions") or [])[:12]):
@@ -1075,6 +1168,7 @@ def write_answers(
     want_outreach: bool = False,
     model: str = OPENAI_MODEL_DEFAULT,
     timeout: int = 180,
+    base_url: str = OPENAI_BASE_DEFAULT,
 ) -> dict[str, Any]:
     """Draft answers, a cover letter, and an outreach note from the CV alone."""
     name = str(document.get("header", {}).get("name", "")).strip()
@@ -1135,7 +1229,7 @@ def write_answers(
     written = _ask(
         system, user,
         api_key=api_key, model=model,
-        max_tokens=MAX_ANSWER_OUTPUT_TOKENS, timeout=timeout,
+        max_tokens=MAX_ANSWER_OUTPUT_TOKENS, timeout=timeout, base_url=base_url,
     )
 
     # The same evidence rules the CV rewrites obey, applied to prose the
