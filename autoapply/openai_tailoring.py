@@ -23,6 +23,8 @@ from __future__ import annotations
 
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
+import threading
 import json
 import os
 from pathlib import Path
@@ -392,6 +394,79 @@ def _ask(
     raise RuntimeError("OpenAI request failed")
 
 
+# Token accounting. Every provider reports usage the same way, so the cost of
+# one tailoring is measurable rather than estimated — which is the only way to
+# compare a free tier against a paid one honestly.
+_usage_lock = threading.Lock()
+_usage: dict[str, int] | None = None
+
+
+@contextmanager
+def track_usage():
+    """Collect token usage for everything run inside the block."""
+    global _usage
+    with _usage_lock:
+        _usage = {"input": 0, "output": 0, "calls": 0}
+    try:
+        yield lambda: dict(_usage or {})
+    finally:
+        with _usage_lock:
+            _usage = None
+
+
+def _record_usage(payload: dict[str, Any]) -> None:
+    usage = payload.get("usage") or {}
+    with _usage_lock:
+        if _usage is None:
+            return
+        _usage["input"] += int(usage.get("prompt_tokens", 0) or 0)
+        _usage["output"] += int(usage.get("completion_tokens", 0) or 0)
+        _usage["calls"] += 1
+
+
+# Parameters no provider is required to support. `max_completion_tokens` is
+# the newer spelling; older and third-party endpoints still expect `max_tokens`.
+OPTIONAL_PARAMS = ("response_format", "temperature", "max_completion_tokens")
+
+
+def _request_body(
+    system: str, user: str, *, model: str, max_tokens: int
+) -> dict[str, Any]:
+    body: dict[str, Any] = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+        "max_completion_tokens": max_tokens,
+        # Constrain decoding to valid JSON so a stray prose preamble cannot
+        # waste a whole generation and force the user to retry.
+        "response_format": {"type": "json_object"},
+    }
+    if not model.startswith(FIXED_TEMPERATURE_MODELS):
+        body["temperature"] = TEMPERATURE
+    return body
+
+
+def _without_rejected(
+    body: dict[str, Any], response: Any
+) -> dict[str, Any] | None:
+    """Drop the parameter a 400 complained about, if it is an optional one."""
+    try:
+        message = str(response.json().get("error", {}).get("message", ""))
+    except Exception:
+        return None
+    for name in OPTIONAL_PARAMS:
+        if name in message and name in body:
+            reduced = dict(body)
+            value = reduced.pop(name)
+            # An endpoint that rejects the new spelling wants the old one.
+            if name == "max_completion_tokens":
+                reduced["max_tokens"] = value
+            return reduced
+    return None
+
+
 def _ask_once(
     system: str,
     user: str,
@@ -405,30 +480,28 @@ def _ask_once(
     headers = {"Content-Type": "application/json"}
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
+    body = _request_body(system, user, model=model, max_tokens=max_tokens)
     try:
         response = requests.post(
             f"{base_url}/chat/completions",
             headers=headers,
-            json={
-                "model": model,
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user},
-                ],
-                **(
-                    {}
-                    if model.startswith(FIXED_TEMPERATURE_MODELS)
-                    else {"temperature": TEMPERATURE}
-                ),
-                "max_completion_tokens": max_tokens,
-                # Constrain decoding to valid JSON so a stray prose preamble
-                # cannot waste a whole generation and force the user to retry.
-                "response_format": {"type": "json_object"},
-            },
+            json=body,
             timeout=timeout,
         )
+        # Providers differ on which optional parameters they accept. Rather
+        # than maintain a compatibility matrix, drop whatever one objects to
+        # and ask again: the request still works, just less constrained.
+        if response.status_code == 400:
+            reduced = _without_rejected(body, response)
+            if reduced is not None:
+                response = requests.post(
+                    f"{base_url}/chat/completions",
+                    headers=headers, json=reduced, timeout=timeout,
+                )
         response.raise_for_status()
-        content = response.json()["choices"][0]["message"]["content"]
+        payload = response.json()
+        _record_usage(payload)
+        content = payload["choices"][0]["message"]["content"]
         if isinstance(content, list):
             content = "".join(
                 str(part.get("text", ""))
