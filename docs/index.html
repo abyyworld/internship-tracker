@@ -77,6 +77,19 @@ h2{font-size:17px;line-height:1.25;margin:3px 0 0;letter-spacing:-.018em}
 .meta{display:grid;gap:7px;color:var(--muted);font-size:12px;margin-top:3px}
 .meta div{display:flex;gap:8px}.meta b{color:#cfddd8;font-weight:700;min-width:58px}
 .focus{margin:13px 0;color:#b9cbc4;font-size:12px}
+.fitbar{display:none;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 14px;margin:0 0 12px;
+  border:1px solid #396b55;border-radius:14px;background:#102b20;font-size:13px}
+.fitbar.show{display:flex}
+.fitbar b{color:var(--green)}
+.fitchip{border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--muted);
+  padding:6px 11px;cursor:pointer;font-size:12px;font-weight:700}
+.fitchip.active{border-color:var(--green2);color:var(--green);background:#173327}
+.badge.fit-apply{border-color:#2b7b58;color:var(--green);background:#102b1e}
+.badge.fit-sponsor{border-color:#876f39;color:var(--amber);background:#241d10}
+.badge.fit-mismatch{border-color:#6b3a3a;color:var(--red);background:#1a0f0f}
+.whyfit{margin:10px 0 0;font-size:11.5px;color:var(--muted);line-height:1.45}
+.whyfit b{color:#cfddd8;font-weight:700}
+.card.dim{opacity:.55}
 .supervisors{margin:12px 0 2px;padding:11px 12px;border:1px solid #5a3e8a;border-radius:12px;
   background:#170f24}
 .supervisors b{display:block;color:var(--purple);font-size:11px;letter-spacing:.05em;
@@ -108,7 +121,7 @@ footer a{color:var(--green)}
 <body>
 <div class="shell" data-autoapply-dashboard>
 <header>
-  <div class="eyebrow"><i class="pulse"></i>verified role intelligence · updated 2026-08-02</div>
+  <div class="eyebrow"><i class="pulse"></i>verified role intelligence · updated 2026-08-03</div>
   <div class="hero">
     <h1>Find the role.<br><span>Tailor. Apply.</span></h1>
     <p class="intro">Internships, research assistantships, PhD fellowships, postdocs, and new-grad roles — worldwide, across every CS and STEM domain. AI-tailored CV editing built in.</p>
@@ -150,6 +163,21 @@ footer a{color:var(--green)}
     <button class="chip" id="clear">Clear filters</button>
   </div>
 </section>
+<div class="fitbar" id="fitOffer">
+  <b>Check these against your own profile</b>
+  <span class="muted" style="font-size:12px">Your local helper can mark which of these
+  you can actually apply to, by work authorisation and graduation date. It stays on your machine.</span>
+  <span class="spacer"></span>
+  <a class="btn primary" href="http://127.0.0.1:8765/dashboard">Open my local tracker</a>
+</div>
+<div class="fitbar" id="fitbar">
+  <b id="fitSummary"></b>
+  <span class="muted" style="font-size:12px">Checked on your machine against your profile — never published.</span>
+  <span class="spacer"></span>
+  <button class="fitchip" data-fit="apply">Can apply now</button>
+  <button class="fitchip" data-fit="sponsor">Needs sponsorship</button>
+  <button class="fitchip" data-fit="hide-mismatch">Hide date mismatches</button>
+</div>
 <div class="resultbar">
   <div><strong id="resultCount">0 roles</strong> <span id="context"></span></div>
   <select id="sort" class="control sort">
@@ -184,6 +212,10 @@ const prettyLevel=v=>LEVEL_LABELS[v]||v;
 const prettyTerm=v=>TERM_LABELS[v]||v;
 const prettyRegion=v=>REGION_LABELS[v]||v;
 let category="All", posType="All types", visible=PAGE;
+// Personal fit verdicts, fetched from the local helper when it is running.
+// They are never baked into this page: it is public.
+let FIT={}, fitFilter="";
+const FIT_LABELS={apply:"you can apply",sponsor:"needs sponsorship",mismatch:"date mismatch"};
 const $=id=>document.getElementById(id);
 const esc=value=>{const d=document.createElement("div");d.textContent=value??"";return d.innerHTML};
 const norm=value=>(value||"").toString().toLowerCase();
@@ -226,6 +258,12 @@ function supervisors(j){
     </div>
   </div>`;
 }
+const fitOf=j=>FIT[j.url]||null;
+function whyFit(j){
+  const f=fitOf(j);
+  if(!f||!f.reasons||!f.reasons.length)return "";
+  return `<p class="whyfit"><b>${esc(FIT_LABELS[f.status]||f.status)}:</b> ${esc(f.reasons[0])}</p>`;
+}
 function card(j){
   const badges=[
     categoryBadge(j.category),
@@ -233,11 +271,14 @@ function card(j){
     j.tier?`<span class="badge ${esc(j.tier)}">${esc(j.tier)}</span>`:"",
     j.new?`<span class="badge new">new</span>`:"",
     j.tailor?`<span class="badge ai">AI CV editor</span>`:"",
-    j.university?`<span class="badge phd">supervisors listed</span>`:""
+    j.university?`<span class="badge phd">supervisors listed</span>`:"",
+    fitOf(j)&&FIT_LABELS[fitOf(j).status]
+      ?`<span class="badge fit-${esc(fitOf(j).status)}">${esc(FIT_LABELS[fitOf(j).status])}</span>`:""
   ].filter(Boolean).join("");
   const focus=j.focus?`<p class="focus">${esc(j.focus.replaceAll(",",", "))}</p>`:"";
   const localUrl=`http://127.0.0.1:8765/editor?url=${encodeURIComponent(j.url)}`;
-  return `<article class="card">
+  const f=fitOf(j);
+  return `<article class="card${f&&f.status==="mismatch"?" dim":""}">
     <div class="cardhead"><div class="logo">${esc(initials(j.company))}</div><div>
       <div class="company">${esc(j.company)}</div><h2>${esc(j.role)}</h2></div></div>
     <div class="badges">${badges}</div>
@@ -246,7 +287,7 @@ function card(j){
       <div><b>Term</b><span>${esc(prettyTerm(j.term)||"Not stated")} · ${esc(j.work_mode||"unspecified")}</span></div>
       <div><b>Degree</b><span>${esc(prettyLevel(j.level)||"Not stated")}</span></div>
       ${j.company_type&&j.company_type!=="unknown"?`<div><b>Company</b><span>${esc(prettyType(j.company_type))}</span></div>`:""}
-    </div>${focus}${supervisors(j)}
+    </div>${whyFit(j)}${focus}${supervisors(j)}
     <div class="actions">
       <a class="btn primary" href="${esc(localUrl)}" target="_blank" rel="noopener">✦ Edit CV for this job</a>
       <a class="btn secondary job-link" data-no-autoapply="1" href="${esc(j.url)}" target="_blank" rel="noopener">Open only</a>
@@ -259,7 +300,7 @@ function state(){
     newOnly:$("newOnly").checked,officialOnly:$("officialOnly").checked,
     remoteOnly:$("remoteOnly").checked,startupOnly:$("startupOnly").checked,
     academicOnly:$("academicOnly").checked,
-    sort:$("sort").value,category,posType};
+    sort:$("sort").value,category,posType,fit:fitFilter};
 }
 function matches(j,s){
   const hay=norm([j.company,j.role,j.location,j.region,j.focus,j.category,j.position_type].join(" "));
@@ -270,7 +311,34 @@ function matches(j,s){
     (!s.tier||(s.tier==="standard"?!j.tier:j.tier===s.tier))&&
     (s.category==="All"||j.category===s.category)&&typeMatch&&(!s.newOnly||j.new)&&
     (!s.officialOnly||j.official_ats)&&(!s.remoteOnly||j.work_mode==="remote")&&
-    (!s.startupOnly||isStartup(j))&&(!s.academicOnly||!!j.university);
+    (!s.startupOnly||isStartup(j))&&(!s.academicOnly||!!j.university)&&matchesFit(j,s.fit);
+}
+function matchesFit(j,mode){
+  if(!mode)return true;
+  const f=fitOf(j);
+  if(mode==="hide-mismatch")return !f||f.status!=="mismatch";
+  return !!f&&f.status===mode;
+}
+const LOCAL=location.port==="8765";
+async function loadFit(){
+  const token=localStorage.getItem("autoapply_bridge_token_v1")||"";
+  // Verdicts need the local helper. Served from it, this is a same-origin
+  // request; on the public page it is not, and browsers now gate loopback
+  // requests from public sites behind a permission prompt, so the page offers
+  // a link to the local copy instead of failing quietly.
+  if(token.length<32)return;
+  if(!LOCAL){$("fitOffer").classList.add("show");return}
+  try{
+    const r=await fetch("/api/fit",{headers:{"X-Autoapply-Token":token}});
+    if(!r.ok)return;
+    const result=await r.json();
+    FIT=result.fit||{};
+    const c=result.counts||{};
+    $("fitSummary").textContent=
+      `${c.apply||0} you can apply to · ${c.sponsor||0} need sponsorship · ${c.mismatch||0} ruled out by date`;
+    $("fitbar").classList.add("show");
+    render();
+  }catch(e){/* the helper is not running; the page stays as it is */}
 }
 function sorted(list,mode){
   return [...list].sort((a,b)=>{
@@ -319,7 +387,15 @@ $("sort").addEventListener("change",()=>{visible=PAGE;render()});
 $("loadMore").onclick=()=>{visible+=PAGE;render()};
 $("clear").onclick=()=>{document.querySelectorAll(".filters input").forEach(x=>{x.type==="checkbox"?x.checked=false:x.value=""});
   document.querySelectorAll(".filters select").forEach(x=>x.value="");$("sort").value="recommended";category="All";posType="All types";visible=PAGE;render()};
-restore();render();
+$("fitbar").onclick=e=>{
+  const want=e.target.dataset.fit;
+  if(!want)return;
+  fitFilter=fitFilter===want?"":want;
+  document.querySelectorAll(".fitchip").forEach(x=>
+    x.classList.toggle("active",x.dataset.fit===fitFilter));
+  visible=PAGE;render();
+};
+restore();render();loadFit();
 </script>
 </body>
 </html>

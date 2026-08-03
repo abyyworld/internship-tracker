@@ -357,6 +357,15 @@ border-radius:13px;font-size:13px}
       </div>
     </div>
 
+    <div class="card" id="modelCard">
+      <div class="eyebrow">Model</div>
+      <p class="hint" style="margin-top:4px">Default is the best value measured
+      on your CV. Larger models rewrite one or two more lines for roughly
+      double the wait and cost — worth it for a job you really want.</p>
+      <select id="modelSelect" class="key" style="margin-top:6px"></select>
+      <p class="hint" id="modelNote"></p>
+    </div>
+
     <div class="card" id="keyCard">
       <div class="eyebrow">OpenAI key</div>
       <p class="muted" style="font-size:12px" id="keyStatus">Checking…</p>
@@ -1193,6 +1202,27 @@ async function saveKey(){
     $("keyInput").value="";state.ai_configured=true;renderKey();toast("OpenAI key saved privately")}
   catch(err){notice(err.message,"error")}
 }
+function renderModel(){
+  const sel=$("modelSelect");sel.replaceChildren();
+  const list=state.models||[];
+  if(!list.length){
+    $("modelNote").textContent="Add your key to choose a model.";
+    sel.disabled=true;return;
+  }
+  sel.disabled=false;
+  for(const name of list){
+    const o=document.createElement("option");o.value=name;o.textContent=name;
+    if(name===state.model)o.selected=true;
+    sel.append(o);
+  }
+  $("modelNote").textContent=`Using ${state.model}. Recommended: ${list[0]}.`;
+}
+async function saveModel(name){
+  try{
+    const r=await api("/api/settings/model",{method:"POST",body:JSON.stringify({model:name})});
+    state.model=r.model;renderModel();toast("Model set to "+r.model);
+  }catch(err){notice(err.message,"error")}
+}
 function renderKey(){
   $("keyStatus").textContent=state.ai_configured?
     "Configured ✓  Replace only if needed.":"Not configured — paste your OpenAI key.";
@@ -1240,7 +1270,7 @@ async function loadCv(id){
   $("exportName").textContent=state.suggested_cv_name
     ?`Saves as “${(state.document.header.name||"").trim()} - ${state.suggested_cv_name} - CV.pdf”`:"";
   flag("Saved");
-  renderCvPicker();renderCvList();renderKey();renderAll();
+  renderCvPicker();renderCvList();renderKey();renderModel();renderAll();
 }
 async function init(){
   if(token.length<32){showInitError("Browser connection missing — open start-autoapply.command once, then reload.");return}
@@ -1260,6 +1290,7 @@ $("exportPdf").onclick=exportPdf;
 $("saveAsCv").onclick=saveAsCv;
 $("newCvName").oninput=()=>{nameTouched=true};
 $("writeAnswers").onclick=writeAnswers;
+$("modelSelect").onchange=e=>saveModel(e.target.value);
 $("tabs").onclick=e=>{if(e.target.dataset.tab)showTab(e.target.dataset.tab)};
 $("cvSelect").onchange=async e=>{
   try{await loadCv(e.target.value);toast("Switched CV")}

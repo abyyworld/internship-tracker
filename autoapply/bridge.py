@@ -40,10 +40,14 @@ from .cv_library import (
     save_cv,
 )
 from .editor_ui import EDITOR_PAGE
+from .fit import assess_all, read_postings
 from .jobs import jobs_from_tracker
 from .openai_tailoring import (
     OPENAI_MODEL_DEFAULT,
+    available_models,
     find_questions,
+    load_model,
+    save_model,
     generate_suggestions,
     load_openai_key,
     openai_key_configured,
@@ -57,6 +61,17 @@ from .store import Store
 
 MAX_REQUEST_BYTES = 262144
 DOWNLOAD_TTL = timedelta(minutes=5)
+
+# The published dashboard is a different origin from this loopback server, so
+# reading fit verdicts from it needs an explicit grant. Exactly one origin is
+# allowed and only for the read-only verdict route: everything else on this
+# server stays same-origin, and every route still requires the bridge token.
+DASHBOARD_ORIGINS = ("https://abyyworld.github.io",)
+
+
+def _allowed_origin(value: str) -> str:
+    origin = str(value or "").strip()
+    return origin if origin in DASHBOARD_ORIGINS else ""
 
 
 def _now() -> datetime:
@@ -225,9 +240,38 @@ class BridgeHandler(BaseHTTPRequestHandler):
     def log_message(self, _format: str, *_args: Any) -> None:
         return
 
+    def _cors(self) -> None:
+        origin = _allowed_origin(self.headers.get("Origin", ""))
+        if origin:
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
+
+    def do_OPTIONS(self) -> None:
+        # Preflight for the dashboard's verdict fetch, which carries the token
+        # header. Only that one route is offered.
+        if urlparse(self.path).path != "/api/fit" or not _allowed_origin(
+            self.headers.get("Origin", "")
+        ):
+            self.send_response(404)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        self.send_response(204)
+        self._cors()
+        self.send_header("Access-Control-Allow-Headers", "X-Autoapply-Token")
+        self.send_header("Access-Control-Allow-Methods", "GET")
+        self.send_header("Access-Control-Max-Age", "600")
+        # A public page reaching a loopback address is a private-network
+        # request, which Chrome refuses unless the preflight grants it.
+        if self.headers.get("Access-Control-Request-Private-Network") == "true":
+            self.send_header("Access-Control-Allow-Private-Network", "true")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def _json(self, status: int, value: dict[str, Any]) -> None:
         body = json.dumps(value, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
+        self._cors()
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
@@ -293,6 +337,13 @@ class BridgeHandler(BaseHTTPRequestHandler):
         self.server.refresh_jobs_if_tracker_changed()
         with Store(database_path(self.server.home)) as store:
             return store.find_job_by_url(url)
+
+    def _models(self) -> list[str]:
+        """What this account can actually run, so the picker is never a guess."""
+        try:
+            return available_models(load_openai_key(self.server.home))[:12]
+        except (FileNotFoundError, RuntimeError):
+            return []
 
     def _person_name(self) -> str:
         try:
@@ -382,9 +433,55 @@ class BridgeHandler(BaseHTTPRequestHandler):
                         "ai_configured": openai_key_configured(
                             self.server.home
                         ),
+                        "model": load_model(self.server.home),
+                        "models": self._models(),
                     },
                 )
             except (FileNotFoundError, KeyError, OSError, RuntimeError, ValueError) as exc:
+                self._json(422, {"error": str(exc)})
+            return
+        if parsed_request.path == "/dashboard":
+            # The published page is public and carries no personal verdicts.
+            # Served from here it is same-origin with the API, so the fit
+            # judgements load without a cross-origin grant — which Chrome now
+            # gates behind a permission prompt for loopback addresses anyway.
+            page = Path(__file__).resolve().parent.parent / "docs" / "index.html"
+            if not page.is_file():
+                self._html(404, LOCAL_PAGE_ERROR.replace(
+                    "__ERROR__",
+                    "docs/index.html has not been built yet. Run python3 dashboard.py.",
+                ))
+                return
+            self._html(200, page.read_text(encoding="utf-8"))
+            return
+        if parsed_request.path == "/api/fit":
+            # Verdicts live here, never in docs/index.html: the public page must
+            # not carry anybody's visa status or graduation date.
+            if not self._authorized():
+                self._json(401, {"error": "Bridge token required"})
+                return
+            try:
+                profile = load_yaml(profile_path(self.server.home))
+                # Straight from the tracker rather than the database: this is a
+                # read of the current listing, and it must not wait behind a
+                # generation holding the SQLite write lock.
+                jobs = read_postings(self.server.tracker)
+                verdicts = assess_all(jobs, profile, today_year=_now().year)
+                self._json(
+                    200,
+                    {
+                        "ok": True,
+                        "fit": {job.url: verdicts[job.id] for job in jobs},
+                        "counts": {
+                            status: sum(
+                                1 for value in verdicts.values()
+                                if value["status"] == status
+                            )
+                            for status in ("apply", "sponsor", "check", "mismatch")
+                        },
+                    },
+                )
+            except (FileNotFoundError, OSError, RuntimeError, ValueError) as exc:
                 self._json(422, {"error": str(exc)})
             return
         if parsed_request.path == "/api/cvs":
@@ -453,6 +550,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
         if parsed_request.path not in {
             "/prepare",
             "/api/settings/openai",
+            "/api/settings/model",
             "/api/suggest",
             "/api/answers",
             "/api/draft",
@@ -470,6 +568,14 @@ class BridgeHandler(BaseHTTPRequestHandler):
             payload = self._payload()
         except ValueError as exc:
             self._json(400, {"error": str(exc)})
+            return
+
+        if parsed_request.path == "/api/settings/model":
+            try:
+                chosen = save_model(self.server.home, payload.get("model", ""))
+                self._json(200, {"ok": True, "model": chosen})
+            except (OSError, RuntimeError, ValueError) as exc:
+                self._json(422, {"error": str(exc)})
             return
 
         if parsed_request.path == "/api/settings/openai":
@@ -537,6 +643,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     api_key=load_openai_key(self.server.home),
                     instructions=instructions,
                     mode=mode,
+                    model=load_model(self.server.home),
                 )
                 generated["cv_id"] = cv_id
                 saved = save_draft(
@@ -569,8 +676,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 ]
                 if not questions:
                     questions = find_questions(
-                        job, api_key=key, model=draft.get("model")
-                        or OPENAI_MODEL_DEFAULT,
+                        job, api_key=key, model=load_model(self.server.home)
                     )
                 extra = str(payload.get("question", "")).strip()
                 if extra:
@@ -584,6 +690,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 written = write_answers(
                     job, document, draft, questions,
                     api_key=key,
+                    model=load_model(self.server.home),
                     instructions=str(payload.get("instructions", ""))[:2000],
                     want_cover_letter=bool(payload.get("cover_letter", True)),
                     want_outreach=bool(payload.get("outreach", False)),
