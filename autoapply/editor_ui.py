@@ -357,6 +357,15 @@ border-radius:13px;font-size:13px}
       </div>
     </div>
 
+    <div class="card" id="providerCard">
+      <div class="eyebrow">Provider</div>
+      <p class="hint" style="margin-top:4px">Anything speaking the OpenAI API
+      works — including a model running on this Mac, which costs nothing and
+      never leaves the machine.</p>
+      <select id="providerSelect" class="key" style="margin-top:6px"></select>
+      <p class="hint" id="providerNote"></p>
+    </div>
+
     <div class="card" id="modelCard">
       <div class="eyebrow">Model</div>
       <p class="hint" style="margin-top:4px">Default is the best value measured
@@ -1202,6 +1211,36 @@ async function saveKey(){
     $("keyInput").value="";state.ai_configured=true;renderKey();toast("OpenAI key saved privately")}
   catch(err){notice(err.message,"error")}
 }
+function renderProvider(){
+  const sel=$("providerSelect");sel.replaceChildren();
+  for(const p of state.providers||[]){
+    const o=document.createElement("option");o.value=p.base;
+    o.textContent=p.label;
+    if(p.base===state.base_url)o.selected=true;
+    sel.append(o);
+  }
+  const known=(state.providers||[]).some(p=>p.base===state.base_url);
+  if(!known&&state.base_url){
+    const o=document.createElement("option");o.value=state.base_url;
+    o.textContent="Custom — "+state.base_url;o.selected=true;sel.append(o);
+  }
+  const local=/^http:\/\/(127\.0\.0\.1|localhost)/.test(state.base_url||"");
+  $("providerNote").textContent=local
+    ?"Running locally. No key needed, no usage limit, nothing sent off this machine."
+    :"Needs a key for this provider below. Free tiers exist for Groq, Google AI Studio, OpenRouter and GitHub Models.";
+  $("keyCard").style.display=local?"none":"";
+}
+async function saveProvider(url){
+  try{
+    const r=await api("/api/settings/endpoint",{method:"POST",
+      body:JSON.stringify({base_url:url})});
+    state.base_url=r.base_url;state.models=r.models||[];
+    if(state.models.length&&!state.models.includes(state.model)){
+      await saveModel(state.models[0]);
+    }
+    renderProvider();renderModel();toast("Provider set");
+  }catch(err){notice(err.message,"error")}
+}
 function renderModel(){
   const sel=$("modelSelect");sel.replaceChildren();
   const list=state.models||[];
@@ -1270,7 +1309,7 @@ async function loadCv(id){
   $("exportName").textContent=state.suggested_cv_name
     ?`Saves as “${(state.document.header.name||"").trim()} - ${state.suggested_cv_name} - CV.pdf”`:"";
   flag("Saved");
-  renderCvPicker();renderCvList();renderKey();renderModel();renderAll();
+  renderCvPicker();renderCvList();renderKey();renderProvider();renderModel();renderAll();
 }
 async function init(){
   if(token.length<32){showInitError("Browser connection missing — open start-autoapply.command once, then reload.");return}
@@ -1291,6 +1330,7 @@ $("saveAsCv").onclick=saveAsCv;
 $("newCvName").oninput=()=>{nameTouched=true};
 $("writeAnswers").onclick=writeAnswers;
 $("modelSelect").onchange=e=>saveModel(e.target.value);
+$("providerSelect").onchange=e=>saveProvider(e.target.value);
 $("tabs").onclick=e=>{if(e.target.dataset.tab)showTab(e.target.dataset.tab)};
 $("cvSelect").onchange=async e=>{
   try{await loadCv(e.target.value);toast("Switched CV")}

@@ -44,9 +44,15 @@ from .fit import assess_all, read_postings
 from .jobs import jobs_from_tracker
 from .openai_tailoring import (
     OPENAI_MODEL_DEFAULT,
+    PROVIDERS,
     available_models,
+    models_for,
     find_questions,
+    is_local,
+    load_base_url,
+    load_key_for,
     load_model,
+    save_base_url,
     save_model,
     generate_suggestions,
     load_openai_key,
@@ -339,9 +345,10 @@ class BridgeHandler(BaseHTTPRequestHandler):
             return store.find_job_by_url(url)
 
     def _models(self) -> list[str]:
-        """What this account can actually run, so the picker is never a guess."""
+        """What this endpoint can actually run, so the picker is never a guess."""
+        base = load_base_url(self.server.home)
         try:
-            return available_models(load_openai_key(self.server.home))[:12]
+            return models_for(base, load_key_for(self.server.home))[:16]
         except (FileNotFoundError, RuntimeError):
             return []
 
@@ -435,6 +442,10 @@ class BridgeHandler(BaseHTTPRequestHandler):
                         ),
                         "model": load_model(self.server.home),
                         "models": self._models(),
+                        "base_url": load_base_url(self.server.home),
+                        "providers": [
+                            {"id": key, **value} for key, value in PROVIDERS.items()
+                        ],
                     },
                 )
             except (FileNotFoundError, KeyError, OSError, RuntimeError, ValueError) as exc:
@@ -551,6 +562,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
             "/prepare",
             "/api/settings/openai",
             "/api/settings/model",
+            "/api/settings/endpoint",
             "/api/suggest",
             "/api/answers",
             "/api/draft",
@@ -568,6 +580,17 @@ class BridgeHandler(BaseHTTPRequestHandler):
             payload = self._payload()
         except ValueError as exc:
             self._json(400, {"error": str(exc)})
+            return
+
+        if parsed_request.path == "/api/settings/endpoint":
+            try:
+                url = save_base_url(self.server.home, payload.get("base_url", ""))
+                self._json(200, {
+                    "ok": True, "base_url": url,
+                    "models": self._models(), "local": is_local(url),
+                })
+            except (OSError, RuntimeError, ValueError) as exc:
+                self._json(422, {"error": str(exc)})
             return
 
         if parsed_request.path == "/api/settings/model":
@@ -640,10 +663,11 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 generated = generate_suggestions(
                     job,
                     document,
-                    api_key=load_openai_key(self.server.home),
+                    api_key=load_key_for(self.server.home),
                     instructions=instructions,
                     mode=mode,
                     model=load_model(self.server.home),
+                    base_url=load_base_url(self.server.home),
                 )
                 generated["cv_id"] = cv_id
                 saved = save_draft(
@@ -668,7 +692,8 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     job.description = description
                 document, _profile = self._document(cv_id)
                 draft = load_draft(self.server.home, job.id, cv_id)
-                key = load_openai_key(self.server.home)
+                key = load_key_for(self.server.home)
+                base = load_base_url(self.server.home)
                 questions = [
                     question
                     for question in (draft.get("questions") or [])
@@ -676,7 +701,8 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 ]
                 if not questions:
                     questions = find_questions(
-                        job, api_key=key, model=load_model(self.server.home)
+                        job, api_key=key, model=load_model(self.server.home),
+                        base_url=base,
                     )
                 extra = str(payload.get("question", "")).strip()
                 if extra:
@@ -691,6 +717,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     job, document, draft, questions,
                     api_key=key,
                     model=load_model(self.server.home),
+                    base_url=base,
                     instructions=str(payload.get("instructions", ""))[:2000],
                     want_cover_letter=bool(payload.get("cover_letter", True)),
                     want_outreach=bool(payload.get("outreach", False)),
