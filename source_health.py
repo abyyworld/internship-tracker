@@ -218,7 +218,7 @@ def summary(history: dict[str, Any] | None = None) -> dict[str, Any]:
     }
 
 
-def sample_descriptions(tracker: Path, limit: int = 12) -> dict[str, int]:
+def sample_descriptions(tracker: Path, limit: int = 28) -> dict[str, int]:
     """Check that postings still hand back their advert.
 
     Spread across providers rather than taken from the top of the file, so one
@@ -241,14 +241,20 @@ def sample_descriptions(tracker: Path, limit: int = 12) -> dict[str, int]:
     while len(chosen) < limit and any(by_ats.values()):
         for group in by_ats.values():
             if group and len(chosen) < limit:
-                chosen.append(group.pop(len(group) // 2))
-    resolved = 0
-    for job in chosen:
+                # Spread through each provider rather than repeatedly taking
+                # its middle, so the sample moves as the tracker does.
+                chosen.append(group.pop(len(group) * len(chosen) // (limit + 1) % len(group)))
+    # Sequential requests would add minutes to every run for a dozen fetches.
+    from concurrent.futures import ThreadPoolExecutor
+
+    def resolves(job: Any) -> bool:
         try:
-            if len(fetch_description(job) or "") >= 400:
-                resolved += 1
+            return len(fetch_description(job) or "") >= 400
         except Exception:
-            pass
+            return False
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        resolved = sum(1 for good in pool.map(resolves, chosen) if good)
     return {"tried": len(chosen), "resolved": resolved}
 
 

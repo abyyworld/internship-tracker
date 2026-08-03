@@ -9,6 +9,8 @@ import json
 from pathlib import Path
 from urllib.parse import urlsplit
 
+import scorecard
+from funding import load_schemes
 from source_health import alerts as health_alerts, summary as health_summary
 from universities import _index, annotate, load_universities
 
@@ -109,6 +111,7 @@ def load_jobs() -> list[dict[str, object]]:
     # Academic postings rarely name a supervisor, so match the institution once
     # and let each such job carry links to its real, current faculty.
     index = _index(load_universities())
+    campuses = scorecard.index()
     jobs: list[dict[str, object]] = []
     for row in rows:
         url = safe_url(row.get("url", ""))
@@ -147,6 +150,17 @@ def load_jobs() -> list[dict[str, object]]:
             }
         )
         annotate(jobs[-1], index)
+        university = jobs[-1].get("university")
+        if university and university.get("country") == "United States":
+            figures = scorecard.lookup(university["name"], campuses)
+            if figures:
+                university["scorecard"] = {
+                    "admission_rate": figures.get("admission_rate"),
+                    "students": figures.get("students"),
+                    "tuition": figures.get("tuition_out_of_state"),
+                    "earnings": figures.get("earnings_10yr_median"),
+                    "summary": scorecard.describe(figures),
+                }
     return jobs
 
 
@@ -165,9 +179,20 @@ def build() -> int:
     # Reliability is published deliberately. A job dataset nobody audits is
     # worth nothing, and the failures here are the kind that hide.
     health = {"summary": health_summary(), "alerts": health_alerts()[:8]}
+    # Funding is listed for everyone rather than matched here: matching needs
+    # the private profile, and this page is public.
+    schemes = [
+        {
+            key: value for key, value in scheme.items()
+            if key in {"id", "name", "funder", "country", "levels", "eligibility",
+                       "covers", "cycle", "url"}
+        }
+        for scheme in load_schemes()
+    ]
     page = (
         TEMPLATE.replace("__JOBS__", json_for_script(jobs))
         .replace("__HEALTH__", json_for_script(health))
+        .replace("__FUNDING__", json_for_script(schemes))
         .replace("__GENERATED__", date.today().isoformat())
     )
     OUTPUT.write_text(page, encoding="utf-8")
@@ -286,6 +311,20 @@ h2{font-size:17px;line-height:1.25;margin:3px 0 0;letter-spacing:-.018em}
 .suplinks a{border:1px solid #4a356f;border-radius:999px;padding:4px 9px;font-size:11px;
   color:#d9c8ff;text-decoration:none;font-weight:700}
 .suplinks a:hover{border-color:var(--purple);background:#20143a}
+.scfacts{display:block;color:#cbb8f5;font-size:11px;margin:4px 0 0}
+.funding{margin:26px 0 8px;border:1px solid var(--line);border-radius:18px;
+  background:linear-gradient(155deg,#141f2e 0,#0c1418 78%);padding:20px 22px}
+.funding h3{margin:0;font-size:19px;letter-spacing:-.02em}
+.funding>p{color:var(--muted);font-size:13px;margin:6px 0 14px;max-width:70ch}
+.fundgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.fund{border:1px solid var(--line);border-radius:13px;padding:12px 13px;background:#0d1620}
+.fund b{display:block;font-size:13.5px;margin-bottom:2px}
+.fund .who{color:var(--muted);font-size:11.5px}
+.fund .cyc{color:var(--amber);font-size:11.5px;margin-top:6px}
+.fund .lv{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
+.fund .lv i{font-style:normal;border:1px solid #3a5a7a;border-radius:99px;padding:2px 7px;
+  font-size:10px;color:var(--blue)}
+.fund a{display:inline-block;margin-top:8px;color:var(--blue);font-size:11.5px;font-weight:700}
 .actions{display:flex;gap:8px;margin-top:auto;padding-top:16px}
 .btn{display:inline-flex;justify-content:center;align-items:center;min-height:40px;border-radius:10px;
   padding:0 12px;text-decoration:none;border:1px solid var(--line);font-weight:800;font-size:12px;cursor:pointer}
@@ -376,12 +415,21 @@ footer a{color:var(--green)}
   </select>
 </div>
 <main class="cards" id="cards"></main>
+<section class="funding" id="funding" hidden>
+  <h3>Funding for study and research</h3>
+  <p>Scholarships, studentships and fellowships that fund a degree or a research post,
+  with who may apply and when the cycle usually opens. Deadlines move every year, so each
+  one links to the page that actually governs it. Your local helper can mark which are open
+  to you now.</p>
+  <div class="fundgrid" id="fundgrid"></div>
+</section>
 <button class="load" id="loadMore" hidden>Show more roles</button>
 <footer>Public job metadata only. Eligibility remains review-required unless personally verified. CV editing happens through the private localhost helper and never submits an application. <a href="https://github.com/abyyworld/internship-tracker">View source on GitHub</a>.</footer>
 </div>
 <script>
 const JOBS=__JOBS__;
 const HEALTH=__HEALTH__;
+const FUNDING=__FUNDING__;
 const PAGE=48;
 const CATEGORY_ORDER=["All","AI / ML","Software Engineering","Quant / Finance","Robotics & Embodied AI","Security","Data","Systems & Infra","Hardware / EE","HCI / XR","Computational Science"];
 const TYPE_ORDER=["All types","intern","research-assistant","new-grad","phd-fellowship","postdoc","co-op","placement","fellowship","masters-research"];
@@ -437,8 +485,10 @@ function supervisors(j){
   const u=j.university;
   if(!u)return "";
   const topic=(u.terms||[]).join(", ");
+  const sc=u.scorecard&&u.scorecard.summary
+    ?`<span class="scfacts">${esc(u.scorecard.summary)}</span>`:"";
   return `<div class="supervisors">
-    <b>Supervisors · ${esc(u.name)}${u.rank?` · THE #${esc(u.rank)}`:""}</b>
+    <b>Supervisors · ${esc(u.name)}${u.rank?` · THE #${esc(u.rank)}`:""}</b>${sc}
     <span>${topic?`Search its faculty for ${esc(topic)}:`:"Search its faculty:"}</span>
     <div class="suplinks">
       <a href="${esc(u.scholar)}" target="_blank" rel="noopener">Academics &amp; contacts ↗</a>
@@ -574,6 +624,20 @@ function renderHealth(){
   }
   $("health").innerHTML=html;
 }
+const LEVEL_NAMES={undergraduate:"Undergrad",masters:"Masters",phd:"PhD",
+  postdoc:"Postdoc",research:"Research"};
+function renderFunding(){
+  if(!FUNDING.length)return;
+  $("funding").hidden=false;
+  $("fundgrid").innerHTML=FUNDING.map(f=>`<article class="fund">
+    <b>${esc(f.name)}</b>
+    <span class="who">${esc(f.funder)}</span>
+    <div class="lv">${(f.levels||[]).map(l=>`<i>${esc(LEVEL_NAMES[l]||l)}</i>`).join("")}</div>
+    <div class="cyc">${esc(f.cycle||"")}</div>
+    <a href="${esc(f.url)}" target="_blank" rel="noopener">Eligibility &amp; deadline ↗</a>
+  </article>`).join("");
+}
+renderFunding();
 renderHealth();
 $("totalStat").textContent=JOBS.length;
 $("researchStat").textContent=JOBS.filter(isResearch).length;

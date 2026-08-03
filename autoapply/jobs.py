@@ -321,6 +321,66 @@ def _ashby_description(url: str) -> str:
     return ""
 
 
+def _workday_description(url: str) -> str:
+    """Read a Workday posting through the JSON its own page calls.
+
+    Workday career sites are single-page apps: fetching the URL returns an
+    empty shell, so these postings arrived with no advert at all. Every site
+    exposes the same public endpoint under /wday/cxs/{tenant}/{site}/job/...,
+    which is what the page itself requests.
+    """
+    parsed = urlparse(url)
+    host = parsed.hostname or ""
+    if not host.endswith("myworkdayjobs.com"):
+        return ""
+    tenant = host.split(".")[0]
+    parts = [part for part in parsed.path.split("/") if part]
+    # Some sites carry a locale segment ahead of the site name.
+    if parts and re.fullmatch(r"[a-z]{2}-[A-Z]{2}", parts[0]):
+        parts = parts[1:]
+    if len(parts) < 2 or "job" not in parts:
+        return ""
+    site = parts[0]
+    rest = "/".join(parts[parts.index("job") + 1:])
+    if not rest:
+        return ""
+    data = _get(
+        f"https://{host}/wday/cxs/{tenant}/{site}/job/{rest}", as_json=True
+    )
+    posting = data.get("jobPostingInfo") or {}
+    return html_to_text(str(posting.get("jobDescription", "")))
+
+
+def _greenhouse_embedded_description(url: str, company: str) -> str:
+    """Resolve a Greenhouse posting embedded in a company's own careers page.
+
+    These carry the Greenhouse job id as ?gh_jid= but are served from the
+    employer's domain, so the ATS is recorded as unknown and the page itself
+    is a script that renders nothing.
+    """
+    job_id = dict(parse_qsl(urlparse(url).query)).get("gh_jid", "")
+    if not job_id.isdigit():
+        return ""
+    host = (urlparse(url).hostname or "").removeprefix("www.")
+    candidates = [
+        host.split(".")[0],
+        re.sub(r"[^a-z0-9]+", "", str(company or "").lower()),
+    ]
+    for board in dict.fromkeys(filter(None, candidates)):
+        for api in ("boards-api.greenhouse.io", "api.eu.greenhouse.io"):
+            try:
+                data = _get(
+                    f"https://{api}/v1/boards/{board}/jobs/{job_id}?content=true",
+                    as_json=True,
+                )
+            except Exception:
+                continue
+            text = html_to_text(str(data.get("content", "")))
+            if text:
+                return text
+    return ""
+
+
 def fetch_description(job: Job) -> str:
     """Fetch public posting text. Never calls an application submission endpoint.
 
@@ -338,6 +398,18 @@ def fetch_description(job: Job) -> str:
     if handler:
         try:
             text = handler(job.url)
+        except Exception:
+            text = ""
+        if len(text) >= MIN_DESCRIPTION_CHARS:
+            return text
+    # Postings served from an employer's own site, where the ATS is recorded as
+    # unknown but the page is still backed by one.
+    for reader in (
+        lambda: _workday_description(job.url),
+        lambda: _greenhouse_embedded_description(job.url, job.company),
+    ):
+        try:
+            text = reader()
         except Exception:
             text = ""
         if len(text) >= MIN_DESCRIPTION_CHARS:
