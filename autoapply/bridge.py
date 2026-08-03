@@ -42,10 +42,13 @@ from .cv_library import (
 from .editor_ui import EDITOR_PAGE
 from .jobs import jobs_from_tracker
 from .openai_tailoring import (
+    OPENAI_MODEL_DEFAULT,
+    find_questions,
     generate_suggestions,
     load_openai_key,
     openai_key_configured,
     save_openai_key,
+    write_answers,
 )
 from .resume import render_resume
 from .runner import prepare
@@ -451,6 +454,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
             "/prepare",
             "/api/settings/openai",
             "/api/suggest",
+            "/api/answers",
             "/api/draft",
             "/api/export",
             "/api/cv/save",
@@ -543,6 +547,67 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     existing=generated,
                 )
                 self._json(200, {"ok": True, "draft": saved})
+                return
+
+            if parsed_request.path == "/api/answers":
+                # Questions come from the advert, so the description must be
+                # live here for the same reason it must be for a rewrite.
+                from .runner import _fetch_resume_description
+
+                description, _source = _fetch_resume_description(job)
+                if description != job.description:
+                    with Store(database_path(self.server.home)) as store:
+                        store.update_description(job.id, description)
+                    job.description = description
+                document, _profile = self._document(cv_id)
+                draft = load_draft(self.server.home, job.id, cv_id)
+                key = load_openai_key(self.server.home)
+                questions = [
+                    question
+                    for question in (draft.get("questions") or [])
+                    if str(question.get("question", "")).strip()
+                ]
+                if not questions:
+                    questions = find_questions(
+                        job, api_key=key, model=draft.get("model")
+                        or OPENAI_MODEL_DEFAULT,
+                    )
+                extra = str(payload.get("question", "")).strip()
+                if extra:
+                    questions = questions + [{
+                        "id": f"q{len(questions)}",
+                        "question": extra[:800],
+                        "answer": "",
+                        "word_limit": 0,
+                        "source": "custom",
+                    }]
+                written = write_answers(
+                    job, document, draft, questions,
+                    api_key=key,
+                    instructions=str(payload.get("instructions", ""))[:2000],
+                    want_cover_letter=bool(payload.get("cover_letter", True)),
+                    want_outreach=bool(payload.get("outreach", False)),
+                )
+                answers = {item["id"]: item["answer"] for item in written["answers"]}
+                for question in questions:
+                    if answers.get(question["id"]):
+                        question["answer"] = answers[question["id"]]
+                draft["questions"] = questions
+                if written["cover_letter"]:
+                    draft["cover_letter"] = written["cover_letter"]
+                if written["outreach_email"]:
+                    draft["outreach_email"] = written["outreach_email"]
+                saved = save_draft(
+                    self.server.home, document, job.id, draft, existing=draft
+                )
+                self._json(
+                    200,
+                    {
+                        "ok": True,
+                        "draft": saved,
+                        "unverified_claims": written["unverified_claims"],
+                    },
+                )
                 return
 
             if parsed_request.path == "/api/cv/save":

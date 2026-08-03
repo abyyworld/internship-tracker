@@ -32,12 +32,15 @@ from typing import Any
 import requests
 
 from .ai_tailoring import (
+    _credential_claims,
     _length_bounds,
+    _named_tokens,
     _validate_rewrite,
     _validate_summary,
     borrowed_terms,
 )
-from .cv_editor import empty_draft, ordered_sections
+from .cv_editor import MAX_ANSWER_CHARS, MAX_QUESTIONS, empty_draft, ordered_sections
+from .tailoring import concepts
 from .models import Job
 
 
@@ -47,12 +50,23 @@ OPENAI_MODEL_DEFAULT = "gpt-4o-mini"
 # reads it in full; the section calls receive only the requirements it found,
 # which keeps every parallel request small and fast.
 MAX_DESCRIPTION_CHARS = 8000
-MAX_SECTION_OUTPUT_TOKENS = 4000
+MAX_SECTION_OUTPUT_TOKENS = 6000
+# Alternatives are only worth generating for lines short enough that a reader
+# will actually compare them. Three phrasings of an 1800-character paragraph
+# cost three times the tokens, crowd out other sections, and nobody reads past
+# the first — so long prose gets one considered rewrite instead.
+VARIANT_MAX_CHARS = 420
 # The strategy call returns requirements, a full running order, and a
 # rewritten summary; 1200 tokens truncated it on postings with many
 # requirements, and a truncated plan is a lost generation.
 MAX_STRATEGY_OUTPUT_TOKENS = 2600
 MAX_PARALLEL_REQUESTS = 6
+# An alternative phrasing and an added line are both single CV lines.
+MAX_VARIANTS = 3
+MAX_VARIANT_CHARS = 2600
+MIN_ADDED_CHARS = 40
+MAX_ADDED_CHARS = 400
+MAX_ADDED_PER_ENTRY = 2
 # Rewriting whole prose entries at temperature 0 produces near-copies; a little
 # freedom is what makes a rewrite actually read differently.
 TEMPERATURE = 0.35
@@ -329,6 +343,12 @@ def _strategy(
         "exactly once. " + drop_rule + "\n"
         "Write `priorities`: three short notes telling the rewriter what to "
         "foreground across the whole CV for this role.\n"
+        "In `keywords`, list the terms an ATS would screen this application "
+        "on, each marked covered when the CV already uses it and missing when "
+        "it does not, with importance high, medium, or low. Do not invent "
+        "coverage: judge only from the CV you are given.\n"
+        "Set `match_score` from 0 to 100 for how well this CV evidences this "
+        "posting's requirements as written.\n"
         "Rewrite the summary so it opens on the candidate's evidence that "
         "matters most for this posting. It describes the CANDIDATE, never the "
         "company or the vacancy: do not name the employer, do not restate the "
@@ -338,6 +358,8 @@ def _strategy(
         + _TRUTH_RULES + "\n"
         "Return exactly: "
         '{"requirements":["..."],"section_order":["s0",...],'
+        '"keywords":[{"term":"...","status":"covered|missing","importance":"high|medium|low"}],'
+        '"match_score":0,'
         '"entry_order":{"s0":["s0e1",...]},"drop":["s2e3"],'
         '"priorities":["..."],'
         '"summary":{"proposal":"...","rationale":"..."},'
@@ -397,9 +419,23 @@ def _rewrite_section(
         "unread, so keep the supporting detail rather than summarising it "
         "away. Write natural prose; never produce a keyword list.\n"
         "In each rationale, name the requirement the rewrite answers.\n"
+        "When a fact says `alternatives: 2`, also give `variants`: two further "
+        "phrasings of that same line which a reader would genuinely choose "
+        "between — one plainer and more direct, one leading with a different "
+        "piece of the same evidence. They are alternatives, not near-copies, "
+        "and each must obey every rule above including the length band. When a "
+        "fact says `alternatives: 0`, return `variants` empty: that line is a "
+        "full paragraph and one considered rewrite is worth more than three "
+        "hurried ones.\n"
+        "In `add`, propose at most one extra line for an entry when that "
+        "entry's own verified text already contains evidence for a requirement "
+        "that its current lines bury. An added line restates evidence already "
+        "present in that entry; if there is none to restate, add nothing.\n"
         + _TRUTH_RULES + "\n"
         'Return exactly: {"bullets":[{"fact_id":"exact-id","proposal":"...",'
-        '"rationale":"answers <requirement> ...","keywords":["..."]}]}'
+        '"variants":["...","..."],'
+        '"rationale":"answers <requirement> ...","keywords":["..."]}],'
+        '"add":[{"entry_id":"s0e1","text":"...","rationale":"..."}]}'
     )
     facts = []
     for entry in section["entries"]:
@@ -413,6 +449,7 @@ def _rewrite_section(
                 # model compresses past the floor and the rewrite is discarded.
                 "min_chars": low,
                 "max_chars": high,
+                "alternatives": 2 if len(bullet["text"]) <= VARIANT_MAX_CHARS else 0,
                 "entry": entry.get("title", ""),
                 "context": entry.get("organization", ""),
             })
@@ -423,6 +460,10 @@ def _rewrite_section(
             "priorities": priorities,
             "candidate_instructions": instructions[:2000],
             "section": section.get("name", ""),
+            "entries": [
+                {"entry_id": entry.get("id", ""), "title": entry.get("title", "")}
+                for entry in section["entries"]
+            ],
             "facts": facts,
         },
         ensure_ascii=False,
@@ -529,13 +570,15 @@ def generate_suggestions(
     # An entry's heading and sibling lines are already-verified evidence for
     # any line inside it.
     # Requirement words the CV never uses may not appear in any rewrite.
-    forbidden = borrowed_terms(requirements, " ".join([
+    cv_text = " ".join([
         document["summary"],
         *(str(skill) for skill in document.get("skills", [])),
         *(str(entry.get("title", "")) for section in sections for entry in section["entries"]),
         *(str(entry.get("organization", "")) for section in sections for entry in section["entries"]),
         *originals.values(),
-    ]))
+    ])
+    cv_terms = concepts(cv_text)
+    forbidden = borrowed_terms(requirements, cv_text)
     document_evidence = " ".join([
         document["summary"],
         *(str(skill) for skill in document.get("skills", [])),
@@ -543,6 +586,15 @@ def generate_suggestions(
         *(str(entry.get("organization", "")) for section in sections for entry in section["entries"]),
         *originals.values(),
     ])
+    entry_only_evidence = {
+        str(entry.get("id", "")): " ".join([
+            str(entry.get("title", "")),
+            str(entry.get("organization", "")),
+            *(bullet["text"] for bullet in entry["bullets"]),
+        ])
+        for section in sections
+        for entry in section["entries"]
+    }
     entry_evidence = {
         bullet["id"]: document_evidence
         for section in sections
@@ -560,6 +612,31 @@ def generate_suggestions(
     draft["mode"] = mode
     draft["instructions"] = instructions[:4000]
     draft["requirements"] = requirements
+    keywords = []
+    for item in list(plan.get("keywords") or [])[:40]:
+        if not isinstance(item, dict):
+            continue
+        term = re.sub(r"\s+", " ", str(item.get("term", ""))).strip()[:80]
+        # A start date or a whole sentence is not a screening term.
+        if not term or len(term.split()) > 4 or re.search(r"\d{4}", term):
+            continue
+        # Whether the CV contains a term is a fact, not a judgement, so the
+        # model's claim is checked rather than trusted. A multi-word term is
+        # covered when most of it lands: demanding every word of "algorithms
+        # and data structures" reports almost nothing as covered.
+        parts = concepts(term)
+        covered = bool(parts) and len(parts & cv_terms) / len(parts) >= 0.6
+        keywords.append({
+            "term": term,
+            "status": "covered" if covered else "missing",
+            "importance": str(item.get("importance", "")).strip()[:20],
+        })
+    draft["keywords"] = keywords
+    try:
+        score = int(plan.get("match_score"))
+        draft["match_score"] = max(0, min(100, score))
+    except (TypeError, ValueError):
+        draft["match_score"] = None
     draft["advice"] = _clean_list(plan.get("advice"), limit=6, chars=300)
     if failures:
         draft["advice"].append(
@@ -615,11 +692,29 @@ def generate_suggestions(
         if proposal == originals[fact_id]:
             rejected.pop(fact_id, None)
             return
+        # Alternatives go through exactly the same guards; one that fails is
+        # dropped rather than failing the whole line.
+        variants = [proposal]
+        for candidate in _clean_list(raw.get("variants"), limit=4, chars=MAX_VARIANT_CHARS):
+            if len(variants) >= MAX_VARIANTS:
+                break
+            try:
+                checked = _validate_rewrite(
+                    originals[fact_id], candidate,
+                    strict=mode == "targeted",
+                    evidence=entry_evidence.get(fact_id, ""),
+                    forbidden=forbidden,
+                )
+            except ValueError:
+                continue
+            if checked not in variants and checked != originals[fact_id]:
+                variants.append(checked)
         rejected.pop(fact_id, None)
         draft["bullets"][fact_id] = {
             "id": fact_id,
             "original": originals[fact_id],
             "proposal": proposal,
+            "variants": variants,
             "rationale": re.sub(
                 r"\s+", " ", str(raw.get("rationale", ""))
             ).strip()[:800],
@@ -628,11 +723,48 @@ def generate_suggestions(
             "source": "ai",
         }
 
+    def accept_added(raw: Any) -> None:
+        """A proposed extra line, checked against the entry it would join."""
+        if not isinstance(raw, dict):
+            return
+        entry_id = str(raw.get("entry_id", "")).strip()
+        evidence = entry_only_evidence.get(entry_id)
+        if evidence is None:
+            return
+        text = re.sub(r"\s+", " ", str(raw.get("text", ""))).strip()
+        if not MIN_ADDED_CHARS <= len(text) <= MAX_ADDED_CHARS:
+            rejected[f"add:{entry_id}"] = "length"
+            return
+        try:
+            # An added line has no original to measure against, so the entry's
+            # own verified text is both its evidence and its subject.
+            _validate_rewrite(
+                evidence, text,
+                strict=False, evidence=document_evidence, forbidden=forbidden,
+            )
+        except ValueError as exc:
+            rejected[f"add:{entry_id}"] = str(exc)
+            return
+        lines = draft["added"].setdefault(entry_id, [])
+        if len(lines) >= MAX_ADDED_PER_ENTRY or any(l["text"] == text for l in lines):
+            return
+        lines.append({
+            "id": f"{entry_id}-new{len(lines)}",
+            "text": text,
+            "rationale": re.sub(
+                r"\s+", " ", str(raw.get("rationale", ""))
+            ).strip()[:800],
+            "status": "pending",
+            "source": "ai",
+        })
+
     for result in results:
         if not result:
             continue
         for raw in list(result.get("bullets") or [])[:80]:
             accept(raw)
+        for raw in list(result.get("add") or [])[:12]:
+            accept_added(raw)
 
     # One repair round for the badly-shaped ones, so a rewrite is not lost to a
     # character count the model can simply be told to correct.
@@ -706,3 +838,229 @@ def generate_suggestions(
             f"Try a more specific instruction ({reasons or 'empty response'})."
         )
     return draft
+
+
+# ── Application questions, cover letter, outreach ────────────────────────────
+
+MAX_ANSWER_OUTPUT_TOKENS = 3000
+DEFAULT_ANSWER_WORDS = 150
+
+
+def find_questions(
+    job: Job,
+    *,
+    api_key: str,
+    model: str = OPENAI_MODEL_DEFAULT,
+    timeout: int = 120,
+) -> list[dict[str, Any]]:
+    """Pull the open-ended questions the application itself asks.
+
+    Postings state these in the advert ("in your cover letter, tell us…",
+    "applicants must submit a statement of…") far more often than the form
+    reveals before you start filling it in.
+    """
+    system = (
+        "You extract application questions from a job posting. Return JSON "
+        "only, no markdown. List every open-ended question or written "
+        "submission the applicant is asked for: essay prompts, statements of "
+        "purpose, 'why this company', 'describe a project', and anything the "
+        "advert says to address in a cover letter. Quote each in the "
+        "posting's own words. Give word_limit when the posting states one, "
+        "otherwise 0. If the posting asks for nothing written, return an "
+        "empty list — do not invent questions.\n"
+        'Return exactly: {"questions":[{"question":"...","word_limit":0}]}'
+    )
+    user = json.dumps(
+        {
+            "company": job.company,
+            "role": job.role,
+            "description": job.description[:MAX_DESCRIPTION_CHARS],
+        },
+        ensure_ascii=False,
+    )
+    found = _ask(
+        system, user,
+        api_key=api_key, model=model,
+        max_tokens=MAX_STRATEGY_OUTPUT_TOKENS, timeout=timeout,
+    )
+    questions = []
+    for index, item in enumerate(list(found.get("questions") or [])[:12]):
+        if not isinstance(item, dict):
+            continue
+        text = re.sub(r"\s+", " ", str(item.get("question", ""))).strip()
+        if not text:
+            continue
+        try:
+            limit = max(0, min(2000, int(item.get("word_limit") or 0)))
+        except (TypeError, ValueError):
+            limit = 0
+        questions.append({
+            "id": f"q{index}",
+            "question": text[:800],
+            "answer": "",
+            "word_limit": limit,
+            "source": "posting",
+        })
+    return questions
+
+
+def _evidence_pack(document: dict[str, Any], draft: dict[str, Any]) -> dict[str, Any]:
+    """What the applicant can truthfully say, as this job's CV now reads."""
+    patches = (draft or {}).get("bullets", {})
+
+    def text_of(bullet: dict[str, Any]) -> str:
+        patch = patches.get(bullet["id"], {})
+        if isinstance(patch, dict) and patch.get("status") == "accepted":
+            return str(patch.get("proposal", bullet["text"]))
+        return bullet["text"]
+
+    summary_patch = (draft or {}).get("summary")
+    summary = document["summary"]
+    if isinstance(summary_patch, dict) and summary_patch.get("status") == "accepted":
+        summary = str(summary_patch.get("proposal", summary))
+    return {
+        "summary": summary,
+        "sections": [
+            {
+                "section": section.get("name", ""),
+                "entries": [
+                    {
+                        "title": entry.get("title", ""),
+                        "context": entry.get("organization", ""),
+                        "dates": entry.get("dates", ""),
+                        "text": " ".join(text_of(bullet) for bullet in entry["bullets"]),
+                    }
+                    for entry in section["entries"]
+                ],
+            }
+            for section in ordered_sections(document, draft)
+        ],
+    }
+
+
+def write_answers(
+    job: Job,
+    document: dict[str, Any],
+    draft: dict[str, Any],
+    questions: list[dict[str, Any]],
+    *,
+    api_key: str,
+    instructions: str = "",
+    want_cover_letter: bool = True,
+    want_outreach: bool = False,
+    model: str = OPENAI_MODEL_DEFAULT,
+    timeout: int = 180,
+) -> dict[str, Any]:
+    """Draft answers, a cover letter, and an outreach note from the CV alone."""
+    name = str(document.get("header", {}).get("name", "")).strip()
+    wanted = [
+        {
+            "id": question["id"],
+            "question": question["question"],
+            "words": question.get("word_limit") or DEFAULT_ANSWER_WORDS,
+        }
+        for question in questions[:MAX_QUESTIONS]
+    ]
+    pieces = []
+    if wanted:
+        pieces.append("the listed questions")
+    if want_cover_letter:
+        pieces.append("a cover letter")
+    if want_outreach:
+        pieces.append("a short outreach note to a recruiter")
+    if not pieces:
+        return {"answers": [], "cover_letter": None, "outreach_email": None}
+
+    system = (
+        "You are drafting an application in the applicant's own voice. Return "
+        "JSON only, no markdown. Write " + ", ".join(pieces) + ".\n"
+        "Every specific claim must come from the supplied CV: a project, a "
+        "result, a role, a course. Where the CV has nothing relevant, write "
+        "about what the applicant wants to learn rather than inventing "
+        "experience. Never state a degree, employer, technology, or metric "
+        "the CV does not contain, and never claim years of experience.\n"
+        "Write first person, plainly, without flattery of the company and "
+        "without opening on 'I am excited to'. Name the specific work you are "
+        "drawing on. Respect each question's word budget within 10 percent.\n"
+        "Nothing you write may contain a placeholder in brackets such as "
+        "[Recruiter's Name] or [Company]: the applicant sends this text as it "
+        "stands, and a bracket left in it is the most visible mistake "
+        "possible. Address anyone you cannot name by their role.\n"
+        "The cover letter is at most 300 words, addressed to the hiring team, "
+        "with no address block. The recruiter note is at most 120 words and "
+        "opens with a Subject line.\n"
+        'Return exactly: {"answers":[{"id":"q0","answer":"..."}],'
+        '"cover_letter":"...","outreach_email":"..."}'
+    )
+    user = json.dumps(
+        {
+            "applicant_name": name,
+            "target_job": {
+                "company": job.company,
+                "role": job.role,
+                "location": job.location,
+                "description": job.description[:MAX_DESCRIPTION_CHARS],
+            },
+            "cv": _evidence_pack(document, draft),
+            "questions": wanted,
+            "applicant_instructions": instructions[:2000],
+        },
+        ensure_ascii=False,
+    )
+    written = _ask(
+        system, user,
+        api_key=api_key, model=model,
+        max_tokens=MAX_ANSWER_OUTPUT_TOKENS, timeout=timeout,
+    )
+
+    # The same evidence rules the CV rewrites obey, applied to prose the
+    # applicant will sign their name to.
+    evidence = " ".join([
+        # The posting's own particulars are facts about the application, not
+        # claims about the applicant: a cover letter has to name the company.
+        job.company, job.role, job.location,
+        document["summary"],
+        *(str(skill) for skill in document.get("skills", [])),
+        *(
+            f"{entry.get('title', '')} {entry.get('organization', '')} "
+            + " ".join(bullet["text"] for bullet in entry["bullets"])
+            for section in document["sections"]
+            for entry in section["entries"]
+        ),
+    ])
+    flagged: list[str] = []
+
+    def checked(text: str, label: str) -> str:
+        value = str(text or "").strip()
+        if not value:
+            return ""
+        for placeholder in re.findall(r"\[[^\]\n]{2,40}\]", value):
+            flagged.append(f"{label} still contains the placeholder {placeholder}")
+        for claim in _credential_claims(value) - _credential_claims(evidence):
+            flagged.append(f"{label} claims '{claim}', which your CV does not")
+        for token in _named_tokens(value) - _named_tokens(evidence):
+            flagged.append(f"{label} names '{token}', which your CV does not")
+        return value[:MAX_ANSWER_CHARS]
+
+    answers = []
+    by_id = {question["id"]: question for question in questions}
+    for item in list(written.get("answers") or [])[:MAX_QUESTIONS]:
+        if not isinstance(item, dict):
+            continue
+        identifier = str(item.get("id", "")).strip()
+        if identifier not in by_id:
+            continue
+        answers.append({
+            "id": identifier,
+            "answer": checked(item.get("answer", ""), "An answer"),
+        })
+    letter = checked(written.get("cover_letter", ""), "The cover letter")
+    outreach = checked(written.get("outreach_email", ""), "The outreach note")
+    return {
+        "answers": answers,
+        "cover_letter": {"text": letter} if letter else None,
+        "outreach_email": {"text": outreach} if outreach else None,
+        # Surfaced rather than silently stripped: unlike a CV line, prose is
+        # the applicant's own voice and they must decide what to cut.
+        "unverified_claims": sorted(set(flagged))[:12],
+    }

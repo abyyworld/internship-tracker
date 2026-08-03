@@ -17,6 +17,12 @@ MAX_INSTRUCTION_CHARS = 4000
 # runs past 1800 characters, so a cap sized for bullet lists would reject every
 # rewrite of a research entry.
 MAX_PROPOSAL_CHARS = 2600
+# How many alternative phrasings of one line may be offered at once. Beyond
+# three the choice costs more attention than it saves.
+MAX_VARIANTS = 3
+MAX_ADDED_PER_ENTRY = 3
+MAX_QUESTIONS = 12
+MAX_ANSWER_CHARS = 4000
 
 
 def _now_iso() -> str:
@@ -371,7 +377,18 @@ def empty_draft(
         # move available and claims nothing that was not already true.
         "order": {"sections": [], "entries": {}},
         "hidden": [],
+        # Lines the model proposes adding to an entry, and master lines this
+        # job's CV leaves out. Both are per job; the fact bank never changes.
+        "added": {},
+        "removed": [],
         "requirements": [],
+        "keywords": [],
+        "match_score": None,
+        # Open-ended questions found in the posting, with drafted answers, plus
+        # a cover letter and an outreach email for the same application.
+        "questions": [],
+        "cover_letter": None,
+        "outreach_email": None,
         "advice": [],
         "rejected_by_validator": {},
         "updated_at": _now_iso(),
@@ -390,6 +407,8 @@ def ordered_sections(
     draft = draft or {}
     order = draft.get("order") or {}
     hidden = set(order.get("hidden") or draft.get("hidden") or [])
+    removed = set(draft.get("removed") or [])
+    added = draft.get("added") or {}
 
     def sort_key(ids: list[str], identifier: str, fallback: int) -> tuple[int, int]:
         return (ids.index(identifier), 0) if identifier in ids else (len(ids), fallback)
@@ -419,8 +438,24 @@ def ordered_sections(
                 section["entries"].index(entry),
             )
         )
-        if entries:
-            result.append({**section, "entries": entries})
+        resolved: list[dict[str, Any]] = []
+        for entry in entries:
+            bullets = [
+                bullet
+                for bullet in entry.get("bullets", [])
+                if str(bullet.get("id", "")) not in removed
+            ]
+            bullets += [
+                {"id": line["id"], "text": line["text"]}
+                for line in added.get(str(entry.get("id", "")), [])
+                if line.get("status") == "accepted" and str(line.get("text", "")).strip()
+            ]
+            # An entry with every line removed prints as a bare heading, so it
+            # leaves this job's CV entirely.
+            if bullets:
+                resolved.append({**entry, "bullets": bullets})
+        if resolved:
+            result.append({**section, "entries": resolved})
     return result
 
 
@@ -460,10 +495,23 @@ def _clean_patch(
     source = str(value.get("source", "ai"))
     if source not in {"ai", "manual"}:
         raise ValueError("CV suggestion source is invalid")
+    # Alternative phrasings of the same line. `proposal` is whichever one is
+    # currently selected, so accepting a patch never has to consult the list.
+    variants = [
+        cleaned
+        for cleaned in (
+            re.sub(r"\s+", " ", str(item)).strip()
+            for item in list(value.get("variants", []))[:MAX_VARIANTS]
+        )
+        if cleaned and len(cleaned) <= MAX_PROPOSAL_CHARS
+    ]
+    if proposal not in variants:
+        variants.insert(0, proposal)
     return {
         "id": expected_id,
         "original": original,
         "proposal": proposal,
+        "variants": variants[:MAX_VARIANTS],
         "rationale": re.sub(
             r"\s+", " ", str(value.get("rationale", ""))
         ).strip()[:800],
@@ -475,6 +523,50 @@ def _clean_patch(
         "status": status,
         "source": source,
     }
+
+
+def _clean_keywords(values: Any) -> list[dict[str, Any]]:
+    cleaned = []
+    for item in list(values or [])[:40]:
+        if not isinstance(item, dict):
+            continue
+        term = re.sub(r"\s+", " ", str(item.get("term", ""))).strip()[:80]
+        if not term:
+            continue
+        status = str(item.get("status", "missing"))
+        cleaned.append({
+            "term": term,
+            "status": status if status in {"covered", "missing"} else "missing",
+            "importance": str(item.get("importance", "")).strip()[:20],
+        })
+    return cleaned
+
+
+def _clean_questions(values: Any) -> list[dict[str, Any]]:
+    cleaned = []
+    for index, item in enumerate(list(values or [])[:MAX_QUESTIONS]):
+        if not isinstance(item, dict):
+            continue
+        question = re.sub(r"\s+", " ", str(item.get("question", ""))).strip()[:800]
+        if not question:
+            continue
+        cleaned.append({
+            "id": str(item.get("id", "")).strip() or f"q{index}",
+            "question": question,
+            "answer": str(item.get("answer", ""))[:MAX_ANSWER_CHARS],
+            "word_limit": max(0, min(2000, int(item.get("word_limit") or 0))),
+            "source": "posting" if item.get("source") == "posting" else "custom",
+        })
+    return cleaned
+
+
+def _clean_letter(value: Any) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    text = str(value.get("text", ""))[:MAX_ANSWER_CHARS]
+    if not text.strip():
+        return None
+    return {"text": text, "updated_at": _now_iso()}
 
 
 def normalize_draft(
@@ -543,6 +635,61 @@ def normalize_draft(
             if str(key) in section_ids
         },
     }
+    raw_added = incoming.get("added", (existing or {}).get("added", {})) or {}
+    if not isinstance(raw_added, dict):
+        raise ValueError("Added CV lines must be an object")
+    cleaned_added: dict[str, list[dict[str, Any]]] = {}
+    for key, lines in list(raw_added.items())[:64]:
+        if str(key) not in entry_ids or not isinstance(lines, list):
+            continue
+        kept = []
+        for index, line in enumerate(lines[:MAX_ADDED_PER_ENTRY]):
+            if not isinstance(line, dict):
+                continue
+            text = re.sub(r"\s+", " ", str(line.get("text", ""))).strip()
+            if not text or len(text) > MAX_PROPOSAL_CHARS:
+                continue
+            status = str(line.get("status", "pending"))
+            if status not in {"pending", "accepted", "rejected"}:
+                raise ValueError("Added CV line status is invalid")
+            source = str(line.get("source", "ai"))
+            if source not in {"ai", "manual"}:
+                raise ValueError("Added CV line source is invalid")
+            kept.append({
+                "id": str(line.get("id", "")).strip() or f"{key}-new{index}",
+                "text": text,
+                "rationale": re.sub(
+                    r"\s+", " ", str(line.get("rationale", ""))
+                ).strip()[:800],
+                "status": status,
+                "source": source,
+            })
+        if kept:
+            cleaned_added[str(key)] = kept
+    result["added"] = cleaned_added
+
+    result["removed"] = [
+        str(value)
+        for value in list(
+            incoming.get("removed", (existing or {}).get("removed", [])) or []
+        )[:128]
+        if str(value) in originals
+    ]
+
+    for key in ("keywords", "questions"):
+        result[key] = deepcopy(
+            incoming.get(key, (existing or {}).get(key, result[key]))
+        )
+    result["match_score"] = incoming.get(
+        "match_score", (existing or {}).get("match_score")
+    )
+    result["keywords"] = _clean_keywords(result["keywords"])
+    result["questions"] = _clean_questions(result["questions"])
+    for key in ("cover_letter", "outreach_email"):
+        result[key] = _clean_letter(
+            incoming.get(key, (existing or {}).get(key))
+        )
+
     result["hidden"] = [
         str(value)
         for value in list(
