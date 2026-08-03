@@ -129,6 +129,48 @@ border:1px solid #14324f33;background:transparent;color:var(--accent);cursor:poi
 background:#0b1712;color:var(--muted);border:1px solid var(--line)}
 .modes button.on{border-color:var(--green2);color:var(--green);background:#12291f}
 .mode-note{font-size:11px;color:var(--muted);margin:2px 0 0;min-height:30px}
+.variants{display:flex;gap:4px;align-items:center;margin:5px 0 2px}
+.variants b{font:800 10px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;
+color:#4a5a68;margin-right:2px}
+.variants button{min-height:22px;min-width:22px;padding:0 7px;font-size:11px;font-weight:800;
+border-radius:5px;border:1px solid #14324f33;background:#fff;color:var(--accent);cursor:pointer}
+.variants button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.inline-ai.added{border-left-color:#1f7a4d;background:#1f7a4d0f}
+.inline-ai.added .label{color:#1f7a4d}
+.line-x{font:700 10px/1 var(--sans);color:#9c3a33;border:1px solid transparent;background:none;
+cursor:pointer;padding:0 3px;vertical-align:super;opacity:0;transition:opacity .12s}
+.cv-para:hover .line-x{opacity:.75}
+.line-x:hover{opacity:1;border-color:#9c3a3340;border-radius:4px}
+.tabs{display:flex;gap:4px}
+.tabs button{min-height:30px;padding:0 12px;font-size:12px;font-weight:800;border-radius:8px;
+background:transparent;color:var(--muted);border:1px solid var(--line)}
+.tabs button.on{border-color:var(--green2);color:var(--green);background:#12291f}
+.qa{background:#fff;color:var(--ink);font-family:var(--serif);width:100%;max-width:840px;
+margin:0 auto;padding:34px 38px 44px;border-radius:4px;box-shadow:0 24px 70px #000a}
+.qa h3{font:800 13px/1.3 var(--sans);letter-spacing:.2em;text-transform:uppercase;
+color:var(--accent);margin:0 0 4px}
+.qa .rule{height:1.4px;background:var(--rule);margin:7px 0 14px}
+.qa .q{font-weight:700;font-size:14.5px;margin:16px 0 3px}
+.qa .limit{font:600 11px/1.4 var(--sans);color:var(--meta);margin-bottom:5px}
+.qa .a{font-size:14px;line-height:1.4;white-space:pre-wrap;outline:none;border:1px solid #14324f26;
+border-radius:6px;padding:9px 11px;min-height:64px;background:#fdfdfd}
+.qa .a:focus{border-color:#14324f66;box-shadow:0 0 0 3px #14324f14}
+.qa .count{font:600 11px/1.4 var(--sans);color:var(--meta);margin-top:4px;display:flex;
+justify-content:space-between;gap:10px}
+.qa .count.over{color:#9c3a33}
+.qa .copy{min-height:24px;padding:0 9px;font:800 10px/1 var(--sans);border-radius:5px;
+border:1px solid #14324f33;background:#fff;color:var(--accent);cursor:pointer}
+.qa .empty{font:14px/1.5 var(--sans);color:var(--meta);text-align:center;padding:26px 10px}
+.warn{border:1px solid #66552b;background:#2b2414;padding:10px 12px;border-radius:10px;
+color:#ffe1a1;font-size:12px;margin-bottom:10px}
+.kw{display:flex;flex-wrap:wrap;gap:5px}
+.kw span{border-radius:99px;padding:3px 8px;font-size:11px;border:1px solid var(--line);
+color:var(--muted)}
+.kw span.missing{border-color:#6f3430;color:var(--red);background:#2a1715}
+.kw span.covered{border-color:#2a7455;color:var(--green);background:#0f2318}
+.kw span.high{font-weight:800}
+.score{display:flex;align-items:baseline;gap:8px;margin:2px 0 10px}
+.score b{font-size:26px;letter-spacing:-.03em}
 .doc-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .cv-picker select{background:#0b1712;color:var(--text);border:1px solid var(--line);
 border-radius:9px;min-height:34px;padding:0 8px;max-width:200px}
@@ -223,6 +265,10 @@ border-radius:13px;font-size:13px}
 <main class="pane">
   <div class="pane-header">
     <div class="doc-toolbar cv-picker">
+      <div class="tabs" id="tabs">
+        <button data-tab="cv" class="on">CV</button>
+        <button data-tab="answers">Answers</button>
+      </div>
       <select id="cvSelect" title="Choose which saved CV to edit"></select>
       <span class="muted" id="savedFlag" style="font-size:11px">Saved</span>
     </div>
@@ -237,6 +283,7 @@ border-radius:13px;font-size:13px}
       <span id="docMeta"></span>
     </div>
     <div id="cvDoc"><div class="empty-state">Loading CV…</div></div>
+    <div id="answersDoc" style="display:none"></div>
   </div>
 </main>
 
@@ -275,9 +322,28 @@ border-radius:13px;font-size:13px}
       Each CV is one private file in <code id="cvStorage">private/Saved CVs/</code></p>
     </div>
 
+    <div class="card" id="answerCard">
+      <div class="eyebrow blue">Application answers</div>
+      <p class="hint" style="margin-top:4px">Finds the essay prompts and open-ended
+      questions in the posting and drafts each one from your CV.</p>
+      <label class="toggle" style="margin:6px 0"><input type="checkbox" id="wantCover" checked> Cover letter</label>
+      <label class="toggle" style="margin-bottom:8px"><input type="checkbox" id="wantOutreach"> Recruiter note</label>
+      <input class="key" id="ownQuestion" placeholder="Add your own question…" maxlength="500">
+      <button class="secondary" id="writeAnswers" style="width:100%;margin-top:8px">Draft answers</button>
+      <div class="busy" id="answerBusy"><span class="spinner"></span><span>Reading the posting…</span></div>
+    </div>
+
+    <div class="card" id="keywordCard" style="display:none">
+      <div class="eyebrow purple">Keyword match</div>
+      <div class="score" id="scoreBox" style="display:none"><b id="scoreValue">—</b>
+        <span class="muted" style="font-size:11px">evidence match, judged against this posting</span></div>
+      <p class="muted" style="font-size:12px;margin-bottom:8px" id="keywordNote"></p>
+      <div class="kw" id="keywordList"></div>
+    </div>
+
     <div class="card" id="gapCard" style="display:none">
-      <div class="eyebrow purple">Gap analysis</div>
-      <p class="muted" style="font-size:12px;margin-bottom:8px">Technologies named in the posting, against your current draft:</p>
+      <div class="eyebrow purple">Technologies in the posting</div>
+      <p class="muted" style="font-size:12px;margin-bottom:8px">Detected in the advert, against your current draft:</p>
       <div id="gapList"></div>
     </div>
 
@@ -340,15 +406,60 @@ function orderedSections(){
   const secIds=d.order.sections||[];
   const sections=all.map((sec,i)=>({sec,key:rank(secIds,sec.id,i)}))
     .sort((a,b)=>a.key[0]-b.key[0]||a.key[1]-b.key[1]).map(x=>x.sec);
+  const removed=new Set(d.removed||[]);
+  const added=d.added||{};
   const out=[];
   for(const sec of sections){
     const wanted=(d.order.entries||{})[sec.id]||[];
     const kept=(sec.entries||[]).map((e,i)=>({e,key:rank(wanted,e.id,i)}))
       .filter(x=>!hidden.has(x.e.id))
       .sort((a,b)=>a.key[0]-b.key[0]||a.key[1]-b.key[1]).map(x=>x.e);
-    if(kept.length)out.push({...sec,entries:kept});
+    const resolved=[];
+    for(const e of kept){
+      const bullets=(e.bullets||[]).filter(b=>!removed.has(b.id))
+        .concat((added[e.id]||[]).filter(l=>l.status==="accepted"&&(l.text||"").trim())
+          .map(l=>({id:l.id,text:l.text})));
+      if(bullets.length)resolved.push({...e,bullets});
+    }
+    if(resolved.length)out.push({...sec,entries:resolved});
   }
   return out;
+}
+function draftLines(){
+  const d=draftOrder();
+  d.added=d.added||{};d.removed=d.removed||[];
+  return d;
+}
+function setLineRemoved(factId,gone){
+  const d=draftLines();
+  const set=new Set(d.removed);
+  gone?set.add(factId):set.delete(factId);
+  d.removed=[...set];renderAll();queueSave();
+}
+function addedFor(entryId){return (draftLines().added||{})[entryId]||[]}
+function addLine(entryId){
+  const d=draftLines();
+  const lines=(d.added[entryId]||[]).slice();
+  if(lines.length>=3){toast("Three added lines per entry is the limit");return}
+  lines.push({id:`${entryId}-new${lines.length}`,text:"New line — click to edit.",
+    rationale:"Added by you",status:"accepted",source:"manual"});
+  d.added={...d.added,[entryId]:lines};
+  renderAll();queueSave();
+  // Put the caret straight into the line that was just created.
+  const el=document.querySelector(`[data-id="${lines[lines.length-1].id}"]`);
+  if(el){el.focus();document.getSelection().selectAllChildren(el)}
+}
+function editAddedLine(entryId,lineId,text){
+  const d=draftLines();
+  const lines=(d.added[entryId]||[]).map(l=>l.id===lineId?{...l,text}:l)
+    .filter(l=>(l.text||"").trim());
+  d.added={...d.added,[entryId]:lines};
+}
+function findAddedLine(lineId){
+  const d=draftLines();
+  for(const [entryId,lines] of Object.entries(d.added||{}))
+    for(const line of lines)if(line.id===lineId)return{entryId,line};
+  return null;
 }
 function hiddenEntries(){
   const hidden=new Set(draftOrder().hidden);
@@ -490,6 +601,14 @@ function editableLine(id,original,extraClass){
   const p=patchFor(id);
   if(p&&p.status==="accepted")el.classList.add(p.source==="manual"?"is-manual":"is-accepted");
   el.addEventListener("blur",()=>{
+    const owned=findAddedLine(id);
+    if(owned){
+      const text=(el.innerText||"").replace(/\s+/g," ").trim();
+      if(text!==owned.line.text){
+        editAddedLine(owned.entryId,id,text);renderAll();queueSave();
+      }
+      return;
+    }
     const before=JSON.stringify(patchFor(id)||null);
     setManualText(id,original,el.innerText);
     if(JSON.stringify(patchFor(id)||null)!==before){renderAll();queueSave()}
@@ -516,6 +635,21 @@ function inlineAiStrip(id){
   prop.spellcheck=false;prop.textContent=p.proposal;
   prop.addEventListener("blur",()=>{p.proposal=(prop.innerText||"").replace(/\s+/g," ").trim()||p.proposal});
   box.append(prop);
+  // Alternative phrasings of the same line, so the choice is between real
+  // options rather than take-it-or-leave-it.
+  const opts=(p.variants||[]).filter(Boolean);
+  if(opts.length>1){
+    const row=document.createElement("div");row.className="variants";
+    const cap=document.createElement("b");cap.textContent="Options";row.append(cap);
+    opts.forEach((text,i)=>{
+      const b=document.createElement("button");b.textContent=String(i+1);
+      b.title=text.slice(0,160);
+      if(text===p.proposal)b.classList.add("on");
+      b.onclick=()=>{p.proposal=text;renderAll();queueSave()};
+      row.append(b);
+    });
+    box.append(row);
+  }
   if(p.rationale){const w=document.createElement("div");w.className="why";w.textContent=p.rationale;box.append(w)}
   const row=document.createElement("div");row.className="row";
   const ok=document.createElement("button");ok.className="mini ok";ok.textContent="Use this";
@@ -524,6 +658,31 @@ function inlineAiStrip(id){
   no.onclick=()=>{p.status="rejected";renderAll();queueSave()};
   row.append(ok,no);box.append(row);
   return box;
+}
+// A line the model proposes adding to an entry, drawn from that entry's own
+// verified text. Accepting it prints it; it never touches the fact bank.
+function addedStrips(entryId){
+  const out=[];
+  for(const line of addedFor(entryId)){
+    if(line.status!=="pending")continue;
+    const box=document.createElement("div");box.className="inline-ai added";
+    const lbl=document.createElement("div");lbl.className="label";lbl.textContent="AI would add a line";
+    box.append(lbl);
+    const prop=document.createElement("div");prop.className="prop";prop.contentEditable="true";
+    prop.spellcheck=false;prop.textContent=line.text;
+    prop.addEventListener("blur",()=>{line.text=(prop.innerText||"").replace(/\s+/g," ").trim()||line.text});
+    box.append(prop);
+    if(line.rationale){const w=document.createElement("div");w.className="why";
+      w.textContent=line.rationale;box.append(w)}
+    const row=document.createElement("div");row.className="row";
+    const ok=document.createElement("button");ok.className="mini ok";ok.textContent="Add this";
+    ok.onclick=()=>{line.status="accepted";renderAll();queueSave()};
+    const no=document.createElement("button");no.className="mini no";no.textContent="Dismiss";
+    no.onclick=()=>{line.status="rejected";renderAll();queueSave()};
+    row.append(ok,no);box.append(row);
+    out.push(box);
+  }
+  return out;
 }
 function entryLinks(entry){
   const links=[];
@@ -603,6 +762,8 @@ function renderCV(){
         right.style.cssText="display:flex;align-items:baseline;gap:8px";
         const tools=document.createElement("div");tools.className="entry-tools";
         tools.append(
+          toolButton("+ line","Write a new line for this entry",
+            ()=>addLine(entry.id)),
           toolButton("↑","Move up",()=>moveEntry(sec.id,entry.id,-1)),
           toolButton("↓","Move down",()=>moveEntry(sec.id,entry.id,1)),
           toolButton("✕","Leave this entry out of this job's CV",
@@ -623,28 +784,54 @@ function renderCV(){
       (entry.bullets||[]).forEach((b,i)=>{
         if(i)para.append(document.createTextNode(" "));
         para.append(editableLine(b.id,b.text,b.style==="lead"?"lead":""));
+        const owned=findAddedLine(b.id);
+        if(owned||((entry.bullets||[]).length>1)){
+          const x=document.createElement("button");x.className="line-x";x.textContent="✕";
+          x.title=owned?"Delete this added line":"Leave this line out of this job's CV";
+          x.tabIndex=-1;
+          x.onclick=()=>{
+            if(!owned){setLineRemoved(b.id,true);return}
+            editAddedLine(owned.entryId,b.id,"");renderAll();queueSave();
+          };
+          para.append(x);
+        }
         const strip=inlineAiStrip(b.id);if(strip)strips.push(strip);
       });
       const links=entryLinks(entry);
       if(links){para.append(document.createTextNode(" "));para.append(links)}
       block.append(para);
       for(const strip of strips)block.append(strip);
+      for(const strip of addedStrips(entry.id))block.append(strip);
       wrap.append(block);
     }
     paper.append(wrap);
   }
 
   const left=hiddenEntries();
-  if(left.length){
+  const removed=new Set(draftLines().removed);
+  const lines=[];
+  for(const sec of state.document.sections||[])
+    for(const e of sec.entries||[])
+      for(const bl of e.bullets||[])
+        if(removed.has(bl.id))lines.push({entry:e,bullet:bl});
+  if(left.length||lines.length){
     const box=document.createElement("div");box.className="left-out";
     const h=document.createElement("h4");
-    h.textContent=`Left out of this job's CV (${left.length})`;box.append(h);
+    h.textContent=`Left out of this job's CV (${left.length+lines.length})`;box.append(h);
     for(const {section,entry} of left){
       const row=document.createElement("div");
       const label=document.createElement("span");
       label.textContent=`${entry.title||"(untitled)"} · ${section}`;
       row.append(label,toolButton("Put back","Include this entry again",
         ()=>setHidden(entry.id,false)));
+      box.append(row);
+    }
+    for(const {entry,bullet} of lines){
+      const row=document.createElement("div");
+      const label=document.createElement("span");
+      label.textContent=`${(bullet.text||"").slice(0,70)}… · ${entry.title||""}`;
+      row.append(label,toolButton("Put back","Include this line again",
+        ()=>setLineRemoved(bullet.id,false)));
       box.append(row);
     }
     paper.append(box);
@@ -744,13 +931,19 @@ function renderSuggestions(){
     ?`${rewritten}/${state.document.fact_ids.length} rewritten`
     :total+" edit"+(total===1?"":"s");
   $("acceptedCount").style.display=(total||rewritten)?"":"none";
-  const dropped=(state.draft&&state.draft.hidden||[]).length;
-  const moved=((state.draft&&state.draft.order||{}).sections||[]).length;
+  const d=state.draft||{};
+  const dropped=(d.hidden||[]).length;
+  const cutLines=(d.removed||[]).length;
+  const moved=((d.order||{}).sections||[]).length;
+  const newLines=Object.values(d.added||{})
+    .reduce((n,ls)=>n+ls.filter(l=>l.status==="accepted").length,0);
   const parts=[];
   if(manual.length)parts.push(`${manual.length} of your edits`);
   if(acceptedAi)parts.push(`${acceptedAi} AI rewrite${acceptedAi===1?"":"s"}`);
+  if(newLines)parts.push(`${newLines} added line${newLines===1?"":"s"}`);
   if(moved)parts.push("a reordered running order");
   if(dropped)parts.push(`${dropped} entr${dropped===1?"y":"ies"} left out`);
+  if(cutLines)parts.push(`${cutLines} line${cutLines===1?"":"s"} left out`);
   $("exportNote").textContent=parts.length
     ?parts.join(", ")+" will be applied. Everything else stays original."
     :"Your CV exports unchanged until you edit a line or accept a suggestion.";
@@ -764,7 +957,134 @@ function renderSuggestions(){
     for(const a of advice){const li=document.createElement("li");li.textContent=a;ul.append(li)}
   }else $("adviceSection").style.display="none";
 }
-function renderAll(){renderCV();renderRequirements();renderSuggestions();renderGaps();renderFitPill()}
+function renderKeywords(){
+  const kws=((state.draft||{}).keywords||[]).filter(k=>k&&k.term);
+  const card=$("keywordCard"),list=$("keywordList");
+  const score=(state.draft||{}).match_score;
+  if(!kws.length&&score==null){card.style.display="none";return}
+  card.style.display="";
+  $("scoreBox").style.display=score==null?"none":"";
+  if(score!=null){
+    $("scoreValue").textContent=score+"%";
+    $("scoreValue").style.color=score>=70?"var(--green)":score>=45?"var(--amber)":"var(--red)";
+  }
+  const missing=kws.filter(k=>k.status==="missing").length;
+  // The score is a judgement about evidence; this list is literal presence.
+  // Said plainly, because they legitimately disagree.
+  $("keywordNote").textContent=kws.length
+    ?`${missing} of ${kws.length} screening terms do not appear anywhere in your CV text. `+
+     `The score above judges your evidence; this checks the words themselves.`:"";
+  list.replaceChildren();
+  const order={high:0,medium:1,low:2};
+  [...kws].sort((a,b)=>(a.status==="missing"?0:1)-(b.status==="missing"?0:1)
+    ||(order[a.importance]??3)-(order[b.importance]??3))
+    .forEach(k=>{
+      const el=document.createElement("span");
+      el.className=k.status+(k.importance==="high"?" high":"");
+      el.textContent=(k.status==="covered"?"✓ ":"✗ ")+k.term;
+      if(k.importance)el.title=k.importance+" importance";
+      list.append(el);
+    });
+}
+function renderFit(){
+  // The model's own score is a judgement about requirements; the word-overlap
+  // number is only a fallback when no rewrite has been run yet.
+  const score=(state.draft||{}).match_score;
+  if(score==null){renderFitPill();return}
+  const pill=$("fitPill");pill.style.display="";
+  pill.textContent=`Match: ${score}%`;
+  pill.className="fit-pill "+(score>=70?"good":score>=45?"medium":"low");
+}
+function renderAll(){
+  renderCV();renderRequirements();renderSuggestions();renderGaps();
+  renderKeywords();renderFit();renderAnswers();
+}
+
+// ── Application answers ──────────────────────────────────────────────────────
+// Same document treatment as the CV: a page you type into, with the posting's
+// own wording above each box and a live word count against its stated limit.
+const words=t=>((t||"").trim().match(/\S+/g)||[]).length;
+function answerBlock(label,text,onEdit,limit){
+  const wrap=document.createElement("div");
+  const q=document.createElement("div");q.className="q";q.textContent=label;wrap.append(q);
+  if(limit){const l=document.createElement("div");l.className="limit";
+    l.textContent=`Limit: ${limit} words`;wrap.append(l)}
+  const a=document.createElement("div");a.className="a";a.contentEditable="true";
+  a.spellcheck=true;a.textContent=text||"";
+  const foot=document.createElement("div");foot.className="count";
+  const n=document.createElement("span");
+  const copy=document.createElement("button");copy.className="copy";copy.textContent="Copy";
+  copy.onclick=async()=>{
+    try{await navigator.clipboard.writeText(a.innerText);copy.textContent="Copied"}
+    catch(e){copy.textContent="Select and copy"}
+    setTimeout(()=>copy.textContent="Copy",1600);
+  };
+  const tally=()=>{
+    const c=words(a.innerText);
+    n.textContent=c+" word"+(c===1?"":"s");
+    foot.classList.toggle("over",!!limit&&c>limit*1.1);
+  };
+  a.addEventListener("input",tally);
+  a.addEventListener("blur",()=>{onEdit(a.innerText);queueSave()});
+  foot.append(n,copy);wrap.append(a,foot);tally();
+  return wrap;
+}
+function renderAnswers(){
+  const root=$("answersDoc");root.replaceChildren();
+  const d=state.draft||{};
+  const questions=(d.questions||[]).filter(q=>q&&q.question);
+  const page=document.createElement("div");page.className="qa";
+  const h=document.createElement("h3");h.textContent="Application answers";page.append(h);
+  const rule=document.createElement("div");rule.className="rule";page.append(rule);
+
+  if(!questions.length&&!d.cover_letter&&!d.outreach_email){
+    const empty=document.createElement("div");empty.className="empty";
+    empty.innerHTML="Nothing drafted yet.<br><br>Press <strong>Draft answers</strong> on the right. "+
+      "It reads the posting for essay prompts and open-ended questions, then writes each one "+
+      "from the CV in the other tab.";
+    page.append(empty);root.append(page);return;
+  }
+  for(const q of questions){
+    page.append(answerBlock(q.question,q.answer,text=>{q.answer=text},q.word_limit));
+  }
+  if(d.cover_letter){
+    page.append(answerBlock("Cover letter",d.cover_letter.text,
+      text=>{d.cover_letter={...d.cover_letter,text}},300));
+  }
+  if(d.outreach_email){
+    page.append(answerBlock("Note to a recruiter",d.outreach_email.text,
+      text=>{d.outreach_email={...d.outreach_email,text}},0));
+  }
+  root.append(page);
+}
+async function writeAnswers(){
+  $("writeAnswers").disabled=true;$("answerBusy").classList.add("show");notice("");
+  try{
+    const result=await api("/api/answers",{method:"POST",body:JSON.stringify({
+      url:jobUrl,cv_id:cvId,question:$("ownQuestion").value.trim(),
+      cover_letter:$("wantCover").checked,outreach:$("wantOutreach").checked,
+      instructions:$("instructions").value})});
+    state.draft=result.draft;$("ownQuestion").value="";
+    showTab("answers");renderAll();
+    const flagged=result.unverified_claims||[];
+    if(flagged.length){
+      notice("Check before sending — "+flagged.join("; "),"");
+    }
+    const n=(state.draft.questions||[]).length;
+    toast(n?`${n} question${n===1?"":"s"} drafted`:"Cover letter drafted");
+  }catch(err){notice(err.message,"error")}
+  finally{$("writeAnswers").disabled=false;$("answerBusy").classList.remove("show")}
+}
+function showTab(name){
+  const cv=name!=="answers";
+  $("cvDoc").style.display=cv?"":"none";
+  $("answersDoc").style.display=cv?"none":"";
+  document.querySelectorAll("#tabs button").forEach(b=>
+    b.classList.toggle("on",b.dataset.tab===(cv?"cv":"answers")));
+  $("docMeta").textContent=cv
+    ?`${state.document.fact_ids.length} editable lines`
+    :`${((state.draft||{}).questions||[]).length} question(s)`;
+}
 
 // ── Saving ───────────────────────────────────────────────────────────────────
 let saveTimer=null,saving=false;
@@ -939,6 +1259,8 @@ $("saveKey").onclick=saveKey;
 $("exportPdf").onclick=exportPdf;
 $("saveAsCv").onclick=saveAsCv;
 $("newCvName").oninput=()=>{nameTouched=true};
+$("writeAnswers").onclick=writeAnswers;
+$("tabs").onclick=e=>{if(e.target.dataset.tab)showTab(e.target.dataset.tab)};
 $("cvSelect").onchange=async e=>{
   try{await loadCv(e.target.value);toast("Switched CV")}
   catch(err){notice(err.message,"error")}
