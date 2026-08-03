@@ -261,6 +261,20 @@ GITHUB_SOURCES = [
 # Verified via API test — these slugs return real data.
 # Slugs that returned 404/timeout are NOT listed here (they'd just fail every run).
 GREENHOUSE_BOARDS = [
+    ("watershed", "Watershed", "None"),
+    ("airtable", "Airtable", "None"),
+    ("asana", "Asana", "None"),
+    ("figma", "Figma", "None"),
+    ("vercel", "Vercel", "None"),
+    ("tenstorrent", "Tenstorrent", "None"),
+    ("sambanovasystems", "SambaNova Systems", "None"),
+    ("recursionpharmaceuticals", "Recursion Pharmaceuticals", "None"),
+    ("coreweave", "CoreWeave", "None"),
+    ("voxel51", "Voxel51", "None"),
+    ("nuro", "Nuro", "None"),
+    ("labelbox", "Labelbox", "None"),
+    ("scaleai", "Scale AI", "None"),
+    ("togetherai", "Together AI", "None"),
     # slug                    display name              term
     ("jumptrading",          "Jump Trading",           None),
     ("imc",                  "IMC Trading",            None),
@@ -275,13 +289,8 @@ GREENHOUSE_BOARDS = [
     ("cloudflare",           "Cloudflare",             None),
     ("stripe",               "Stripe",                 None),
     ("databricks",           "Databricks",             None),
-    ("scaleai",              "Scale AI",               None),
     ("brex",                 "Brex",                    None),
-    ("figma",                "Figma",                   None),
-    ("togetherai",           "Together AI",            None),
     ("verkada",              "Verkada",                 None),
-    ("coreweave",            "CoreWeave",               None),
-    ("nuro",                 "Nuro",                    None),
     ("mercury",              "Mercury",                 None),
     ("airbnb",               "Airbnb",                  None),
     ("wayve",                "Wayve",                   None),
@@ -317,61 +326,46 @@ GREENHOUSE_BOARDS = [
     ("stackav",              "Stack AV",                None),
     ("wing",                 "Wing",                    None),
     # Broader tech / research companies
-    ("nvidia",               "NVIDIA",                  None),
-    ("amd",                  "AMD",                     None),
-    ("qualcomm",             "Qualcomm",                None),
-    ("arm",                  "Arm",                     None),
-    ("intel",                "Intel",                   None),
-    ("ibm",                  "IBM",                     None),
-    ("samsungresearch",      "Samsung Research",        None),
-    ("huggingface",          "Hugging Face",            None),
-    ("mistral",              "Mistral AI",              None),
-    ("groq",                 "Groq",                    None),
-    ("lambdalabs",           "Lambda Labs",             None),
-    ("modal",                "Modal",                   None),
-    ("replit",               "Replit",                  None),
     ("coinbase",             "Coinbase",                None),
     ("ripple",               "Ripple",                  None),
     ("chime",                "Chime",                   None),
-    ("plaid",                "Plaid",                   None),
     ("robinhood",            "Robinhood",               None),
     ("duolingo",             "Duolingo",                None),
     ("reddit",               "Reddit",                  None),
     ("discord",              "Discord",                 None),
-    ("snap",                 "Snap",                    None),
     ("twilio",               "Twilio",                  None),
-    ("snowflake",            "Snowflake",               None),
     ("mongodb",              "MongoDB",                 None),
     ("elastic",              "Elastic",                 None),
-    ("hashicorp",            "HashiCorp",               None),
-    ("1password",            "1Password",               None),
-    ("cloudsmith",           "Cloudsmith",              None),
     # Defence / aerospace / space
     ("spacex",               "SpaceX",                  None),
-    ("boeing",               "Boeing",                  None),
-    ("l3harris",             "L3Harris",                None),
-    ("bae-systems",          "BAE Systems",             None),
-    ("northropgrumman",      "Northrop Grumman",        None),
-    ("lockheedmartin",       "Lockheed Martin",         None),
-    ("raytheon",             "Raytheon",                None),
     # Research / academic / biotech
-    ("allen-institute",      "Allen Institute for AI",  None),
-    ("calico",               "Calico (Google)",         None),
-    ("modernatx",            "Moderna",                 None),
-    ("genentech",            "Genentech",               None),
-    ("biontech",             "BioNTech",                None),
-    ("deepvariant",          "DeepVariant / Google",    None),
     # NOTE: palantir removed — their Greenhouse board is 404; already tracked via Lever
 ]
 
 # Ashby boards — format: https://api.ashbyhq.com/posting-api/job-board/{slug}
 # Direct role URLs. Verified live.
 ASHBY_BOARDS = [
+    ("semgrep", "Semgrep", "None"),
+    ("snyk", "Snyk", "None"),
+    ("temporal", "Temporal", "None"),
+    ("astronomer", "Astronomer", "None"),
+    ("airbyte", "Airbyte", "None"),
+    ("prefect", "Prefect", "None"),
+    ("benchling", "Benchling", "None"),
+    ("loom", "Loom", "None"),
+    ("notion", "Notion", "None"),
+    ("supabase", "Supabase", "None"),
+    ("linear", "Linear", "None"),
+    ("modal", "Modal Labs", "None"),
+    ("1password", "1Password", "None"),
+    ("snowflake", "Snowflake", "None"),
+    ("plaid", "Plaid", "None"),
+    ("replit", "Replit", "None"),
+    ("lambda", "Lambda Labs", "None"),
     ("openai",       "OpenAI",       None),
     ("perplexity",   "Perplexity",   None),
     ("cohere",       "Cohere",       None),
     ("ramp",         "Ramp",         None),
-    ("notion",       "Notion",       None),
     ("elevenlabs",   "ElevenLabs",   None),
     ("sierra",       "Sierra",       None),
     ("harvey",       "Harvey",       None),
@@ -405,35 +399,20 @@ ASHBY_BOARDS = [
     ("sunrise",              "Sunrise Robotics",        None),
     ("unitxlabs",            "UnitX",                   None),
     # More AI / research startups
-    ("together",             "Together AI",             None),
     ("anyscale",             "Anyscale",                None),
-    ("run-ai",               "Run:AI",                  None),
-    ("weights-biases",       "Weights & Biases",        None),
-    ("scale",                "Scale AI",                None),
-    ("labelbox",             "Labelbox",                None),
     ("roboflow",             "Roboflow",                None),
-    ("landing-ai",           "Landing AI",              None),
-    ("covariant",            "Covariant",               None),
-    ("nuro",                 "Nuro",                    None),
-    ("voxel51",              "Voxel51",                 None),
-    ("modal-labs",           "Modal Labs",              None),
     ("midjourney",           "Midjourney",              None),
-    ("coreweave",            "CoreWeave",               None),
-    ("recursion",            "Recursion Pharmaceuticals", None),
     ("insitro",              "insitro",                 None),
     ("etched",               "Etched AI",               None),
-    ("groq",                 "Groq",                    None),
-    ("sambanova",            "SambaNova Systems",       None),
     ("cerebras",             "Cerebras Systems",        None),
-    ("tenstorrent",          "Tenstorrent",             None),
     # NOTE: mistral removed — Ashby slug 404; moved to Lever below
 ]
 
 # Lever boards — format: https://api.lever.co/v0/postings/{slug}?mode=json
 LEVER_BOARDS = [
+    ("mistral", "Mistral AI", "None"),
     ("palantir",     "Palantir",     None),
     ("spotify",      "Spotify",      None),
-    ("mistral",      "Mistral AI",   None),
     ("anybotics",    "ANYbotics",    None),
     ("waabi",        "Waabi",        None),
     ("shieldai",     "Shield AI",    None),
@@ -448,32 +427,8 @@ LEVER_BOARDS = [
     ("zoox",         "Zoox",          None),
     ("brightmachines","Bright Machines", None),
     # Additional software / infra / research companies
-    ("linear",       "Linear",        None),
-    ("vercel",       "Vercel",        None),
-    ("supabase",     "Supabase",      None),
-    ("retool",       "Retool",        None),
-    ("figma",        "Figma",         None),
-    ("notion",       "Notion",        None),
-    ("loom",         "Loom",          None),
-    ("asana",        "Asana",         None),
-    ("airtable",     "Airtable",      None),
-    ("benchling",    "Benchling",     None),
-    ("prefect",      "Prefect",       None),
-    ("dbt-labs",     "dbt Labs",      None),
-    ("airbyte",      "Airbyte",       None),
-    ("astronomer",   "Astronomer",    None),
-    ("temporal",     "Temporal",      None),
-    ("earthly",      "Earthly",       None),
     # Cybersecurity
-    ("crowdstrike",  "CrowdStrike",   None),
-    ("sentinelone",  "SentinelOne",   None),
-    ("lacework",     "Lacework",      None),
-    ("snyk",         "Snyk",          None),
-    ("semgrep",      "Semgrep",       None),
     # Climate / clean energy
-    ("climateai",    "Climate AI",    None),
-    ("watershed",    "Watershed",     None),
-    ("energyvault",  "Energy Vault",  None),
 ]
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1519,6 +1474,9 @@ def gather(existing=None):
     """
     merged, identities = {}, {}
     failed, health = [], {}
+    # Rows per source this run, so a source that quietly returns nothing can be
+    # compared against what it used to return rather than only against zero.
+    counts: dict[str, int] = {}
     old_counts = previous_source_counts(existing or {})
 
     def refresh(rec):
@@ -1679,6 +1637,7 @@ def gather(existing=None):
             mark_bad(source, source, "degraded: parsed zero roles unexpectedly")
             continue
         health[source] = "ok"
+        counts[source] = len(rows)
         for r in rows:
             add(r, source)
         print(f"  {source:<20} {len(rows):>4} roles")
@@ -1704,8 +1663,18 @@ def gather(existing=None):
                 bad += 1
                 mark_bad(source, f"{provider}/{name}", err)
                 continue
+            # A board that answers cleanly with nothing, having reliably
+            # carried roles before, has changed under us. The GitHub sources
+            # were already guarded this way; the 192 ATS boards were not, and
+            # they are where the silent breakages actually happen.
+            if not rows and old_counts.get(source, 0) >= 5:
+                bad += 1
+                mark_bad(source, f"{provider}/{name}",
+                         "degraded: parsed zero roles unexpectedly")
+                continue
             ok += 1
             health[source] = "ok"
+            counts[source] = len(rows)
             for r in rows:
                 add(r, source)
         count = sum(
@@ -1750,7 +1719,7 @@ def gather(existing=None):
         add_static(company, role, loc, url, tier, "spring_weeks", "planned",
                    deadline=deadline)
 
-    return merged, health, failed
+    return merged, health, failed, counts
 
 
 def load_existing(path):
@@ -2534,9 +2503,27 @@ def run():
     print("=" * 56)
 
     existing = load_existing(TRACKER_FILE)
-    current, source_health, failed = gather(existing)
+    current, source_health, failed, source_counts = gather(existing)
     new_ids, rows_out = reconcile(current, existing, source_health)
     records_by_id = {row["id"]: row for row in rows_out}
+
+    # Reliability history. A run that fetched cleanly but carried a third of
+    # the usual rows is only visible against what came before it.
+    try:
+        from pathlib import Path
+
+        from source_health import record_run, report, sample_descriptions
+
+        record_run(
+            TODAY,
+            source_counts,
+            source_health,
+            descriptions=sample_descriptions(Path(TRACKER_FILE)),
+        )
+        print()
+        print(report())
+    except Exception as exc:  # never let reporting break a scrape
+        print(f"  source health unavailable: {exc}", file=sys.stderr)
 
     fields = [
         "NEW", "company", "role", "category", "focus_tags",

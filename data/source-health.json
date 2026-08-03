@@ -1,0 +1,622 @@
+{
+  "runs": [
+    {
+      "date": "2026-08-03",
+      "descriptions": {
+        "resolved": 9,
+        "tried": 12
+      },
+      "sources": {
+        "Ashby/1password": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/1x": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Ashby/airbyte": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/anyscale": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/applied": {
+          "rows": 5,
+          "state": "ok"
+        },
+        "Ashby/arthur": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/astronomer": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/bedrock-robotics": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/benchling": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/cerebras": {
+          "rows": 3,
+          "state": "ok"
+        },
+        "Ashby/cobot": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/cognition": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/cohere": {
+          "rows": 3,
+          "state": "ok"
+        },
+        "Ashby/cursor": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/deft-ai": {
+          "rows": 2,
+          "state": "ok"
+        },
+        "Ashby/dyna-robotics": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Ashby/elevenlabs": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/etched": {
+          "rows": 4,
+          "state": "ok"
+        },
+        "Ashby/gecko-robotics": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/generalist": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Ashby/genesis": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/graymatter-robotics": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/harvey": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/humanoid": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/insitro": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/lambda": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/lightwheel": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Ashby/linear": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/loom": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/mecka.ai": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/midjourney": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/modal": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Ashby/moonlake": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/notion": {
+          "rows": 3,
+          "state": "ok"
+        },
+        "Ashby/openai": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/perplexity": {
+          "rows": 4,
+          "state": "ok"
+        },
+        "Ashby/physicalintelligence": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Ashby/plaid": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/prefect": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/ramp": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Ashby/reka": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/replit": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Ashby/robco": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/roboflow": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/saronic": {
+          "rows": 4,
+          "state": "ok"
+        },
+        "Ashby/semgrep": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/serverobotics": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/sierra": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/snowflake": {
+          "rows": 4,
+          "state": "ok"
+        },
+        "Ashby/snyk": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/standardbots": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/summer-robotics": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/sunday": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Ashby/sunrise": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/supabase": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/temporal": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/thebotcompany": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Ashby/unitxlabs": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/agilityrobotics": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/airbnb": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/airtable": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/akunacapital": {
+          "rows": 10,
+          "state": "ok"
+        },
+        "Greenhouse/andurilindustries": {
+          "rows": 18,
+          "state": "ok"
+        },
+        "Greenhouse/anthropic": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/apptronik": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Greenhouse/arxroboticsgmbh": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/asana": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/aurorainnovation": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/avride": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/botauto": {
+          "rows": 2,
+          "state": "ok"
+        },
+        "Greenhouse/brex": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/carbonrobotics": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/chime": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/cloudflare": {
+          "rows": 6,
+          "state": "ok"
+        },
+        "Greenhouse/coinbase": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/coreweave": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Greenhouse/databricks": {
+          "rows": 3,
+          "state": "ok"
+        },
+        "Greenhouse/deepmind": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/diligentrobotics": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/discord": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/duolingo": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/elastic": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/figma": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Greenhouse/figureai": {
+          "rows": 5,
+          "state": "ok"
+        },
+        "Greenhouse/flyzipline": {
+          "rows": 7,
+          "state": "ok"
+        },
+        "Greenhouse/formic": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/graphcore": {
+          "rows": 0,
+          "state": "degraded"
+        },
+        "Greenhouse/horizonsurgicalsystems": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/imc": {
+          "rows": 14,
+          "state": "ok"
+        },
+        "Greenhouse/isomorphiclabs": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/janestreet": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Greenhouse/jumptrading": {
+          "rows": 25,
+          "state": "ok"
+        },
+        "Greenhouse/kodiak": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/labelbox": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Greenhouse/locusrobotics": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/lodestarspace": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/mangroup": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/maymobility": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/mercury": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/mongodb": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/monzo": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/neuralink": {
+          "rows": 18,
+          "state": "ok"
+        },
+        "Greenhouse/nuro": {
+          "rows": 3,
+          "state": "ok"
+        },
+        "Greenhouse/outrider": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/pathrobotics": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/recursionpharmaceuticals": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/reddit": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/ripple": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/robinhood": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/roboforce": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/sambanovasystems": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Greenhouse/scaleai": {
+          "rows": 2,
+          "state": "ok"
+        },
+        "Greenhouse/skildai-careers": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/spacex": {
+          "rows": 21,
+          "state": "ok"
+        },
+        "Greenhouse/squarepointcapital": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Greenhouse/stackav": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/stripe": {
+          "rows": 2,
+          "state": "ok"
+        },
+        "Greenhouse/tenstorrent": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/togetherai": {
+          "rows": 2,
+          "state": "ok"
+        },
+        "Greenhouse/torcrobotics": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Greenhouse/towerresearchcapital": {
+          "rows": 6,
+          "state": "ok"
+        },
+        "Greenhouse/twilio": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/vercel": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/verkada": {
+          "rows": 2,
+          "state": "ok"
+        },
+        "Greenhouse/virtu": {
+          "rows": 14,
+          "state": "ok"
+        },
+        "Greenhouse/voxel51": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/watershed": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/waymo": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Greenhouse/wayve": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/wing": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Greenhouse/xai": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Lever/ChefRobotics": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Lever/MachinaLabs": {
+          "rows": 3,
+          "state": "ok"
+        },
+        "Lever/Nomagic": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Lever/anybotics": {
+          "rows": 3,
+          "state": "ok"
+        },
+        "Lever/brightmachines": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Lever/cobaltrobotics": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Lever/dexterity": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Lever/field-ai": {
+          "rows": 3,
+          "state": "ok"
+        },
+        "Lever/mistral": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Lever/palantir": {
+          "rows": 59,
+          "state": "ok"
+        },
+        "Lever/rai": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Lever/robust-ai": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Lever/shieldai": {
+          "rows": 1,
+          "state": "ok"
+        },
+        "Lever/spotify": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Lever/waabi": {
+          "rows": 2,
+          "state": "ok"
+        },
+        "Lever/zoox": {
+          "rows": 0,
+          "state": "ok"
+        },
+        "Simplify2026": {
+          "rows": 100,
+          "state": "ok"
+        },
+        "Simplify2027": {
+          "rows": 100,
+          "state": "ok"
+        },
+        "SimplifyNewGrad": {
+          "rows": 286,
+          "state": "ok"
+        },
+        "sndsh404_2027": {
+          "rows": 108,
+          "state": "ok"
+        },
+        "vanshb03_2027": {
+          "rows": 116,
+          "state": "ok"
+        }
+      }
+    }
+  ],
+  "schema_version": 1
+}

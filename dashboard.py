@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from source_health import alerts as health_alerts, summary as health_summary
 from universities import _index, annotate, load_universities
 
 
@@ -161,8 +162,13 @@ def json_for_script(value: object) -> str:
 def build() -> int:
     jobs = load_jobs()
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    page = TEMPLATE.replace("__JOBS__", json_for_script(jobs)).replace(
-        "__GENERATED__", date.today().isoformat()
+    # Reliability is published deliberately. A job dataset nobody audits is
+    # worth nothing, and the failures here are the kind that hide.
+    health = {"summary": health_summary(), "alerts": health_alerts()[:8]}
+    page = (
+        TEMPLATE.replace("__JOBS__", json_for_script(jobs))
+        .replace("__HEALTH__", json_for_script(health))
+        .replace("__GENERATED__", date.today().isoformat())
     )
     OUTPUT.write_text(page, encoding="utf-8")
     return len(jobs)
@@ -247,6 +253,17 @@ h2{font-size:17px;line-height:1.25;margin:3px 0 0;letter-spacing:-.018em}
 .meta{display:grid;gap:7px;color:var(--muted);font-size:12px;margin-top:3px}
 .meta div{display:flex;gap:8px}.meta b{color:#cfddd8;font-weight:700;min-width:58px}
 .focus{margin:13px 0;color:#b9cbc4;font-size:12px}
+.health{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 15px;
+  margin:0 0 12px;border:1px solid var(--line);border-radius:14px;background:#0d1a17;font-size:12.5px}
+.health .dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+.health .dot.ok{background:var(--green);box-shadow:0 0 12px var(--green)}
+.health .dot.bad{background:var(--red);box-shadow:0 0 12px var(--red)}
+.health b{font-size:13px}
+.health .muted{color:var(--muted)}
+.health details{color:var(--muted)}
+.health summary{cursor:pointer;color:var(--blue)}
+.health ul{margin:8px 0 0;padding-left:18px}
+.health li{margin:3px 0}
 .fitbar{display:none;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 14px;margin:0 0 12px;
   border:1px solid #396b55;border-radius:14px;background:#102b20;font-size:13px}
 .fitbar.show{display:flex}
@@ -333,6 +350,7 @@ footer a{color:var(--green)}
     <button class="chip" id="clear">Clear filters</button>
   </div>
 </section>
+<div class="health" id="health"></div>
 <div class="fitbar" id="fitOffer">
   <b>Check these against your own profile</b>
   <span class="muted" style="font-size:12px">Your local helper can mark which of these
@@ -363,6 +381,7 @@ footer a{color:var(--green)}
 </div>
 <script>
 const JOBS=__JOBS__;
+const HEALTH=__HEALTH__;
 const PAGE=48;
 const CATEGORY_ORDER=["All","AI / ML","Software Engineering","Quant / Finance","Robotics & Embodied AI","Security","Data","Systems & Infra","Hardware / EE","HCI / XR","Computational Science"];
 const TYPE_ORDER=["All types","intern","research-assistant","new-grad","phd-fellowship","postdoc","co-op","placement","fellowship","masters-research"];
@@ -540,6 +559,22 @@ function restore(){
   if(CATEGORY_ORDER.includes(p.get("category")))category=p.get("category");
   if(TYPE_ORDER.includes(p.get("posType")))posType=p.get("posType");
 }
+function renderHealth(){
+  const s=HEALTH.summary||{}, a=HEALTH.alerts||[];
+  if(!s.sources)return;
+  const clean=!a.some(x=>x.severity==="broken");
+  const rate=s.description_rate==null?"":
+    ` · ${Math.round(s.description_rate*100)}% of sampled adverts still readable`;
+  let html=`<span class="dot ${clean?"ok":"bad"}"></span>`+
+    `<b>${s.healthy}/${s.sources} sources healthy</b>`+
+    `<span class="muted">${s.rows} rows on ${esc(s.date||"the last run")}${rate}</span>`;
+  if(a.length){
+    html+=`<details><summary>${a.length} issue${a.length===1?"":"s"} being tracked</summary><ul>`+
+      a.map(x=>`<li><b>${esc(x.source)}</b> — ${esc(x.detail)}</li>`).join("")+`</ul></details>`;
+  }
+  $("health").innerHTML=html;
+}
+renderHealth();
 $("totalStat").textContent=JOBS.length;
 $("researchStat").textContent=JOBS.filter(isResearch).length;
 $("newStat").textContent=JOBS.filter(j=>j.new).length;
