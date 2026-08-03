@@ -45,7 +45,38 @@ from .models import Job
 
 
 OPENAI_ENDPOINT = "https://api.openai.com/v1/chat/completions"
-OPENAI_MODEL_DEFAULT = "gpt-4o-mini"
+OPENAI_MODELS_ENDPOINT = "https://api.openai.com/v1/models"
+# Preference order, best value first. The account decides what it actually has;
+# this only says which to reach for.
+#
+# Measured on one full rewrite of this CV against a software internship,
+# counting lines the validators accepted and completion tokens billed:
+#
+#   gpt-5.4-mini  16s  29/45   8.9k out   rewrites read like the original
+#   gpt-5.4       32s  41/45   9.6k out   strong verbs, real restructuring
+#   gpt-5.5       48s  43/45  15.8k out   two more lines for 65% more output
+#   gpt-5.6-sol   75s  44/45  15.1k out   best prose, 2.3x the wall time
+#
+# gpt-5.4 is the knee of that curve: 93% of the flagship's coverage for about
+# 60% of the billed output and less than half the wait. The mini tier is a
+# false economy — it returns fewer rewrites and the ones it returns barely
+# differ from the text they replace. The picker still offers the rest, because
+# a job worth 75 seconds is a decision only the applicant can make.
+MODEL_PREFERENCE = (
+    "gpt-5.4",
+    "gpt-5.5",
+    "gpt-5.6-sol",
+    "gpt-5.1",
+    "gpt-5",
+    "gpt-4.1",
+    "gpt-5.4-mini",
+    "gpt-5-mini",
+    "gpt-4o",
+    "gpt-4o-mini",
+)
+OPENAI_MODEL_DEFAULT = MODEL_PREFERENCE[0]
+# Newer models fix sampling temperature and reject the parameter outright.
+FIXED_TEMPERATURE_MODELS = ("gpt-5.5", "gpt-5.6", "gpt-5-mini", "gpt-5-nano")
 # A job description repeats itself well before 8k characters. The strategy call
 # reads it in full; the section calls receive only the requirements it found,
 # which keeps every parallel request small and fast.
@@ -161,6 +192,61 @@ def _salvage_json(text: str) -> dict[str, Any] | None:
     return parsed if isinstance(parsed, dict) else None
 
 
+def model_path(home: Path) -> Path:
+    return home / "openai-model.txt"
+
+
+def load_model(home: Path) -> str:
+    path = model_path(home)
+    if path.exists() and not path.is_symlink():
+        chosen = path.read_text(encoding="utf-8").strip()
+        if chosen and len(chosen) < 64:
+            return chosen
+    return OPENAI_MODEL_DEFAULT
+
+
+def save_model(home: Path, value: str) -> str:
+    chosen = re.sub(r"[^A-Za-z0-9._-]", "", str(value or "")).strip()
+    if not chosen or len(chosen) > 63:
+        raise ValueError("Choose a model from the list")
+    home.mkdir(parents=True, exist_ok=True, mode=0o700)
+    path = model_path(home)
+    path.write_text(chosen + "\n", encoding="utf-8")
+    path.chmod(0o600)
+    return chosen
+
+
+def available_models(api_key: str, *, timeout: int = 20) -> list[str]:
+    """Chat models on this account, best first, then the rest alphabetically."""
+    try:
+        response = requests.get(
+            OPENAI_MODELS_ENDPOINT,
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=timeout,
+        )
+        response.raise_for_status()
+        found = {str(item.get("id", "")) for item in response.json().get("data", [])}
+    except (requests.RequestException, KeyError, TypeError, ValueError) as exc:
+        raise RuntimeError(f"Could not list OpenAI models: {exc}") from exc
+    skip = ("audio", "realtime", "transcribe", "tts", "image", "embedding",
+            "moderation", "search", "codex", "instruct")
+    usable = sorted(
+        name for name in found
+        if name.startswith(("gpt-", "o3", "o4"))
+        and not any(word in name for word in skip)
+    )
+    preferred = [name for name in MODEL_PREFERENCE if name in found]
+    return preferred + [name for name in usable if name not in preferred]
+
+
+def best_available_model(api_key: str) -> str:
+    try:
+        models = available_models(api_key)
+    except RuntimeError:
+        return OPENAI_MODEL_DEFAULT
+    return models[0] if models else OPENAI_MODEL_DEFAULT
+
+
 def _json_object(value: str) -> dict[str, Any]:
     cleaned = re.sub(r"<think>.*?</think>", "", value or "", flags=re.S).strip()
     cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.I)
@@ -241,7 +327,11 @@ def _ask_once(
                     {"role": "system", "content": system},
                     {"role": "user", "content": user},
                 ],
-                "temperature": TEMPERATURE,
+                **(
+                    {}
+                    if model.startswith(FIXED_TEMPERATURE_MODELS)
+                    else {"temperature": TEMPERATURE}
+                ),
                 "max_completion_tokens": max_tokens,
                 # Constrain decoding to valid JSON so a stray prose preamble
                 # cannot waste a whole generation and force the user to retry.
@@ -313,6 +403,24 @@ def _entry_index(document: dict[str, Any]) -> list[dict[str, Any]]:
     return index
 
 
+def _standing_order(instructions: str) -> str:
+    """The applicant's own instruction, promoted to the top of the prompt.
+
+    Buried in the payload as one field among many it was routinely ignored.
+    It is the one part of the prompt the person actually wrote, so it outranks
+    the defaults and is stated before them.
+    """
+    text = re.sub(r"\s+", " ", str(instructions or "")).strip()
+    if not text:
+        return ""
+    return (
+        "THE APPLICANT'S INSTRUCTION, WHICH OUTRANKS EVERY DEFAULT BELOW "
+        "EXCEPT THE TRUTH RULES: " + text[:2000] + "\n"
+        "Follow it exactly. If it conflicts with a default about emphasis, "
+        "ordering, tone, or length, the instruction wins.\n\n"
+    )
+
+
 def _strategy(
     job: Job,
     document: dict[str, Any],
@@ -332,7 +440,14 @@ def _strategy(
         else "Leave `drop` empty."
     )
     system = (
-        "You are a CV strategist. Return JSON only, no markdown.\n"
+        _standing_order(instructions)
+        + "You are a CV strategist. Return JSON only, no markdown.\n"
+        "ORDER. Lead with the section a reader hiring for THIS posting opens "
+        "with. For an engineering, software, quant, or industry role that is "
+        "employment and the projects that look like the job; academic research "
+        "and publications come after. For a research, PhD, postdoc, or lab "
+        "role it is the research. Never lead with a section merely because it "
+        "is the candidate's favourite work: match the reader.\n"
         "Read the posting and extract the concrete requirements it states: "
         "named technologies, methods, domains, degree level, and "
         "responsibilities, quoting its own wording. Then decide how this "
@@ -343,12 +458,12 @@ def _strategy(
         "exactly once. " + drop_rule + "\n"
         "Write `priorities`: three short notes telling the rewriter what to "
         "foreground across the whole CV for this role.\n"
-        "In `keywords`, list the terms an ATS would screen this application "
-        "on, each marked covered when the CV already uses it and missing when "
-        "it does not, with importance high, medium, or low. Do not invent "
-        "coverage: judge only from the CV you are given.\n"
-        "Set `match_score` from 0 to 100 for how well this CV evidences this "
-        "posting's requirements as written.\n"
+        "In `keywords`, list 12 to 20 terms an ATS would screen this "
+        "application on — named technologies, methods, and domains, one to "
+        "three words each, never a sentence or a date. Mark each covered when "
+        "the CV already uses it and missing when it does not, with importance "
+        "high, medium, or low. Fewer than a dozen makes the coverage figure "
+        "derived from them meaningless.\n"
         "Rewrite the summary so it opens on the candidate's evidence that "
         "matters most for this posting. It describes the CANDIDATE, never the "
         "company or the vacancy: do not name the employer, do not restate the "
@@ -359,7 +474,6 @@ def _strategy(
         "Return exactly: "
         '{"requirements":["..."],"section_order":["s0",...],'
         '"keywords":[{"term":"...","status":"covered|missing","importance":"high|medium|low"}],'
-        '"match_score":0,'
         '"entry_order":{"s0":["s0e1",...]},"drop":["s2e3"],'
         '"priorities":["..."],'
         '"summary":{"proposal":"...","rationale":"..."},'
@@ -408,7 +522,8 @@ def _rewrite_section(
              "requirements. Leave the rest alone."
     )
     system = (
-        "You are rewriting one section of a CV for one job. Return JSON only, "
+        _standing_order(instructions)
+        + "You are rewriting one section of a CV for one job. Return JSON only, "
         "no markdown.\n" + scope + "\n"
         "Lead each line with the evidence this posting cares about, use the "
         "posting's own vocabulary wherever the verified text already supports "
@@ -632,10 +747,20 @@ def generate_suggestions(
             "importance": str(item.get("importance", "")).strip()[:20],
         })
     draft["keywords"] = keywords
-    try:
-        score = int(plan.get("match_score"))
-        draft["match_score"] = max(0, min(100, score))
-    except (TypeError, ValueError):
+    # The model's own figure disagreed with the keyword panel beside it — 85%
+    # next to "3 of 14 terms covered" reads as broken, and it was: one was a
+    # vibe and the other a count. The score is now derived from the same
+    # checked coverage, weighted so a high-importance gap costs more.
+    weights = {"high": 3.0, "medium": 2.0, "low": 1.0}
+    total = sum(weights.get(k["importance"], 1.5) for k in keywords)
+    if total:
+        earned = sum(
+            weights.get(k["importance"], 1.5)
+            for k in keywords
+            if k["status"] == "covered"
+        )
+        draft["match_score"] = int(round(100 * earned / total))
+    else:
         draft["match_score"] = None
     draft["advice"] = _clean_list(plan.get("advice"), limit=6, chars=300)
     if failures:
