@@ -1,4 +1,4 @@
-# Manual Check List — 2026-08-08
+# Manual Check List — 2026-08-09
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -118,4 +118,5 @@ Use the local cockpit or private autoapply database to record your decision; per
 Roles previously seen only in these sources remain stale; they are not marked closed.
 
 - **Greenhouse/Graphcore**: degraded: parsed zero roles unexpectedly
+- **Greenhouse/Anduril**: The read operation timed out
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
