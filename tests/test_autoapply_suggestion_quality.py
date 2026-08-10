@@ -11,6 +11,7 @@ from autoapply.suggestion_quality import (
     covers,
     coverage_score,
     evidence_gaps,
+    is_generic_rationale,
     is_screening_term,
     keyword_panel,
     normalise_importance,
@@ -197,6 +198,41 @@ class TermsGainedTests(unittest.TestCase):
         # Boilerplate the posting phrases itself in is not vocabulary.
         self.assertNotIn("experience", vocabulary)
         self.assertNotIn("strong", vocabulary)
+
+
+class RationaleTests(unittest.TestCase):
+    POSTING = {"distributed", "training", "computer-vision"}
+
+    def test_praise_for_the_rewrite_is_not_a_reason(self):
+        for rationale in (
+            "Stronger action verb.",
+            "Clearer and more impactful wording.",
+            "Improved tone and readability.",
+            "",
+        ):
+            with self.subTest(rationale=rationale):
+                self.assertTrue(is_generic_rationale(rationale, self.POSTING))
+
+    def test_naming_the_requirement_is_a_reason(self):
+        self.assertFalse(
+            is_generic_rationale(
+                "Answers the distributed training requirement.", self.POSTING
+            )
+        )
+
+    def test_quoting_the_wording_changed_is_a_reason(self):
+        self.assertFalse(
+            is_generic_rationale(
+                'Replaces "worked on models" with the posting\'s own phrase.',
+                self.POSTING,
+            )
+        )
+
+    def test_a_rationale_is_judged_against_this_posting_only(self):
+        """The same sentence is specific for one posting and empty for another."""
+        rationale = "Answers the computer vision requirement."
+        self.assertFalse(is_generic_rationale(rationale, self.POSTING))
+        self.assertTrue(is_generic_rationale(rationale, {"kubernete"}))
 
 
 if __name__ == "__main__":
