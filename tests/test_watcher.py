@@ -447,13 +447,20 @@ class GeneratedOutputTests(unittest.TestCase):
     def test_the_readme_documents_a_command_that_exists(self):
         readme = self._readme([dict(self.ROW)])
         self.assertIn("python3 -m autoapply bridge", readme)
-        # The command the README advertises must be a real subcommand.
+        # The command the README advertises must be a real subcommand. Read the
+        # parser's own choices rather than invoking --help, which would print
+        # the whole usage message into the test output.
+        import argparse
+
         from autoapply.cli import build_parser
 
-        parser = build_parser()
-        with self.assertRaises(SystemExit) as caught:
-            parser.parse_args(["bridge", "--help"])
-        self.assertEqual(caught.exception.code, 0)
+        subcommands = {
+            name
+            for action in build_parser()._actions
+            if isinstance(action, argparse._SubParsersAction)
+            for name in action.choices
+        }
+        self.assertIn("bridge", subcommands)
 
     def test_a_digest_is_written_under_the_digests_directory(self):
         """Generated history stays out of the repository root."""
