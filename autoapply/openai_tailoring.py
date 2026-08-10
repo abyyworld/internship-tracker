@@ -1129,12 +1129,19 @@ def generate_suggestions(
         lines = draft["added"].setdefault(entry_id, [])
         if len(lines) >= MAX_ADDED_PER_ENTRY or any(l["text"] == text for l in lines):
             return
+        added_rationale = re.sub(
+            r"\s+", " ", str(raw.get("rationale", ""))
+        ).strip()[:800]
         lines.append({
             "id": f"{entry_id}-new{len(lines)}",
             "text": text,
-            "rationale": re.sub(
-                r"\s+", " ", str(raw.get("rationale", ""))
-            ).strip()[:800],
+            # Held to the same standard as a rewrite: a reason that would be
+            # true of any added line is not a reason to add this one.
+            "rationale": "" if is_generic_rationale(added_rationale, posting_terms)
+            else added_rationale,
+            # An added line is new text, so everything it says that the posting
+            # screens on is a gain.
+            "adds_keywords": terms_gained("", text, posting_terms),
             "status": "pending",
             "source": "ai",
         })
@@ -1209,7 +1216,15 @@ def generate_suggestions(
         for section in ordered_sections(document, draft)
         for entry in section["entries"]
     ]
-    if not draft["bullets"] and not draft["summary"] and tailored == master:
+    # An accepted added line is a suggestion too. Leaving it out of this test
+    # threw away a generation whose only output was a set of valid new lines,
+    # and reported it as having produced nothing evidence-safe.
+    if (
+        not draft["bullets"]
+        and not draft["summary"]
+        and not draft["added"]
+        and tailored == master
+    ):
         reasons = ", ".join(
             f"{reason}: {count}"
             for reason, count in sorted(Counter(rejected.values()).items())

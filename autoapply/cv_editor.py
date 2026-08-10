@@ -673,6 +673,12 @@ def normalize_draft(
                 "rationale": re.sub(
                     r"\s+", " ", str(line.get("rationale", ""))
                 ).strip()[:800],
+                # Measured on generation; kept so a reload still shows it.
+                "adds_keywords": [
+                    re.sub(r"\s+", " ", str(item)).strip()[:80]
+                    for item in list(line.get("adds_keywords", []))[:12]
+                    if str(item).strip()
+                ],
                 "status": status,
                 "source": source,
             })

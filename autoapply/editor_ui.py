@@ -702,6 +702,10 @@ function addedStrips(entryId){
     box.append(prop);
     if(line.rationale){const w=document.createElement("div");w.className="why";
       w.textContent=line.rationale;box.append(w)}
+    const lg=(line.adds_keywords||[]).filter(Boolean);
+    if(lg.length){const g=document.createElement("div");g.className="why";
+      g.style.color="var(--green)";
+      g.textContent="Adds screening terms: "+lg.join(", ");box.append(g)}
     const row=document.createElement("div");row.className="row";
     const ok=document.createElement("button");ok.className="mini ok";ok.textContent="Add this";
     ok.onclick=()=>{line.status="accepted";renderAll();queueSave()};
