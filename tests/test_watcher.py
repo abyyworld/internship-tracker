@@ -390,3 +390,79 @@ class SecurityTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class GeneratedOutputTests(unittest.TestCase):
+    """The watcher writes the repository's front page and its history files."""
+
+    ROW = {
+        "id": "x1", "company": "Acme", "role": "Robotics Intern", "region": "UK",
+        "term": "Summer 2027", "url": "https://invalid.test", "source": "test",
+        "source_status": "open", "category": "Robotics & Embodied AI",
+        "tier": "elite", "deadline": "", "sponsorship": "", "location": "London",
+        "record_kind": "posting", "NEW": "YES", "degree": "Undergraduate eligible",
+        "company_type": "", "position_type": "Internship", "cv_support": "",
+        "eligibility": "review",
+    }
+
+    def _in_sandbox(self, work):
+        """Run a generator in a scratch directory: it writes to the cwd."""
+        import os
+        import tempfile
+
+        original = os.getcwd()
+        with tempfile.TemporaryDirectory() as directory:
+            os.chdir(directory)
+            try:
+                work()
+                return directory, sorted(
+                    os.path.relpath(os.path.join(root, name), directory)
+                    for root, _, names in os.walk(directory)
+                    for name in names
+                )
+            finally:
+                os.chdir(original)
+
+    def test_the_public_readme_names_no_private_filesystem_path(self):
+        """A public front page described the owner's own Desktop layout."""
+        readme = self._readme([dict(self.ROW)])
+        for leak in ("/Users/", "$HOME/Desktop", "other projects"):
+            with self.subTest(leak=leak):
+                self.assertNotIn(leak, readme)
+
+    def _readme(self, rows):
+        import os
+        import tempfile
+
+        original = os.getcwd()
+        with tempfile.TemporaryDirectory() as directory:
+            os.chdir(directory)
+            try:
+                watcher.build_dashboard(rows, ["x1"], {"x1": rows[0]})
+                with open("README.md", encoding="utf-8") as handle:
+                    return handle.read()
+            finally:
+                os.chdir(original)
+
+    def test_the_readme_documents_a_command_that_exists(self):
+        readme = self._readme([dict(self.ROW)])
+        self.assertIn("python3 -m autoapply bridge", readme)
+        # The command the README advertises must be a real subcommand.
+        from autoapply.cli import build_parser
+
+        parser = build_parser()
+        with self.assertRaises(SystemExit) as caught:
+            parser.parse_args(["bridge", "--help"])
+        self.assertEqual(caught.exception.code, 0)
+
+    def test_a_digest_is_written_under_the_digests_directory(self):
+        """Generated history stays out of the repository root."""
+        rows = [dict(self.ROW)]
+        _, written = self._in_sandbox(lambda: watcher.write_new_digest(rows, ["x1"]))
+        self.assertEqual(written, [f"digests/new_roles_{watcher.TODAY}.md"])
+
+    def test_no_digest_is_written_when_nothing_is_new(self):
+        _, written = self._in_sandbox(
+            lambda: watcher.write_new_digest([dict(self.ROW)], [])
+        )
+        self.assertEqual(written, [])

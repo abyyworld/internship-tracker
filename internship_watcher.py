@@ -35,6 +35,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 # ─────────────────────────────────────────────────────────────────────────────
 TRACKER_FILE   = "tracker.csv"
 MANUAL_FILE    = "manual_checks.md"
+DIGEST_DIR     = "digests"
 TODAY          = date.today().isoformat()
 DROP_CLOSED    = True
 # Personal application state belongs in the ignored local cockpit/database, never
@@ -2050,163 +2051,6 @@ def _role_row(r, cols=("company", "role", "region", "term")):
     return "| " + " | ".join(cells[c] for c in cols) + " |"
 
 
-def _build_dashboard_legacy(rows_out, new_ids, current):
-    live = [r for r in rows_out if r.get("source_status") == "open"]
-    elite = [r for r in live if r.get("elite_tier") == "elite"]
-    high  = [r for r in live if r.get("elite_tier") == "high"]
-    new_rows = [r for r in rows_out if r.get("NEW") == "YES"]
-    spring = [r for r in live if r.get("term") == "Spring Week 2027"]
-
-    from collections import Counter
-    region_counts = Counter(r.get("region", "?") for r in live)
-
-    L = []
-    L.append("# 🎯 Universal Academic & Career Tracker — Internships · Research · PhD · New Grad\n")
-    L.append(f"> **Auto-updated daily** by GitHub Actions · Last run: **{TODAY}** · "
-             f"**{len(live)} live roles** tracked\n")
-    L.append("\nCovers **Internships · Research Assistantships · PhD Fellowships · Postdocs · "
-             "New Grad** across **SWE · AI/ML · Quant · Data · Security · Robotics · "
-             "Hardware · Computational Science**. "
-             "Scrapes community boards + Greenhouse, Ashby & Lever company APIs "
-             "every day, merges + de-dupes, and flags what newly opened. "
-             "Every role is **tagged, not filtered out** — sort/slice by region, "
-             "degree level, citizenship, visa, term and role type in "
-             "[tracker.csv](tracker.csv).\n")
-    L.append("\n🚫 = US-citizen-only   🛂 = no visa sponsorship   "
-             "🎓 = PhD/MSc-targeted (still listed, just tagged)\n")
-
-    # Deadline computations
-    dated = [(days_until(r.get("deadline", "")), r) for r in live]
-    dated = [(d, r) for d, r in dated if d is not None]
-    dated.sort(key=lambda x: x[0])
-    urgent = [(d, r) for d, r in dated if 0 <= d <= URGENT_DAYS]
-    windows = [r for r in live if r.get("deadline") and days_until(r.get("deadline")) is None]
-
-    # At a glance
-    L.append("\n## 📊 At a glance\n")
-    L.append("| Metric | Count |\n|--------|------:|\n")
-    L.append(f"| Total live roles | {len(live)} |\n")
-    L.append(f"| 🏆 Elite tier | {len(elite)} |\n")
-    L.append(f"| ⭐ High tier | {len(high)} |\n")
-    L.append(f"| 🆕 New this run | {len(new_ids)} |\n")
-    L.append(f"| ⏰ Closing ≤{URGENT_DAYS} days | {len(urgent)} |\n")
-    reg_str = " · ".join(f"{k} {v}" for k, v in region_counts.most_common())
-    L.append(f"\n**By region:** {reg_str}\n")
-    lvl = Counter(r.get("level", "Any") for r in live)
-    L.append(f"**By degree level:** " + " · ".join(f"{k} {v}" for k, v in lvl.most_common()) +
-             "  _(Any = undergrad-friendly)_\n")
-    typ = Counter(r.get("role_type", "") for r in live)
-    L.append(f"**By type:** " + " · ".join(f"{k} {v}" for k, v in typ.most_common() if k) + "\n")
-    us_only = sum(1 for r in live if r.get("citizenship") == "US only")
-    L.append(f"**Citizenship:** {us_only} are US-citizen-only (tagged 🚫); the rest are open to you.\n")
-
-    # Filter guide
-    L.append("\n<details><summary>🔎 <b>How to filter this tracker</b></summary>\n\n")
-    L.append("Open [tracker.csv](tracker.csv) in Google Sheets/Excel → Data → Create a filter. "
-             "Useful columns:\n\n")
-    L.append("- **`region`** — UK · US · Ireland · Netherlands · Canada · Remote · Global\n")
-    L.append("- **`level`** — `Any` (undergrad-friendly) · `MSc` · `PhD`\n")
-    L.append("- **`role_type`** — `intern` · `new-grad` · `placement` · `spring-week` · `graduate`\n")
-    L.append("- **`citizenship`** — blank = open to you · `US only` = skip\n")
-    L.append("- **`sponsorship`** — `no sponsorship` = needs work authorisation\n")
-    L.append("- **`term`** — Summer 2027 · Summer 2026 · Spring Week 2027\n")
-    L.append("- **`elite_tier`** — `elite` · `high`\n")
-    L.append("- **`deadline`** — sort ascending to see what closes first\n")
-    L.append("\n</details>\n")
-
-    # ⏰ Closing within N days — the top-priority section
-    L.append(f"\n## ⏰ Closing within {URGENT_DAYS} days\n")
-    if urgent:
-        L.append("**Apply to these first.**\n\n")
-        L.append("| Days left | Deadline | Company | Role | Region |\n|--:|--|--|--|--|\n")
-        for d, r in urgent:
-            L.append(f"| **{d}** | {_cell(r.get('deadline',''))} | **{_cell(r['company'])}** | "
-                     f"{_cell(r['role'])} | {_cell(r['region'])} |\n")
-    else:
-        L.append("_Nothing with a hard deadline inside the window right now._ "
-                 "Most software/quant internships are **rolling** — the real deadline is "
-                 "\"before they fill up,\" so apply to open elite roles ASAP. Dated deadlines "
-                 "(spring weeks) appear here automatically as autumn approaches.\n")
-    if windows:
-        L.append("\n**Dated application windows** (verify exact date on the site):\n\n")
-        L.append("| Company | Program | Window | Region |\n|--|--|--|--|\n")
-        for r in sorted(windows, key=lambda r: r.get("company", "")):
-            L.append(f"| **{_cell(r['company'])}** | {_cell(r['role'])} | "
-                     f"{_cell(r.get('deadline',''))} | {_cell(r['region'])} |\n")
-
-    # NEW roles
-    if new_rows:
-        elite_new = [r for r in new_rows if r.get("elite_tier") in ("elite", "high")]
-        L.append(f"\n## 🆕 Newly opened ({len(new_rows)})\n")
-        shown = elite_new if elite_new else new_rows
-        L.append("| Company | Role | Region | Term |\n|--|--|--|--|\n")
-        for r in shown[:40]:
-            L.append(_role_row(r) + "\n")
-        if len(shown) > 40:
-            L.append(f"\n_…and {len(shown)-40} more — see [tracker.csv](tracker.csv)_\n")
-
-    # Elite roles by region (collapsible)
-    L.append(f"\n## 🏆 Elite roles — live & auto-scraped ({len(elite)})\n")
-    by_region = {}
-    for r in elite:
-        by_region.setdefault(r.get("region", "Other"), []).append(r)
-    order = ["UK", "US", "Netherlands", "Ireland", "Canada", "Remote", "Global", "Other"]
-    for reg in sorted(by_region, key=lambda x: order.index(x) if x in order else 99):
-        rs = sorted(by_region[reg], key=lambda r: r.get("company", ""))
-        L.append(f"\n<details><summary><b>{reg}</b> — {len(rs)} roles</summary>\n\n")
-        L.append("| Company | Role | Term |\n|--|--|--|\n")
-        for r in rs:
-            L.append(_role_row(r, cols=("company", "role", "term")) + "\n")
-        L.append("\n</details>\n")
-
-    # Spring weeks — urgent
-    if spring:
-        L.append("\n## 🇬🇧 UK Spring Weeks & Insight Days — APPLY OCT–NOV 2026\n")
-        L.append("First-year/early insight programs that feed directly into summer offers. "
-                 "**These deadlines come first — don't miss them.**\n\n")
-        L.append("| Company | Program | Location | Link |\n|--|--|--|--|\n")
-        for r in sorted(spring, key=lambda r: r.get("company", "")):
-            url = r.get("url", "")
-            link = f"[Apply]({url})" if url else ""
-            L.append(f"| **{_cell(r['company'])}** | {_cell(r['role'])} | "
-                     f"{_cell(r.get('location',''))} | {link} |\n")
-
-    # High tier (collapsible, compact)
-    if high:
-        L.append(f"\n## ⭐ High-tier roles ({len(high)})\n")
-        L.append("<details><summary>Show all</summary>\n\n")
-        L.append("| Company | Role | Region | Term |\n|--|--|--|--|\n")
-        for r in sorted(high, key=lambda r: (r.get("region",""), r.get("company",""))):
-            L.append(_role_row(r) + "\n")
-        L.append("\n</details>\n")
-
-    # Manual-check elites
-    L.append("\n## 📋 Elite companies — check these career pages directly\n")
-    L.append("_These firms use private application systems that can't be auto-scraped. "
-             "They're your highest-priority targets — check weekly._\n\n")
-    L.append("| Company | Section | Location | Link |\n|--|--|--|--|\n")
-    for (company, role, loc, url, _t) in ELITE_WATCHLIST:
-        L.append(f"| **{_cell(company)}** | {_cell(role)} | {_cell(loc)} | [Open]({url}) |\n")
-
-    # Footer
-    L.append("\n---\n")
-    L.append("\n## ⚙️ How this works\n")
-    L.append("- A Python scraper (`internship_watcher.py`) runs **every morning via "
-             "GitHub Actions** — no server, no computer needed.\n")
-    L.append("- It pulls [SimplifyJobs](https://github.com/SimplifyJobs), "
-             "[vanshb03](https://github.com/vanshb03/Summer2027-Internships), "
-             "sndsh404, plus company job APIs directly: **Greenhouse** (Jump, IMC, "
-             "Jane Street, Tower, Squarepoint, Anthropic…), **Ashby** (OpenAI, "
-             "Perplexity, Cohere…) and **Lever** (Palantir, Spotify).\n")
-    L.append("- Public discovery data lives in [tracker.csv](tracker.csv). "
-             "Personal status stays in the local cockpit/database. Manual-check links in "
-             "[manual_checks.md](manual_checks.md).\n")
-    L.append("- Want your own copy? Fork this repo and enable Actions. "
-             "Zero dependencies — Python stdlib only.\n")
-    L.append("\n_Data is community-sourced; verify every posting before applying._\n")
-
-    with open("README.md", "w", encoding="utf-8") as f:
-        f.writelines(L)
 
 
 def build_dashboard(rows_out, new_ids, current):
@@ -2304,27 +2148,39 @@ def build_dashboard(rows_out, new_ids, current):
         "\n[Open the filterable Role Radar dashboard]"
         "(https://abyyworld.github.io/internship-tracker/) for search, category, "
         "position type, region, term, degree, company-type, and CV-support filters.\n",
-        "\nThe private helper is configured to start automatically on the owner's "
-        "Mac. Double-click `start-autoapply.command` once to connect the browser, "
-        "or run:\n",
-        "\n```bash\ncd \"$HOME/Desktop/other projects/internship watcher\"\n"
-        "./start-autoapply.command\n```\n",
-        "\nEvery dashboard card has a native **✦ Edit CV for this job** button; "
-        "Tampermonkey is not required for the dashboard. It opens a private "
-        "localhost editor (AI CV Studio) containing the complete master CV. "
-        "OpenAI (`gpt-4o-mini`) proposes a small set of evidence-checked wording "
-        "patches that can be accepted, rejected, or directly edited before "
-        "exporting a job-specific PDF. Untouched content is preserved, and the "
-        "employer application remains a separate button where Simplify can "
-        "autofill.\n",
+        "\nThe CV editor runs from a clone of this repository. See "
+        "[SETUP.md](SETUP.md) for first-time configuration, then:\n",
+        "\n```bash\n./start-autoapply.command   # macOS\n"
+        "python3 -m autoapply bridge  # any platform\n```\n",
+        "\nEvery dashboard card has a native **\u2726 Edit CV for this job** "
+        "button; Tampermonkey is not required for the dashboard. It opens a "
+        "private localhost editor containing the complete master CV and tailors "
+        "it to the selected posting: sections and entries reordered to lead with "
+        "the evidence that posting cares about, every line rewritten against its "
+        "stated requirements, and a summary written for the role. Each proposal "
+        "can be accepted, rejected, or edited before exporting a job-specific "
+        "PDF; untouched content is preserved, and the employer application "
+        "remains a separate button where Simplify can autofill.\n",
+        "\nEvery proposal is checked before it is shown. A rewrite may not "
+        "introduce a number, a named technology, an employer, a date, or a "
+        "qualification the CV does not already evidence, and a metric earned on "
+        "one project may not reappear as the result of another. Keyword coverage "
+        "is counted against the CV rather than taken from the model, and "
+        "requirements the CV genuinely cannot evidence are reported as gaps "
+        "instead of being written around.\n",
+        "\nAny OpenAI-compatible endpoint drives it \u2014 OpenAI, Groq, "
+        "OpenRouter, Cerebras, Together, GitHub Models, Google AI Studio, or a "
+        "model running locally under Ollama for nothing. The provider and model "
+        "are chosen in the editor.\n",
         "\nThe GitHub repository never receives the private profile, fact bank, "
         "OpenAI key, drafts, or generated PDFs. The editor runs on `127.0.0.1`, "
         "stores the API key locally as a mode-0600 private file, requires review "
         "of every proposed change, and never submits an application.\n",
         "\nPressing **Generate suggestions** sends the selected job description "
-        "and master CV text to the OpenAI API through the user's account. Merely "
-        "opening the editor, manually editing, or exporting a PDF does not call "
-        "OpenAI.\n",
+        "and master CV text to the configured endpoint through the user's own "
+        "account. Merely opening the editor, editing by hand, or exporting a PDF "
+        "makes no network call. Pointing the editor at a local model means the "
+        "CV never leaves the machine at all.\n",
     ]
     if stale_error:
         lines.append(
@@ -2456,7 +2312,10 @@ def write_new_digest(rows_out, new_ids):
     stale_count = sum(
         records_by_id[rid].get("source_status") != "open" for rid in new_ids
     )
-    fn = f"new_roles_{TODAY}.md"
+    # Generated discovery history. Kept out of the repository root so the top
+    # level stays the project rather than an accumulating pile of its output.
+    os.makedirs(DIGEST_DIR, exist_ok=True)
+    fn = os.path.join(DIGEST_DIR, f"new_roles_{TODAY}.md")
     with open(fn, "w", encoding="utf-8") as f:
         f.write(f"# {len(new_ids)} roles discovered — {TODAY}\n\n")
         if stale_count:
@@ -2581,7 +2440,7 @@ def run():
     print(f"\n  tracker  -> {TRACKER_FILE}")
     print(f"  manual   -> {MANUAL_FILE}")
     if new_ids:
-        print(f"  new digest -> new_roles_{TODAY}.md")
+        print(f"  new digest -> {DIGEST_DIR}/new_roles_{TODAY}.md")
     print()
 
 
