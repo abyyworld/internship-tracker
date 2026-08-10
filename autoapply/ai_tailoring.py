@@ -79,25 +79,86 @@ def _named_tokens(value: str) -> set[str]:
     return values
 
 
-def _proper_tokens(value: str) -> set[str]:
+# Words a CV line habitually opens with. Capitalisation at the start of a
+# sentence is grammar, so an opener is only read as a name when it is neither
+# one of these nor an inflected English verb.
+SENTENCE_OPENERS = frozenset({
+    "a", "across", "after", "also", "an", "and", "another", "as", "at",
+    "because", "before", "both", "brings", "broke", "brought", "builds",
+    "built", "but", "by", "chose", "core", "current", "cut", "de", "drives",
+    "drove", "during", "each", "every", "final", "finds", "first", "for",
+    "found", "from", "full", "gave", "gives", "grew", "grows", "he", "held",
+    "helps", "her", "here", "his", "holds", "how", "however", "i", "in",
+    "it", "its", "junior", "keeps", "kept", "key", "lead", "leads", "led",
+    "made", "main", "makes", "meets", "met", "my", "no", "now", "of", "on",
+    "one", "ongoing", "or", "other", "our", "over", "own", "owns", "part",
+    "primary", "prior", "put", "ran", "read", "responsible", "runs", "saw",
+    "second", "sends", "senior", "sent", "serves", "set", "sets", "she",
+    "shipped", "ships", "shows", "since", "sold", "sole", "spoke", "such",
+    "takes", "taught", "teaches", "team", "tells", "tests", "than", "that",
+    "the", "their", "then", "there", "these", "they", "third", "this",
+    "those", "three", "through", "throughout", "to", "today", "told",
+    "took", "two", "under", "understood", "up", "uses", "we", "went",
+    "were", "what", "when", "where", "which", "while", "why", "wins",
+    "with", "within", "won", "work", "writes", "wrote", "you", "your",
+})
+
+
+# Prefixes that build a new verb out of an ordinary one: "Rebuilt", "Co-led",
+# "Oversaw". Stripping them lets one wordlist cover the derived forms too.
+VERB_PREFIXES = ("re", "un", "over", "under", "out", "pre", "co-", "co")
+
+
+def _looks_like_english_opener(token: str, known: set[str] | None = None) -> bool:
+    """True when a capitalised sentence opener is ordinary English, not a name.
+
+    A wordlist cannot be complete, so this errs towards calling an unknown
+    opener a name. That costs at most one discarded rewrite; the opposite
+    mistake puts an employer the candidate never had on their CV.
+    """
+    candidates = {token}
+    for prefix in VERB_PREFIXES:
+        if token.startswith(prefix) and len(token) > len(prefix) + 2:
+            candidates.add(token[len(prefix):])
+    for word in candidates:
+        if word in SENTENCE_OPENERS or word.endswith(("ed", "ing", "ly")):
+            return True
+        if known and word in known:
+            return True
+    return False
+
+
+def _word_set(value: str) -> set[str]:
+    """Every word of a text, casefolded, whatever its capitalisation."""
+    return set(re.findall(r"[a-z0-9+#.-]+", (value or "").casefold()))
+
+
+def _proper_tokens(value: str, *, known: set[str] | None = None) -> set[str]:
     """Ordinary capitalised words: Python, Docker, Unity, Neuralink, fMRI.
 
     ``_named_tokens`` only catches acronyms, CamelCase, and tokens carrying
     digits or symbols, so a plainly capitalised technology named in the posting
     could be written into an entry that never claimed it.
 
-    A word opening a sentence is capitalised by grammar, not because it names
-    anything, so those positions are skipped: otherwise rewriting "Built a
-    Python controller" as "Developed a Python controller" is rejected for
-    introducing the entity "Developed".
+    A word opening a sentence is capitalised by grammar rather than because it
+    names anything, so rewriting "Built a Python controller" as "Developed a
+    Python controller" must not be rejected for introducing "Developed".
+    Exempting the position outright was too generous: it let a rewrite open
+    "Neuralink robotics work: built a Python controller" and smuggle in an
+    employer the CV never mentions. An opener is therefore exempt only when it
+    inflects like an English verb, is a known opener, or is a word ``known``
+    already contains — and when ``known`` is None, nothing is exempt, so the
+    text being used as evidence contributes its openers too.
     """
     text = value or ""
     found = set()
     for match in re.finditer(r"\b[A-Z][a-z][A-Za-z0-9+#.-]*\b", text):
+        token = match.group(0).casefold()
         before = text[: match.start()].rstrip()
-        if not before or before[-1] in ".!?":
-            continue
-        found.add(match.group(0).casefold())
+        if (not before or before[-1] in ".!?") and known is not None:
+            if _looks_like_english_opener(token, known):
+                continue
+        found.add(token)
     return found
 
 
@@ -206,33 +267,45 @@ def _validate_rewrite(
     *,
     strict: bool = True,
     evidence: str = "",
+    local_evidence: str | None = None,
     forbidden: set[str] | None = None,
 ) -> str:
     """Check a proposed rewrite of one CV line.
 
-    ``evidence`` is everything the CV already asserts about this person: the
-    entry's heading and sibling lines, and the rest of the document. A rewrite
-    may move a fact the CV states elsewhere into the line where it answers the
-    posting — that is what tailoring is — but it may not name a technology,
-    employer, or qualification the CV never claims anywhere.
+    ``evidence`` is what the CV asserts about this person in general: its
+    skills, its summary, and the entry this line belongs to. A rewrite may
+    draw on it to name a technology the candidate genuinely claims - that is
+    what tailoring is.
+
+    ``local_evidence`` is narrower: the one entry this line sits in. A
+    number, a date, or a qualification is a claim about a specific piece of
+    work, so it is checked against that entry alone. Checked document-wide, a
+    metric earned on one project can be restated as the outcome of another -
+    a sales figure of 40% reappearing as a robot's task success rate reads as
+    evidence and collapses the moment anyone asks about it. When
+    ``local_evidence`` is None the wider evidence is used for both, which is
+    the behaviour the local-model path still relies on.
     """
     value = re.sub(r"\s+", " ", candidate or "").strip().lstrip("•- ").strip()
     supported = f"{evidence} {original}" if evidence else original
+    attributable = (
+        f"{local_evidence} {original}" if local_evidence is not None else supported
+    )
     low, high = _length_bounds(original, strict=strict)
     if not low <= len(value) <= high:
         raise ValueError("length")
-    if _number_tokens(value) - _number_tokens(supported):
+    if _number_tokens(value) - _number_tokens(attributable):
         raise ValueError("new_numeric_claim")
-    if _named_tokens(value) - _named_tokens(supported):
-        raise ValueError("new_named_technology_or_entity")
-    if _proper_tokens(value) - _proper_tokens(supported):
-        raise ValueError("new_named_technology_or_entity")
     # Scoped to the line replaced, never the wider document.
     if _credential_claims(value) - _credential_claims(original):
         raise ValueError("new_credential_claim")
-    supported_lower = supported.casefold()
+    if _named_tokens(value) - _named_tokens(supported):
+        raise ValueError("new_named_technology_or_entity")
+    if _proper_tokens(value, known=_word_set(supported)) - _proper_tokens(supported):
+        raise ValueError("new_named_technology_or_entity")
+    attributable_lower = attributable.casefold()
     for phrase in RISKY_CLAIMS:
-        if phrase in value.casefold() and phrase not in supported_lower:
+        if phrase in value.casefold() and phrase not in attributable_lower:
             raise ValueError("new_unsupported_qualification")
     original_terms = concepts(original)
     candidate_terms = concepts(value)
@@ -261,6 +334,8 @@ def _validate_summary(
     if _number_tokens(value) - _number_tokens(evidence):
         raise ValueError("new_numeric_claim")
     if _named_tokens(value) - _named_tokens(evidence):
+        raise ValueError("new_named_technology_or_entity")
+    if _proper_tokens(value, known=_word_set(evidence)) - _proper_tokens(evidence):
         raise ValueError("new_named_technology_or_entity")
     evidence_lower = evidence.casefold()
     for phrase in RISKY_CLAIMS:
