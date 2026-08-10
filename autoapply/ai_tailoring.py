@@ -211,6 +211,8 @@ GENERIC_REQUIREMENT_WORDS = {
     "experienced", "familiarity", "field", "focus", "fluency", "fluent",
     "graduate", "hands", "impact", "industry", "innovative", "internship",
     "knowledge", "language", "level", "master", "masters", "modern",
+    "attitude", "ethic", "mindset", "motivated", "passion", "passionate",
+    "player", "self", "starter",
     "opportunity", "particularly", "principle", "principles",
     "phd", "position", "practical", "preferred", "proficiency", "proficient",
     "program", "project", "qualification", "quality", "related", "relevant",

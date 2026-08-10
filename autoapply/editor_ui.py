@@ -669,6 +669,16 @@ function inlineAiStrip(id){
     box.append(row);
   }
   if(p.rationale){const w=document.createElement("div");w.className="why";w.textContent=p.rationale;box.append(w)}
+  // Counted rather than claimed: the posting vocabulary this rewrite actually
+  // brings in. A rewrite that gains none is a rephrasing, and saying so lets
+  // the reader skip it instead of reading two near-identical lines.
+  const gained=(p.adds_keywords||[]).filter(Boolean);
+  const gain=document.createElement("div");gain.className="why";
+  gain.style.color=gained.length?"var(--green)":"var(--muted)";
+  gain.textContent=gained.length
+    ?"Adds screening terms: "+gained.join(", ")
+    :"Adds no new screening term \u2014 wording only.";
+  box.append(gain);
   const row=document.createElement("div");row.className="row";
   const ok=document.createElement("button");ok.className="mini ok";ok.textContent="Use this";
   ok.onclick=()=>{p.status="accepted";renderAll();queueSave()};
@@ -987,11 +997,11 @@ function renderKeywords(){
     $("scoreValue").style.color=score>=70?"var(--green)":score>=45?"var(--amber)":"var(--red)";
   }
   const missing=kws.filter(k=>k.status==="missing").length;
-  // The score is a judgement about evidence; this list is literal presence.
-  // Said plainly, because they legitimately disagree.
+  // The score is computed from these same checked statuses, so the two can no
+  // longer disagree and the note no longer has to explain away a gap.
   $("keywordNote").textContent=kws.length
-    ?`${missing} of ${kws.length} screening terms do not appear anywhere in your CV text. `+
-     `The score above judges your evidence; this checks the words themselves.`:"";
+    ?`${missing} of ${kws.length} screening terms are not evidenced anywhere in `+
+     `your CV. The score above is these terms, weighted by importance.`:"";
   list.replaceChildren();
   const order={high:0,medium:1,low:2};
   [...kws].sort((a,b)=>(a.status==="missing"?0:1)-(b.status==="missing"?0:1)
@@ -1005,8 +1015,8 @@ function renderKeywords(){
     });
 }
 function renderFit(){
-  // The model's own score is a judgement about requirements; the word-overlap
-  // number is only a fallback when no rewrite has been run yet.
+  // The checked keyword coverage, once a rewrite has been run. The word-overlap
+  // number is only a fallback for before that.
   const score=(state.draft||{}).match_score;
   if(score==null){renderFitPill();return}
   const pill=$("fitPill");pill.style.display="";

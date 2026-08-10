@@ -390,6 +390,10 @@ def empty_draft(
         "cover_letter": None,
         "outreach_email": None,
         "advice": [],
+        # Screening terms this CV cannot evidence, counted from the keyword
+        # panel rather than asserted. Kept apart from `advice` so the editor
+        # can show the checkable gaps separately from the model's prose.
+        "gaps": [],
         "rejected_by_validator": {},
         "updated_at": _now_iso(),
     }
@@ -520,6 +524,13 @@ def _clean_patch(
             for item in list(value.get("keywords", []))[:12]
             if str(item).strip()
         ],
+        # Measured, not proposed: the posting vocabulary this rewrite adds to
+        # the line. Kept on the patch so the editor can show it after a reload.
+        "adds_keywords": [
+            re.sub(r"\s+", " ", str(item)).strip()[:80]
+            for item in list(value.get("adds_keywords", []))[:12]
+            if str(item).strip()
+        ],
         "status": status,
         "source": source,
     }
@@ -595,6 +606,7 @@ def normalize_draft(
             "model",
             "requirements",
             "advice",
+            "gaps",
             "rejected_by_validator",
         ):
             result[key] = deepcopy(existing.get(key, result.get(key)))

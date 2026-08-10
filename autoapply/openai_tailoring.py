@@ -42,6 +42,13 @@ from .ai_tailoring import (
     borrowed_terms,
 )
 from .cv_editor import MAX_ANSWER_CHARS, MAX_QUESTIONS, empty_draft, ordered_sections
+from .suggestion_quality import (
+    coverage_score,
+    evidence_gaps,
+    keyword_panel,
+    posting_vocabulary,
+    terms_gained,
+)
 from .tailoring import concepts
 from .models import Job
 
@@ -967,42 +974,21 @@ def generate_suggestions(
     draft["mode"] = mode
     draft["instructions"] = instructions[:4000]
     draft["requirements"] = requirements
-    keywords = []
-    for item in list(plan.get("keywords") or [])[:40]:
-        if not isinstance(item, dict):
-            continue
-        term = re.sub(r"\s+", " ", str(item.get("term", ""))).strip()[:80]
-        # A start date or a whole sentence is not a screening term.
-        if not term or len(term.split()) > 4 or re.search(r"\d{4}", term):
-            continue
-        # Whether the CV contains a term is a fact, not a judgement, so the
-        # model's claim is checked rather than trusted. A multi-word term is
-        # covered when most of it lands: demanding every word of "algorithms
-        # and data structures" reports almost nothing as covered.
-        parts = concepts(term)
-        covered = bool(parts) and len(parts & cv_terms) / len(parts) >= 0.6
-        keywords.append({
-            "term": term,
-            "status": "covered" if covered else "missing",
-            "importance": str(item.get("importance", "")).strip()[:20],
-        })
+    # Whether the CV contains a term is a fact, so the model's own claim about
+    # coverage is discarded and recomputed, and the score is derived from the
+    # same checked statuses the panel shows rather than asserted separately.
+    keywords = keyword_panel(plan.get("keywords"), cv_text)
     draft["keywords"] = keywords
-    # The model's own figure disagreed with the keyword panel beside it — 85%
-    # next to "3 of 14 terms covered" reads as broken, and it was: one was a
-    # vibe and the other a count. The score is now derived from the same
-    # checked coverage, weighted so a high-importance gap costs more.
-    weights = {"high": 3.0, "medium": 2.0, "low": 1.0}
-    total = sum(weights.get(k["importance"], 1.5) for k in keywords)
-    if total:
-        earned = sum(
-            weights.get(k["importance"], 1.5)
-            for k in keywords
-            if k["status"] == "covered"
-        )
-        draft["match_score"] = int(round(100 * earned / total))
-    else:
-        draft["match_score"] = None
+    draft["match_score"] = coverage_score(keywords)
+    posting_terms = posting_vocabulary(requirements, keywords)
+    # The model's advice first, then the gaps counted from the panel. A term
+    # the CV cannot evidence is the part of this application still worth the
+    # applicant's time, so it is named rather than left out.
     draft["advice"] = _clean_list(plan.get("advice"), limit=6, chars=300)
+    draft["gaps"] = evidence_gaps(keywords)
+    for gap in draft["gaps"]:
+        if gap not in draft["advice"]:
+            draft["advice"].append(gap)
     if failures:
         draft["advice"].append(
             f"{len(failures)} section(s) could not be rewritten: {failures[0]}"
@@ -1086,6 +1072,11 @@ def generate_suggestions(
                 r"\s+", " ", str(raw.get("rationale", ""))
             ).strip()[:800],
             "keywords": _clean_list(raw.get("keywords"), limit=12, chars=80),
+            # Counted, not claimed: the posting vocabulary this rewrite brings
+            # into the line and the original did not already use. A rewrite
+            # that gains nothing is a rephrasing, and saying so lets the
+            # applicant spend their review time on the ones that matter.
+            "adds_keywords": terms_gained(originals[fact_id], proposal, posting_terms),
             "status": "pending",
             "source": "ai",
         }
