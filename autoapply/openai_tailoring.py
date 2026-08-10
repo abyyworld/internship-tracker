@@ -934,8 +934,24 @@ def generate_suggestions(
         for section in sections
         for entry in section["entries"]
     }
+    # What a line may draw on. General self-claims - the summary and the skills
+    # list - plus the entry the line sits in. Every entry in the document used
+    # to be in scope, which meant a metric from one project could be restated as
+    # the result of another and pass every check.
+    general_claims = " ".join([
+        document["summary"],
+        *(str(skill) for skill in document.get("skills", [])),
+    ])
     entry_evidence = {
-        bullet["id"]: document_evidence
+        bullet["id"]: f"{general_claims} {entry_only_evidence[str(entry.get('id', ''))]}"
+        for section in sections
+        for entry in section["entries"]
+        for bullet in entry["bullets"]
+    }
+    # What a line may attribute to itself: numbers, dates, and qualifications
+    # belong to the piece of work that earned them.
+    bullet_entry_text = {
+        bullet["id"]: entry_only_evidence[str(entry.get("id", ""))]
         for section in sections
         for entry in section["entries"]
         for bullet in entry["bullets"]
@@ -1033,6 +1049,7 @@ def generate_suggestions(
                 str(raw.get("proposal", "")),
                 strict=mode == "targeted",
                 evidence=entry_evidence.get(fact_id, ""),
+                local_evidence=bullet_entry_text.get(fact_id, ""),
                 forbidden=forbidden,
             )
         except ValueError as exc:
@@ -1052,6 +1069,7 @@ def generate_suggestions(
                     originals[fact_id], candidate,
                     strict=mode == "targeted",
                     evidence=entry_evidence.get(fact_id, ""),
+                    local_evidence=bullet_entry_text.get(fact_id, ""),
                     forbidden=forbidden,
                 )
             except ValueError:
@@ -1089,7 +1107,10 @@ def generate_suggestions(
             # own verified text is both its evidence and its subject.
             _validate_rewrite(
                 evidence, text,
-                strict=False, evidence=document_evidence, forbidden=forbidden,
+                strict=False,
+                evidence=f"{general_claims} {evidence}",
+                local_evidence=evidence,
+                forbidden=forbidden,
             )
         except ValueError as exc:
             rejected[f"add:{entry_id}"] = str(exc)

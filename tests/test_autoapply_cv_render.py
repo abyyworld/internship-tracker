@@ -207,6 +207,64 @@ class FabricationGuardTests(unittest.TestCase):
             )
         self.assertEqual(str(caught.exception), "new_credential_claim")
 
+    def test_an_employer_cannot_be_smuggled_in_at_the_start_of_a_sentence(self):
+        """A capitalised opener used to be exempt from the entity check."""
+        with self.assertRaises(ValueError) as caught:
+            self._rewrite(
+                "Neuralink work: built a controller for a mobile robot, "
+                "evaluated in simulation."
+            )
+        self.assertEqual(str(caught.exception), "new_named_technology_or_entity")
+
+    def test_an_institution_cannot_be_smuggled_in_at_the_start_of_a_sentence(self):
+        with self.assertRaises(ValueError) as caught:
+            self._rewrite(
+                "Stanford research: built a controller for a mobile robot, "
+                "evaluated in simulation."
+            )
+        self.assertEqual(str(caught.exception), "new_named_technology_or_entity")
+
+    def test_ordinary_verbs_may_still_open_a_rewrite(self):
+        """The opener check must not reject plain English."""
+        for opener in ("Developed", "Delivered", "Builds", "Led", "Rebuilt a"):
+            with self.subTest(opener=opener):
+                value = self._rewrite(
+                    f"{opener} controller for a mobile robot and evaluated it "
+                    "in simulation."
+                )
+                self.assertTrue(value.startswith(opener.split()[0]))
+
+    def test_a_metric_from_another_entry_cannot_be_attached_to_this_one(self):
+        """A number is a claim about one piece of work, not about the CV."""
+        entry = "Robotics project. " + self.ORIGINAL
+        document = entry + " Sales role: grew revenue by 40% across 12 markets."
+        from autoapply.ai_tailoring import _validate_rewrite
+
+        with self.assertRaises(ValueError) as caught:
+            _validate_rewrite(
+                self.ORIGINAL,
+                "Built a controller for a mobile robot, raising task success "
+                "by 40% over 12 simulated runs.",
+                strict=False,
+                evidence=document,
+                local_evidence=entry,
+            )
+        self.assertEqual(str(caught.exception), "new_numeric_claim")
+
+    def test_a_metric_from_this_entry_may_be_restated(self):
+        entry = self.ORIGINAL + " The controller cut settling time by 30%."
+        from autoapply.ai_tailoring import _validate_rewrite
+
+        value = _validate_rewrite(
+            self.ORIGINAL,
+            "Built a controller for a mobile robot, cutting settling time by "
+            "30% in simulation.",
+            strict=False,
+            evidence=entry,
+            local_evidence=entry,
+        )
+        self.assertIn("30%", value)
+
     def test_a_requirement_the_cv_never_mentions_cannot_be_echoed_back(self):
         from autoapply.ai_tailoring import borrowed_terms
 
