@@ -44,6 +44,7 @@ from .ai_tailoring import (
 from .cv_editor import MAX_ANSWER_CHARS, MAX_QUESTIONS, empty_draft, ordered_sections
 from .suggestion_quality import (
     coverage_score,
+    is_generic_rationale,
     evidence_gaps,
     keyword_panel,
     posting_vocabulary,
@@ -692,6 +693,10 @@ def _strategy(
         "the CV already uses it and missing when it does not, with importance "
         "high, medium, or low. Fewer than a dozen makes the coverage figure "
         "derived from them meaningless.\n"
+        "In `advice`, name only requirements this CV genuinely cannot evidence, "
+        "and say what the applicant could honestly do before the deadline. "
+        "Never suggest claiming something they have not done, and never pad the "
+        "list: an empty `advice` is a better answer than a generic one.\n"
         "Rewrite the summary so it opens on the candidate's evidence that "
         "matters most for this posting. It describes the CANDIDATE, never the "
         "company or the vacancy: do not name the employer, do not restate the "
@@ -705,7 +710,9 @@ def _strategy(
         '"entry_order":{"s0":["s0e1",...]},"drop":["s2e3"],'
         '"priorities":["..."],'
         '"summary":{"proposal":"...","rationale":"..."},'
-        '"advice":["<name a requirement this CV cannot evidence, or omit>"]}'
+        '"advice":["<a requirement this CV cannot evidence, and what the '
+        'applicant could honestly do about it before the deadline; omit if '
+        'there is none>"]}'
     )
     user = json.dumps(
         {
@@ -762,7 +769,15 @@ def _rewrite_section(
         "between its own min_chars and max_chars; a shorter one is discarded "
         "unread, so keep the supporting detail rather than summarising it "
         "away. Write natural prose; never produce a keyword list.\n"
-        "In each rationale, name the requirement the rewrite answers.\n"
+        "RATIONALE. Write it as the edit itself: name the posting requirement "
+        "the line now answers, and quote the original wording you replaced and "
+        "the posting's own phrase you replaced it with - for example: replaces "
+        "\"worked on models\" with the posting's \"distributed training\". A "
+        "rationale that would be true of any rewrite of any line (\"stronger "
+        "verb\", \"clearer\", \"more impactful\") is discarded, because the "
+        "reader cannot check it and cannot decide on it.\n"
+        "In `keywords`, list only terms that appear in the proposal you just "
+        "wrote. It is checked.\n"
         "When a fact says `alternatives: 2`, also give `variants`: two further "
         "phrasings of that same line which a reader would genuinely choose "
         "between — one plainer and more direct, one leading with a different "
@@ -847,6 +862,8 @@ def _repair(
         "instead of summarising it away.\n"
         "`insufficient_evidence_overlap` means you drifted off the subject of "
         "the verified text. Stay on what that line is actually about.\n"
+        "Each rationale must name the requirement answered or quote the wording "
+        "changed; praise for the rewrite is discarded.\n"
         + _TRUTH_RULES + "\n"
         'Return exactly: {"bullets":[{"fact_id":"exact-id","proposal":"...",'
         '"rationale":"...","keywords":["..."]}]}'
@@ -1063,14 +1080,17 @@ def generate_suggestions(
             if checked not in variants and checked != originals[fact_id]:
                 variants.append(checked)
         rejected.pop(fact_id, None)
+        rationale = re.sub(r"\s+", " ", str(raw.get("rationale", ""))).strip()[:800]
         draft["bullets"][fact_id] = {
             "id": fact_id,
             "original": originals[fact_id],
             "proposal": proposal,
             "variants": variants,
-            "rationale": re.sub(
-                r"\s+", " ", str(raw.get("rationale", ""))
-            ).strip()[:800],
+            # A rationale that would be true of any rewrite is worse than none:
+            # it fills the space where a reason should be. Dropped, so the
+            # editor shows the counted keyword gain instead.
+            "rationale": "" if is_generic_rationale(rationale, posting_terms)
+            else rationale,
             "keywords": _clean_list(raw.get("keywords"), limit=12, chars=80),
             # Counted, not claimed: the posting vocabulary this rewrite brings
             # into the line and the original did not already use. A rewrite

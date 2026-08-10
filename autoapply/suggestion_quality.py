@@ -170,3 +170,38 @@ def posting_vocabulary(requirements: Iterable[str], keywords: Iterable[dict[str,
     for keyword in keywords or []:
         found |= significant_parts(str(keyword.get("term", "")))
     return found
+
+
+# Wording that would be true of any rewrite of any line for any job. A
+# rationale built only from these tells the reader nothing they can check.
+FILLER_RATIONALE_TERMS = frozenset({
+    "active", "better", "clarity", "clear", "clearer", "compelling", "concise",
+    "engaging", "flow", "impact", "impactful", "improve", "improved",
+    "improves", "polished", "professional", "punchier", "read", "readable",
+    "reads", "sharper", "sound", "stronger", "tighter", "tone", "verb",
+    "voice", "wording",
+})
+QUOTE_MARKS = "\"'‘’“”"
+
+
+def is_generic_rationale(text: str, posting_terms: Iterable[str]) -> bool:
+    """Whether a rationale explains this edit or merely praises it.
+
+    "Stronger action verb" is true of every rewrite ever proposed and gives the
+    applicant nothing to accept or reject on. A useful rationale either names
+    something the posting asked for or quotes the wording it changed, so those
+    are what is required; anything else is treated as absent, and the measured
+    keyword gain is shown in its place.
+    """
+    value = str(text or "").strip()
+    if not value:
+        return True
+    if any(mark in value for mark in QUOTE_MARKS):
+        return False
+    words = concepts(value)
+    if not words:
+        return True
+    if words & set(posting_terms or set()):
+        return False
+    # Names nothing the posting asked for and quotes nothing it changed.
+    return True

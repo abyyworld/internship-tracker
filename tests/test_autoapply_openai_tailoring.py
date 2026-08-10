@@ -328,6 +328,55 @@ class OpenAiTailoringTests(unittest.TestCase):
             draft["bullets"]["robot"]["adds_keywords"], ["computer-vision"]
         )
 
+    def test_a_rationale_that_explains_nothing_is_dropped(self):
+        draft = self._draft_from({
+            "requirements": ["Experience with computer vision"],
+            "bullets": [
+                {
+                    "fact_id": "robot",
+                    "proposal": (
+                        "Developed a Python robot controller, reducing latency "
+                        "by 20%."
+                    ),
+                    "rationale": "Stronger action verb and clearer wording.",
+                },
+                {
+                    "fact_id": "vision",
+                    "proposal": (
+                        "Evaluated a computer vision prototype on recorded images."
+                    ),
+                    "rationale": "Answers the computer vision requirement.",
+                },
+            ],
+        })
+        self.assertEqual(draft["bullets"]["robot"]["rationale"], "")
+        self.assertEqual(
+            draft["bullets"]["vision"]["rationale"],
+            "Answers the computer vision requirement.",
+        )
+
+    def test_the_rewrite_prompt_asks_for_a_checkable_rationale(self):
+        response = Mock()
+        response.raise_for_status.return_value = None
+        response.json.return_value = {
+            "choices": [{"message": {"content": json.dumps({"bullets": []})}}]
+        }
+        with patch(
+            "autoapply.openai_tailoring.requests.post", return_value=response
+        ) as request:
+            with self.assertRaises(RuntimeError):
+                generate_suggestions(
+                    self.job, self.document, api_key="private-api-key"
+                )
+        prompts = " ".join(
+            message["content"]
+            for call in request.call_args_list
+            for message in call.kwargs["json"]["messages"]
+        )
+        self.assertIn("RATIONALE", prompts)
+        self.assertIn("would be true of any rewrite", prompts)
+        self.assertIn("Never suggest claiming something they have not done", prompts)
+
     def test_endpoint_is_openai(self):
         response = Mock()
         response.raise_for_status.return_value = None
