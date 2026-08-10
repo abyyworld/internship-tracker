@@ -377,6 +377,55 @@ class OpenAiTailoringTests(unittest.TestCase):
         self.assertIn("would be true of any rewrite", prompts)
         self.assertIn("Never suggest claiming something they have not done", prompts)
 
+    def test_an_added_line_is_held_to_the_same_standard_as_a_rewrite(self):
+        draft = self._draft_from({
+            "requirements": ["Experience with computer vision"],
+            "bullets": [],
+            "add": [
+                {
+                    "entry_id": "s0e0",
+                    "text": (
+                        "Evaluated the computer vision prototype on recorded "
+                        "images before integrating it with the controller."
+                    ),
+                    "rationale": "Makes the entry stronger and clearer.",
+                },
+            ],
+        })
+        line = draft["added"]["s0e0"][0]
+        # The rationale would be true of any added line, so it is dropped.
+        self.assertEqual(line["rationale"], "")
+        # What it adds is measured instead.
+        self.assertIn("computer-vision", line["adds_keywords"])
+
+    def test_an_added_line_may_not_invent_evidence(self):
+        draft = self._draft_from({
+            "bullets": [
+                {
+                    "fact_id": "robot",
+                    "proposal": (
+                        "Developed a Python robot controller, reducing latency "
+                        "by 20%."
+                    ),
+                    "rationale": "Answers the Python requirement.",
+                },
+            ],
+            "add": [
+                {
+                    "entry_id": "s0e0",
+                    "text": (
+                        "Deployed the controller to a fleet of 40 robots "
+                        "across three sites for a full season."
+                    ),
+                    "rationale": "Adds scale.",
+                },
+            ],
+        })
+        self.assertEqual(draft["added"], {})
+        self.assertEqual(
+            draft["rejected_by_validator"]["add:s0e0"], "new_numeric_claim"
+        )
+
     def test_endpoint_is_openai(self):
         response = Mock()
         response.raise_for_status.return_value = None
