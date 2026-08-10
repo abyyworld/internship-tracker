@@ -152,6 +152,182 @@ class OpenAiTailoringTests(unittest.TestCase):
         self.assertEqual(sent.kwargs["json"]["model"], OPENAI_MODEL_DEFAULT)
         self.assertNotIn("private-api-key", json.dumps(sent.kwargs["json"]))
 
+    def _draft_from(self, payload):
+        """Run the whole pipeline against one canned model response."""
+        response = Mock()
+        response.raise_for_status.return_value = None
+        response.json.return_value = {
+            "choices": [{"message": {"content": json.dumps(payload)}}]
+        }
+        with patch("autoapply.openai_tailoring.requests.post", return_value=response):
+            return generate_suggestions(
+                self.job, self.document, api_key="private-api-key"
+            )
+
+    def test_an_invented_employer_is_rejected_end_to_end(self):
+        """The CV names no employer. A rewrite may not introduce one."""
+        draft = self._draft_from({
+            "bullets": [
+                {
+                    "fact_id": "robot",
+                    "proposal": (
+                        "Neuralink internship: built a Python robot controller "
+                        "and reduced latency by 20%."
+                    ),
+                    "rationale": "Leads with the employer.",
+                },
+                {
+                    "fact_id": "vision",
+                    "proposal": (
+                        "Evaluated a computer vision prototype on recorded images."
+                    ),
+                    "rationale": "Stronger verb.",
+                },
+            ],
+        })
+        self.assertNotIn("robot", draft["bullets"])
+        self.assertEqual(
+            draft["rejected_by_validator"]["robot"],
+            "new_named_technology_or_entity",
+        )
+
+    def test_a_metric_from_another_entry_is_rejected_end_to_end(self):
+        """20% was earned by the robot entry, not by the essay entry."""
+        self.document["sections"].append({
+            "id": "s1",
+            "name": "Writing",
+            "layout": "entries",
+            "entries": [{
+                "id": "s1e0",
+                "title": "Essay",
+                "organization": "",
+                "bullets": [{
+                    "id": "essay",
+                    "text": "Wrote an essay on autonomous systems for a seminar.",
+                }],
+            }],
+        })
+        draft = self._draft_from({
+            "bullets": [
+                {
+                    "fact_id": "essay",
+                    "proposal": (
+                        "Wrote an essay on autonomous systems for a seminar, "
+                        "cutting latency by 20%."
+                    ),
+                    "rationale": "Borrows another entry's number.",
+                },
+                {
+                    "fact_id": "robot",
+                    "proposal": (
+                        "Developed a Python robot controller, reducing latency "
+                        "by 20%."
+                    ),
+                    "rationale": "Stronger verb.",
+                },
+            ],
+        })
+        self.assertEqual(
+            draft["rejected_by_validator"]["essay"], "new_numeric_claim"
+        )
+        self.assertIn("robot", draft["bullets"])
+
+    def test_a_metric_may_be_restated_within_the_entry_that_earned_it(self):
+        """Sibling lines describe one piece of work and share its evidence."""
+        draft = self._draft_from({
+            "bullets": [
+                {
+                    "fact_id": "vision",
+                    "proposal": (
+                        "Tested a computer vision prototype on recorded images "
+                        "from the same 20% latency work."
+                    ),
+                    "rationale": "Restates a sibling's number.",
+                },
+            ],
+        })
+        self.assertIn("vision", draft["bullets"])
+
+    def test_coverage_is_counted_from_the_cv_not_taken_on_trust(self):
+        draft = self._draft_from({
+            "keywords": [
+                {"term": "Python", "status": "missing", "importance": "high"},
+                {"term": "Kubernetes", "status": "covered", "importance": "high"},
+                {"term": "computer vision", "status": "missing", "importance": "high"},
+                {"term": "excellent team player", "status": "covered",
+                 "importance": "low"},
+                {"term": "Rust", "status": "covered", "importance": "high"},
+            ],
+            "bullets": [
+                {
+                    "fact_id": "robot",
+                    "proposal": (
+                        "Developed a Python robot controller, reducing latency "
+                        "by 20%."
+                    ),
+                    "rationale": "Stronger verb.",
+                },
+            ],
+        })
+        status = {k["term"]: k["status"] for k in draft["keywords"]}
+        # The model called Python missing and Kubernetes covered; the CV says
+        # the opposite, and the CV is the fact.
+        self.assertEqual(status["Python"], "covered")
+        self.assertEqual(status["Kubernetes"], "missing")
+        self.assertEqual(status["computer vision"], "covered")
+        self.assertNotIn("excellent team player", status)
+        self.assertEqual(status["Rust"], "missing")
+        # The figure is derived from the panel, so the two cannot disagree.
+        covered = sum(1 for value in status.values() if value == "covered")
+        self.assertEqual(covered, 2)
+        # Python and computer vision covered, Kubernetes and Rust missing, all
+        # four high importance: (3 + 3) / (3 + 3 + 3 + 3).
+        self.assertEqual(draft["match_score"], 50)
+
+    def test_an_unevidenced_requirement_is_reported_as_a_gap(self):
+        draft = self._draft_from({
+            "keywords": [
+                {"term": "Python", "status": "covered", "importance": "high"},
+                {"term": "Kubernetes", "status": "missing", "importance": "high"},
+                {"term": "computer vision", "status": "covered", "importance": "low"},
+                {"term": "Rust", "status": "missing", "importance": "low"},
+            ],
+            "bullets": [
+                {
+                    "fact_id": "robot",
+                    "proposal": (
+                        "Developed a Python robot controller, reducing latency "
+                        "by 20%."
+                    ),
+                    "rationale": "Stronger verb.",
+                },
+            ],
+        })
+        self.assertTrue(any("Kubernetes" in gap for gap in draft["gaps"]))
+        self.assertTrue(any("Kubernetes" in line for line in draft["advice"]))
+        # A gap is never an invitation to invent the evidence.
+        self.assertTrue(
+            all("only if you have genuinely done it" in gap for gap in draft["gaps"])
+        )
+
+    def test_a_rewrite_records_the_screening_terms_it_actually_adds(self):
+        draft = self._draft_from({
+            "requirements": ["Experience with computer vision and Python"],
+            "bullets": [
+                {
+                    "fact_id": "robot",
+                    "proposal": (
+                        "Built a Python robot controller for computer vision "
+                        "work and reduced latency by 20%."
+                    ),
+                    "rationale": "Answers the vision requirement.",
+                },
+            ],
+        })
+        self.assertEqual(
+            draft["bullets"]["robot"]["adds_keywords"], ["computer-vision"]
+        )
+
     def test_endpoint_is_openai(self):
         response = Mock()
         response.raise_for_status.return_value = None
