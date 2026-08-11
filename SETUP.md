@@ -3,9 +3,10 @@
 The watcher, cockpit, PDF editor, and guarded application assistant run locally.
 The watcher itself uses the Python standard library. The application assistant
 uses free Python packages and an installed copy of Microsoft Edge, and requires
-Python 3.11 or newer. AI CV suggestions use your own OpenAI API account (model
-`gpt-4o-mini` by default); browsing, manual editing, accepting/rejecting prior
-suggestions, PDF export, and the job tracker do not consume API credits.
+Python 3.11 or newer. AI CV suggestions use your own account with whichever
+OpenAI-compatible provider you select in the editor; browsing, manual editing,
+accepting/rejecting prior suggestions, PDF export, and the job tracker do not
+consume API credits.
 
 The system deliberately separates discovery from submission:
 
@@ -32,11 +33,19 @@ python -m pip install -r requirements-autoapply.txt
 The guarded browser workflow currently expects Microsoft Edge to be installed.
 
 No local model download is required for the AI CV Studio. The first time an
-editor opens, paste an OpenAI API key (`sk-…`) into the key card in the right
-panel. The bridge stores it in `private/openai.key` with mode 0600 and never
-exposes it to the public dashboard or browser URL. Pressing **Generate
-suggestions** sends the job description and master CV text to OpenAI through
-that API account; opening the editor and exporting locally do not call the API.
+editor opens, choose a provider in the right panel — OpenAI, Groq, OpenRouter,
+Cerebras, Together, GitHub Models, Google AI Studio, or a model running on this
+machine under Ollama, which needs no key at all — and paste that provider's key
+into the key card below it. The bridge stores each provider's key in its own
+file (`private/openai.key`, `private/gemini.key`, and so on) with mode 0600, and
+never exposes it to the public dashboard or browser URL. Switching provider
+therefore asks for the new provider's key rather than sending the previous one
+to an account that never issued it. A key left in the environment under the
+provider's own variable (`OPENAI_API_KEY`, `GEMINI_API_KEY`, `GROQ_API_KEY`, …)
+is used when no file is saved, which is what a headless run reads. Pressing
+**Generate suggestions** sends the job description and master CV text to the
+chosen provider through that account; opening the editor and exporting locally
+do not call the API.
 
 The daily watcher and cockpit do not require the extra packages:
 
@@ -77,8 +86,8 @@ cd "$HOME/Desktop/other projects/internship watcher"
 
 The localhost bridge imports every open HTTPS role in the current tracker. The
 editor immediately displays the complete master CV without spending API credits.
-Press **Generate suggestions** to fetch the current job description and ask
-OpenAI for a small patch set. Accept, reject, or directly edit each proposal,
+Press **Generate suggestions** to fetch the current job description and ask the
+configured provider for a small patch set. Accept, reject, or directly edit each proposal,
 then press **Export accepted PDF**. Simplify can autofill the employer form;
 choose the newly downloaded PDF as the resume and review the whole application.
 

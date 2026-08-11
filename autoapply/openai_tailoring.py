@@ -30,6 +30,7 @@ import os
 from pathlib import Path
 import re
 from typing import Any
+from urllib.parse import urlparse
 
 import requests
 
@@ -58,30 +59,64 @@ from .models import Job
 # Ollama, Groq, OpenRouter, Google's compatibility layer, and GitHub Models,
 # so pointing at a different base URL is the whole of switching provider —
 # including to a model running on this machine for nothing.
+#
+# `key_env` names the variables that provider's own documentation uses, and
+# nothing else: an OPENAI_API_KEY left in the shell was being sent to Google,
+# which answers it with an authentication error that names no cause.
+# `key_page` is where a key comes from, because a key card that reports one
+# missing and cannot say where to get one is half a message.
 OPENAI_BASE_DEFAULT = "https://api.openai.com/v1"
 PROVIDERS = {
     "openai": {"label": "OpenAI", "base": "https://api.openai.com/v1",
-               "key": "required", "models": []},
+               "key": "required", "models": [],
+               "key_env": ["OPENAI_API_KEY"],
+               "key_page": "https://platform.openai.com/api-keys"},
     "ollama": {"label": "Ollama (on this machine, free)",
-               "base": "http://127.0.0.1:11434/v1", "key": "none", "models": []},
+               "base": "http://127.0.0.1:11434/v1", "key": "none", "models": [],
+               "key_env": [], "key_page": ""},
     "groq": {"label": "Groq (free tier)", "base": "https://api.groq.com/openai/v1",
-             "key": "required", "models": []},
+             "key": "required", "models": [],
+             "key_env": ["GROQ_API_KEY"],
+             "key_page": "https://console.groq.com/keys"},
     "openrouter": {"label": "OpenRouter (has free models)",
                    "base": "https://openrouter.ai/api/v1", "key": "required",
-                   "models": []},
+                   "models": [],
+                   "key_env": ["OPENROUTER_API_KEY"],
+                   "key_page": "https://openrouter.ai/keys"},
     "cerebras": {"label": "Cerebras (free tier)", "base": "https://api.cerebras.ai/v1",
-                 "key": "required", "models": []},
+                 "key": "required", "models": [],
+                 "key_env": ["CEREBRAS_API_KEY"],
+                 "key_page": "https://cloud.cerebras.ai"},
     "together": {"label": "Together AI", "base": "https://api.together.xyz/v1",
-                 "key": "required", "models": []},
+                 "key": "required", "models": [],
+                 "key_env": ["TOGETHER_API_KEY"],
+                 "key_page": "https://api.together.xyz/settings/api-keys"},
     "github": {"label": "GitHub Models (free with a GitHub account)",
                "base": "https://models.inference.ai.azure.com", "key": "required",
-               "models": []},
-    # Google serves an OpenAI-compatible chat endpoint but no model listing on
-    # it, so the picker is seeded rather than discovered.
+               "models": [],
+               "key_env": ["GITHUB_MODELS_TOKEN", "GITHUB_TOKEN"],
+               "key_page": "https://github.com/settings/tokens"},
+    # Google's listing prefixes every id with `models/`; `_model_id` strips it.
+    # The seeded list is the recommendation order, not a substitute for asking.
     "gemini": {"label": "Google AI Studio (free tier)",
                "base": "https://generativelanguage.googleapis.com/v1beta/openai",
                "key": "required",
-               "models": ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"]},
+               "models": ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"],
+               "key_env": ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+               "key_page": "https://aistudio.google.com/apikey"},
+}
+# What each provider's keys look like. Used to tell someone they have pasted
+# one provider's key while another is selected — the failure this catches
+# otherwise surfaces as an authentication error from a provider they believe
+# they configured. OpenRouter is checked before OpenAI: its keys start `sk-or-`,
+# which is also a valid `sk-` prefix.
+KEY_SHAPES = {
+    "openrouter": ("sk-or-",),
+    "openai": ("sk-",),
+    "gemini": ("AIza",),
+    "groq": ("gsk_",),
+    "cerebras": ("csk-",),
+    "github": ("ghp_", "gho_", "github_pat_"),
 }
 
 
@@ -196,15 +231,62 @@ MAX_ADDED_PER_ENTRY = 2
 TEMPERATURE = 0.35
 
 
-def openai_key_path(home: Path) -> Path:
-    return home / "openai.key"
+def provider_id(base_url: str) -> str:
+    """The provider serving this endpoint, or "" for an endpoint of your own."""
+    wanted = str(base_url or "").rstrip("/")
+    for identifier, provider in PROVIDERS.items():
+        if provider["base"] == wanted:
+            return identifier
+    return ""
 
 
-def openai_key_configured(home: Path) -> bool:
-    if is_local(load_base_url(home)):
+def _endpoint_slug(base_url: str) -> str:
+    identifier = provider_id(base_url)
+    if identifier:
+        return identifier
+    host = urlparse(str(base_url or "")).hostname or "endpoint"
+    name = re.sub(r"[^a-z0-9]+", "-", host.lower()).strip("-")
+    return f"custom-{name or 'endpoint'}"
+
+
+def endpoint_name(base_url: str) -> str:
+    """What to call this endpoint in a label: the provider, or its host.
+
+    `provider_label` reads as prose in an error ("The AI endpoint timed out"),
+    which is wrong on a heading: "The AI endpoint key" names nothing.
+    """
+    identifier = provider_id(base_url)
+    if identifier:
+        return _provider_name(identifier)
+    return urlparse(str(base_url or "")).hostname or "your endpoint"
+
+
+def key_hint(base_url: str) -> str:
+    """What a key for this endpoint looks like, for the box you paste it into."""
+    return " or ".join(
+        f"{prefix}…" for prefix in KEY_SHAPES.get(provider_id(base_url), ())
+    )
+
+
+def key_path(home: Path, base_url: str | None = None) -> Path:
+    """Where this endpoint's key is kept. Every provider gets its own file.
+
+    One shared file meant switching provider silently kept the previous
+    provider's key: the editor reported a key configured, and every request
+    came back as an authentication failure from a provider whose key had never
+    been pasted. `openai.key` is still OpenAI's own path, so an existing key
+    keeps working.
+    """
+    base = load_base_url(home) if base_url is None else base_url
+    return home / f"{_endpoint_slug(base)}.key"
+
+
+def key_configured(home: Path, base_url: str | None = None) -> bool:
+    base = load_base_url(home) if base_url is None else base_url
+    if is_local(base):
         return True
     try:
-        return bool(load_openai_key(home))
+        return bool(load_key(home, base))
     except (FileNotFoundError, RuntimeError):
         return False
 
@@ -213,34 +295,73 @@ def load_key_for(home: Path) -> str:
     """The key for the configured endpoint, or none when it is local."""
     if is_local(load_base_url(home)):
         return ""
-    return load_openai_key(home)
+    return load_key(home)
 
 
-def load_openai_key(home: Path) -> str:
-    # Allow env var override (useful for CI / cloud runners)
-    env_key = os.environ.get("OPENAI_API_KEY", "").strip()
-    if env_key and len(env_key) >= 20 and not any(c.isspace() for c in env_key):
-        return env_key
-    path = openai_key_path(home)
+def _env_key(base_url: str) -> str:
+    """A key from this provider's own environment variables, if one is set.
+
+    Only the configured provider's variables are read. A key belongs to the
+    account that issued it, and handing OpenAI's to Google is a request that
+    can only fail.
+    """
+    names = PROVIDERS.get(provider_id(base_url), {}).get(
+        # An endpoint of one's own speaks the OpenAI API, so it inherits its
+        # variable; anything else would need a name this program invented.
+        "key_env", ["OPENAI_API_KEY"],
+    )
+    for name in names:
+        value = os.environ.get(name, "").strip()
+        if len(value) >= 20 and not any(character.isspace() for character in value):
+            return value
+    return ""
+
+
+def load_key(home: Path, base_url: str | None = None) -> str:
+    base = load_base_url(home) if base_url is None else base_url
+    who = provider_label(base)
+    path = key_path(home, base)
+    # The pasted key wins over the environment: it is the one the person chose
+    # in the editor. The environment is the fallback that lets a headless run
+    # work with no file at all.
     if not path.exists():
-        raise FileNotFoundError("OpenAI API key is not configured")
+        from_env = _env_key(base)
+        if from_env:
+            return from_env
+        raise FileNotFoundError(f"No {who} API key is configured")
     if path.is_symlink() or path.stat().st_mode & 0o077:
-        raise RuntimeError("OpenAI key must be a private regular file with mode 0600")
+        raise RuntimeError(
+            f"The {who} key must be a private regular file with mode 0600"
+        )
     value = path.read_text(encoding="utf-8").strip()
     if len(value) < 20 or any(character.isspace() for character in value):
-        raise RuntimeError("OpenAI API key is invalid")
+        raise RuntimeError(f"The stored {who} API key is invalid")
     return value
 
 
-def save_openai_key(home: Path, value: str) -> None:
+def save_key(home: Path, value: str, base_url: str | None = None) -> Path:
+    base = load_base_url(home) if base_url is None else base_url
+    who = provider_label(base)
     key = str(value).strip()
     if len(key) < 20 or any(character.isspace() for character in key):
-        raise ValueError("Paste a valid OpenAI API key (sk-...)")
+        hint = key_hint(base)
+        raise ValueError(
+            f"Paste a valid {who} API key" + (f" ({hint})" if hint else "")
+        )
+    owner = _key_shape_owner(key)
+    identifier = provider_id(base)
+    if owner and identifier and owner != identifier:
+        raise ValueError(
+            f"That is a {_provider_name(owner)} key and {who} is the selected "
+            f"provider. Switch the provider above, or paste a {who} key"
+            + (f" ({key_hint(base)})" if key_hint(base) else "")
+            + "."
+        )
     home.mkdir(parents=True, exist_ok=True, mode=0o700)
     home.chmod(0o700)
-    path = openai_key_path(home)
+    path = key_path(home, base)
     if path.exists() and path.is_symlink():
-        raise RuntimeError("Refusing a symbolic-link OpenAI key")
+        raise RuntimeError(f"Refusing a symbolic-link {who} key")
     flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
     if hasattr(os, "O_NOFOLLOW"):
         flags |= os.O_NOFOLLOW
@@ -254,6 +375,51 @@ def save_openai_key(home: Path, value: str) -> None:
         if descriptor >= 0:
             os.close(descriptor)
     path.chmod(0o600)
+    return path
+
+
+def migrate_legacy_key(home: Path) -> str:
+    """File a key that was saved when every provider shared one file.
+
+    `openai.key` used to hold whatever was pasted, so a Google or Groq key
+    ended up under OpenAI's name. The prefix says whose it is, so it is filed
+    once here rather than the applicant being asked to find and paste it again.
+    Returns the provider it was filed under, or "" when there was nothing to do.
+    """
+    legacy = home / "openai.key"
+    if not legacy.is_file() or legacy.is_symlink():
+        return ""
+    try:
+        value = legacy.read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+    owner = _key_shape_owner(value)
+    # Only a key whose own prefix names another provider is moved. Anything
+    # ambiguous stays where it is: guessing wrong would hand one account's key
+    # to another, which is the failure this whole change exists to stop.
+    if not owner or owner == "openai":
+        return ""
+    destination = key_path(home, PROVIDERS[owner]["base"])
+    if destination.exists():
+        return ""
+    try:
+        save_key(home, value, PROVIDERS[owner]["base"])
+        legacy.unlink()
+    except (OSError, RuntimeError, ValueError):
+        return ""
+    return owner
+
+
+def _key_shape_owner(key: str) -> str:
+    """Whose key this is, by its prefix, or "" when the shape says nothing."""
+    for identifier, prefixes in KEY_SHAPES.items():
+        if key.startswith(prefixes):
+            return identifier
+    return ""
+
+
+def _provider_name(identifier: str) -> str:
+    return str(PROVIDERS.get(identifier, {}).get("label", identifier)).split(" (")[0]
 
 
 def _salvage_json(text: str) -> dict[str, Any] | None:
@@ -298,24 +464,50 @@ def model_path(home: Path) -> Path:
     return home / "openai-model.txt"
 
 
+# A model name is vendor-qualified at most providers — `meta-llama/Llama-3.3-70B`
+# on OpenRouter and Together, `openai/gpt-4o` on GitHub Models — and may carry a
+# tier suffix such as `:free`. Stripping the slash out of one, as sanitising to
+# `[A-Za-z0-9._-]` did, produced a name no endpoint has ever heard of: the model
+# picker offered a working model and the request came back as model-not-found.
+MODEL_ID_REJECT = re.compile(r"[^A-Za-z0-9._:/-]")
+MAX_MODEL_CHARS = 96
+
+
+def _model_id(value: str) -> str:
+    """The name to send, as this endpoint's own chat API spells it.
+
+    Google's listing returns `models/gemini-2.5-flash` while its chat endpoint
+    wants the bare name, so the prefix comes off here rather than in the picker.
+    """
+    name = MODEL_ID_REJECT.sub("", str(value or "")).strip().strip("/")
+    if name.startswith("models/"):
+        name = name[len("models/"):]
+    return name
+
+
 def load_model(home: Path) -> str:
     path = model_path(home)
     if path.exists() and not path.is_symlink():
-        chosen = path.read_text(encoding="utf-8").strip()
-        if chosen and len(chosen) < 64:
+        chosen = _model_id(path.read_text(encoding="utf-8").strip())
+        if chosen and len(chosen) <= MAX_MODEL_CHARS:
             return chosen
     return OPENAI_MODEL_DEFAULT
 
 
 def save_model(home: Path, value: str) -> str:
-    chosen = re.sub(r"[^A-Za-z0-9._-]", "", str(value or "")).strip()
-    if not chosen or len(chosen) > 63:
+    chosen = _model_id(value)
+    if not chosen or len(chosen) > MAX_MODEL_CHARS:
         raise ValueError("Choose a model from the list")
     home.mkdir(parents=True, exist_ok=True, mode=0o700)
     path = model_path(home)
     path.write_text(chosen + "\n", encoding="utf-8")
     path.chmod(0o600)
     return chosen
+
+
+def seeded_models(base_url: str) -> list[str]:
+    """The recommendation order for a provider whose listing needs no discovery."""
+    return list(PROVIDERS.get(provider_id(base_url), {}).get("models", []))
 
 
 def available_models(
@@ -332,16 +524,25 @@ def available_models(
             timeout=timeout,
         )
         response.raise_for_status()
-        found = {str(item.get("id", "")) for item in response.json().get("data", [])}
+        found = {
+            _model_id(str(item.get("id", "")))
+            for item in response.json().get("data", [])
+        } - {""}
     except (requests.RequestException, KeyError, TypeError, ValueError) as exc:
-        raise RuntimeError(f"Could not list OpenAI models: {exc}") from exc
+        raise RuntimeError(
+            f"Could not list {provider_label(base_url)} models: {exc}"
+        ) from exc
     skip = ("audio", "realtime", "transcribe", "tts", "image", "embedding",
             "moderation", "search", "codex", "instruct", "whisper", "guard")
     usable = sorted(
         name for name in found
         if not any(word in name for word in skip)
     )
-    preferred = [name for name in MODEL_PREFERENCE if name in found]
+    # This provider's own recommendation first where it has one, then the
+    # measured OpenAI order. Ranking a discovered Google listing by OpenAI model
+    # names left the picker recommending whichever Gemini sorted first.
+    preference = seeded_models(base_url) + list(MODEL_PREFERENCE)
+    preferred = [name for name in preference if name in found]
     return preferred + [name for name in usable if name not in preferred]
 
 
@@ -351,12 +552,7 @@ def models_for(base_url: str, api_key: str) -> list[str]:
         found = available_models(api_key, base_url=base_url)
     except RuntimeError:
         found = []
-    if found:
-        return found
-    for provider in PROVIDERS.values():
-        if provider["base"] == base_url and provider["models"]:
-            return list(provider["models"])
-    return []
+    return found or seeded_models(base_url)
 
 
 def best_available_model(api_key: str) -> str:
@@ -367,25 +563,25 @@ def best_available_model(api_key: str) -> str:
     return models[0] if models else OPENAI_MODEL_DEFAULT
 
 
-def _json_object(value: str) -> dict[str, Any]:
+def _json_object(value: str, who: str = "The AI endpoint") -> dict[str, Any]:
     cleaned = re.sub(r"<think>.*?</think>", "", value or "", flags=re.S).strip()
     cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.I)
     cleaned = re.sub(r"\s*```$", "", cleaned)
     start = cleaned.find("{")
     end = cleaned.rfind("}")
     if start < 0:
-        raise RuntimeError("OpenAI returned no JSON suggestion object")
+        raise RuntimeError(f"{who} returned no JSON suggestion object")
     if end > start:
         try:
             parsed = json.loads(cleaned[start : end + 1])
             if not isinstance(parsed, dict):
-                raise RuntimeError("OpenAI returned an invalid suggestion object")
+                raise RuntimeError(f"{who} returned an invalid suggestion object")
             return parsed
         except json.JSONDecodeError:
             pass
     salvaged = _salvage_json(cleaned[start:])
     if salvaged is None:
-        raise RuntimeError("OpenAI returned malformed suggestion JSON")
+        raise RuntimeError(f"{who} returned malformed suggestion JSON")
     return salvaged
 
 
@@ -423,7 +619,7 @@ def _ask(
         except RuntimeError as exc:
             if attempt == 2 or "timed out" not in str(exc):
                 raise
-    raise RuntimeError("OpenAI request failed")
+    raise RuntimeError(f"{provider_label(base_url)} request failed")
 
 
 # Token accounting. Every provider reports usage the same way, so the cost of
@@ -492,10 +688,8 @@ def provider_label(base_url: str) -> str:
     endpoint. Telling someone their OpenAI key is invalid while they are
     pointed at Google is a small lie that costs a long debugging session.
     """
-    for provider in PROVIDERS.values():
-        if provider["base"] == str(base_url or "").rstrip("/"):
-            return str(provider["label"]).split(" (")[0]
-    return "The AI endpoint"
+    identifier = provider_id(base_url)
+    return _provider_name(identifier) if identifier else "The AI endpoint"
 
 
 _AUTH_WORDING = re.compile(
@@ -555,13 +749,22 @@ def _ask_once(
         # Providers differ on which optional parameters they accept. Rather
         # than maintain a compatibility matrix, drop whatever one objects to
         # and ask again: the request still works, just less constrained.
-        if response.status_code == 400:
+        #
+        # One retry was not enough. A payload can be wrong in more than one way
+        # for the same provider, and Google's parser names one unknown field per
+        # answer — so dropping the first and giving up returned the second
+        # rejection as a bare HTTP 400.
+        for _ in OPTIONAL_PARAMS:
+            if response.status_code != 400:
+                break
             reduced = _without_rejected(body, response)
-            if reduced is not None:
-                response = requests.post(
-                    f"{base_url}/chat/completions",
-                    headers=headers, json=reduced, timeout=timeout,
-                )
+            if reduced is None:
+                break
+            body = reduced
+            response = requests.post(
+                f"{base_url}/chat/completions",
+                headers=headers, json=body, timeout=timeout,
+            )
         response.raise_for_status()
         payload = response.json()
         _record_usage(payload)
@@ -572,7 +775,7 @@ def _ask_once(
                 for part in content
                 if isinstance(part, dict)
             )
-        return _json_object(str(content))
+        return _json_object(str(content), who)
     except requests.Timeout as exc:
         raise RuntimeError(
             f"{who} timed out. Retry once; no CV changes were saved."
@@ -1230,7 +1433,7 @@ def generate_suggestions(
             for reason, count in sorted(Counter(rejected.values()).items())
         )
         raise RuntimeError(
-            "OpenAI produced no evidence-safe suggestions. "
+            f"{provider_label(base_url)} produced no evidence-safe suggestions. "
             f"Try a more specific instruction ({reasons or 'empty response'})."
         )
     return draft

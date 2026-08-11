@@ -19,9 +19,9 @@ Every dashboard card has a native **✦ Edit CV for this job** button; Tampermon
 
 Every proposal is checked before it is shown. A rewrite may not introduce a number, a named technology, an employer, a date, or a qualification the CV does not already evidence, and a metric earned on one project may not reappear as the result of another. Keyword coverage is counted against the CV rather than taken from the model, and requirements the CV genuinely cannot evidence are reported as gaps instead of being written around.
 
-Any OpenAI-compatible endpoint drives it — OpenAI, Groq, OpenRouter, Cerebras, Together, GitHub Models, Google AI Studio, or a model running locally under Ollama for nothing. The provider and model are chosen in the editor.
+Any OpenAI-compatible endpoint drives it — OpenAI, Groq, OpenRouter, Cerebras, Together, GitHub Models, Google AI Studio, or a model running locally under Ollama for nothing. The provider and model are chosen in the editor. Each provider keeps its own key file, so switching provider asks for that provider's key instead of sending the previous one to an account that never issued it.
 
-The GitHub repository never receives the private profile, fact bank, OpenAI key, drafts, or generated PDFs. The editor runs on `127.0.0.1`, stores the API key locally as a mode-0600 private file, requires review of every proposed change, and never submits an application.
+The GitHub repository never receives the private profile, fact bank, API keys, drafts, or generated PDFs. The editor runs on `127.0.0.1`, stores the API key locally as a mode-0600 private file, requires review of every proposed change, and never submits an application.
 
 Pressing **Generate suggestions** sends the selected job description and master CV text to the configured endpoint through the user's own account. Merely opening the editor, editing by hand, or exporting a PDF makes no network call. Pointing the editor at a local model means the CV never leaves the machine at all.
 
