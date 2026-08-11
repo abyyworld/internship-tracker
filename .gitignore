@@ -17,6 +17,9 @@ apply_cockpit.html
 # Private application state and generated CVs must never be committed.
 private/
 .private/
+# Every provider keeps its own key file under private/. Named again here so a
+# key saved anywhere else cannot be committed either.
+*.key
 # The master CV PDF and its generator are personal documents. Their design is
 # already reproduced in autoapply/cv_render.py, so the repository does not need
 # the originals — and this repository is public.

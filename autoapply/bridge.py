@@ -43,21 +43,24 @@ from .editor_ui import EDITOR_PAGE
 from .fit import assess_all, read_postings
 from .jobs import jobs_from_tracker
 from .openai_tailoring import (
-    OPENAI_MODEL_DEFAULT,
     PROVIDERS,
-    available_models,
     models_for,
     find_questions,
     is_local,
+    key_configured,
+    key_hint,
+    key_path,
+    endpoint_name,
     load_base_url,
     load_key_for,
     load_model,
+    migrate_legacy_key,
+    provider_id,
     save_base_url,
+    save_key,
     save_model,
+    seeded_models,
     generate_suggestions,
-    load_openai_key,
-    openai_key_configured,
-    save_openai_key,
     write_answers,
 )
 from .resume import render_resume
@@ -350,7 +353,33 @@ class BridgeHandler(BaseHTTPRequestHandler):
         try:
             return models_for(base, load_key_for(self.server.home))[:16]
         except (FileNotFoundError, RuntimeError):
-            return []
+            # No key yet, so the endpoint cannot be asked. Its own
+            # recommendations still populate the picker.
+            return seeded_models(base)
+
+    def _provider(self) -> dict[str, Any]:
+        """Who is being called, and whether this provider's key is on disk.
+
+        The key card reads this. Everything in it used to be hard-coded to
+        OpenAI, so choosing Google left the card reporting an OpenAI key
+        configured — true, and useless, because Google will not accept it.
+        """
+        base = load_base_url(self.server.home)
+        identifier = provider_id(base)
+        return {
+            "id": identifier,
+            "label": endpoint_name(base),
+            "base_url": base,
+            "local": is_local(base),
+            "configured": key_configured(self.server.home, base),
+            "key_hint": key_hint(base),
+            # Shown so the file can be found, replaced, or deleted by hand.
+            "key_file": str(key_path(self.server.home, base)),
+            "key_env": list(PROVIDERS.get(identifier, {}).get(
+                "key_env", ["OPENAI_API_KEY"]
+            )),
+            "key_page": str(PROVIDERS.get(identifier, {}).get("key_page", "")),
+        }
 
     def _person_name(self) -> str:
         try:
@@ -437,9 +466,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                         # Pre-fills the "save as" box so the CV is named after
                         # the job by default; the user edits it before saving.
                         "suggested_cv_name": _suggested_cv_name(job),
-                        "ai_configured": openai_key_configured(
-                            self.server.home
-                        ),
+                        "provider": self._provider(),
                         "model": load_model(self.server.home),
                         "models": self._models(),
                         "base_url": load_base_url(self.server.home),
@@ -560,6 +587,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
         parsed_request = urlparse(self.path)
         if parsed_request.path not in {
             "/prepare",
+            "/api/settings/key",
             "/api/settings/openai",
             "/api/settings/model",
             "/api/settings/endpoint",
@@ -585,9 +613,13 @@ class BridgeHandler(BaseHTTPRequestHandler):
         if parsed_request.path == "/api/settings/endpoint":
             try:
                 url = save_base_url(self.server.home, payload.get("base_url", ""))
+                # The new provider's own key state travels with the answer:
+                # switching provider changes which key is in play, and the card
+                # has to stop claiming the previous one.
                 self._json(200, {
                     "ok": True, "base_url": url,
                     "models": self._models(), "local": is_local(url),
+                    "provider": self._provider(),
                 })
             except (OSError, RuntimeError, ValueError) as exc:
                 self._json(422, {"error": str(exc)})
@@ -601,13 +633,24 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 self._json(422, {"error": str(exc)})
             return
 
-        if parsed_request.path == "/api/settings/openai":
+        # The key is stored against the provider currently selected, never a
+        # single shared file. `/api/settings/openai` is the name this route had
+        # when OpenAI was the only endpoint, kept so an editor page left open
+        # across the change still saves.
+        if parsed_request.path in {"/api/settings/key", "/api/settings/openai"}:
             try:
-                save_openai_key(
-                    self.server.home,
-                    str(payload.get("api_key", "")),
+                save_key(self.server.home, str(payload.get("api_key", "")))
+                self._json(
+                    200,
+                    {
+                        "ok": True,
+                        "configured": True,
+                        "provider": self._provider(),
+                        # A key is what the model listing was waiting for, so
+                        # the picker fills in without a second round trip.
+                        "models": self._models(),
+                    },
                 )
-                self._json(200, {"ok": True, "configured": True})
             except (OSError, RuntimeError, ValueError) as exc:
                 self._json(422, {"error": str(exc)})
             return
@@ -865,6 +908,7 @@ def run_bridge(home: Path, tracker: Path, port: int) -> None:
     if not 1024 <= port <= 65535:
         raise ValueError("Bridge port must be between 1024 and 65535")
     token = load_or_create_bridge_token(home)
+    filed = migrate_legacy_key(home)
     with Store(database_path(home)) as store:
         imported = store.import_jobs(
             jobs_from_tracker(tracker, include_unknown=True)
@@ -880,6 +924,9 @@ def run_bridge(home: Path, tracker: Path, port: int) -> None:
     print(f"  address : http://127.0.0.1:{port}")
     print(f"  jobs    : {imported}")
     print(f"  token   : {token}")
+    if filed:
+        print(f"  keys    : moved a {endpoint_name(PROVIDERS[filed]['base'])} "
+              f"key out of openai.key into {filed}.key")
     print("")
     print("Paste the token once into the GitHub CV + Apply userscript.")
     print("Keep this terminal open. Press Ctrl-C to stop.")

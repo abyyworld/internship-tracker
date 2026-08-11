@@ -12,9 +12,9 @@ from autoapply.cv_editor import master_document
 from autoapply.openai_tailoring import (
     OPENAI_MODEL_DEFAULT,
     generate_suggestions,
-    load_openai_key,
-    openai_key_configured,
-    save_openai_key,
+    key_configured,
+    load_key,
+    save_key,
 )
 from autoapply.models import Job
 
@@ -69,19 +69,19 @@ class OpenAiTailoringTests(unittest.TestCase):
     def test_key_is_private_and_stable(self):
         with tempfile.TemporaryDirectory() as directory:
             home = Path(directory)
-            self.assertFalse(openai_key_configured(home))
-            save_openai_key(home, "sk-test-key-with-at-least-twenty-characters")
+            self.assertFalse(key_configured(home))
+            save_key(home, "sk-test-key-with-at-least-twenty-characters")
             self.assertEqual(
-                load_openai_key(home),
+                load_key(home),
                 "sk-test-key-with-at-least-twenty-characters",
             )
-            self.assertTrue(openai_key_configured(home))
+            self.assertTrue(key_configured(home))
             self.assertEqual(
                 stat.S_IMODE((home / "openai.key").stat().st_mode),
                 0o600,
             )
 
-    def test_environment_key_is_used_when_present(self):
+    def test_environment_key_is_used_when_no_file_is_saved(self):
         with tempfile.TemporaryDirectory() as directory:
             home = Path(directory)
             with patch.dict(
@@ -89,8 +89,22 @@ class OpenAiTailoringTests(unittest.TestCase):
                 {"OPENAI_API_KEY": "sk-env-key-with-at-least-twenty-chars"},
             ):
                 self.assertEqual(
-                    load_openai_key(home),
+                    load_key(home),
                     "sk-env-key-with-at-least-twenty-chars",
+                )
+
+    def test_the_pasted_key_outranks_the_environment(self):
+        # The key in the editor is the one the applicant chose; a variable left
+        # in the shell is a fallback for a run with no file at all.
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            save_key(home, "sk-pasted-key-with-at-least-twenty-chars")
+            with patch.dict(
+                os.environ,
+                {"OPENAI_API_KEY": "sk-env-key-with-at-least-twenty-chars"},
+            ):
+                self.assertEqual(
+                    load_key(home), "sk-pasted-key-with-at-least-twenty-chars"
                 )
 
     def test_safe_patch_is_returned_and_new_metric_is_discarded(self):
@@ -526,8 +540,8 @@ class ProviderEndpointTests(unittest.TestCase):
     def test_a_local_endpoint_is_allowed_and_needs_no_key(self):
         from autoapply.openai_tailoring import (
             is_local,
+            key_configured,
             load_key_for,
-            openai_key_configured,
             save_base_url,
         )
 
@@ -537,7 +551,7 @@ class ProviderEndpointTests(unittest.TestCase):
             self.assertTrue(is_local(url))
             self.assertEqual(load_key_for(home), "")
             # A local runtime has no account, so it counts as configured.
-            self.assertTrue(openai_key_configured(home))
+            self.assertTrue(key_configured(home))
 
     def test_the_endpoint_file_is_private(self):
         from autoapply.openai_tailoring import base_url_path, save_base_url
@@ -585,6 +599,213 @@ class ProviderEndpointTests(unittest.TestCase):
         )
         # A local runtime has no account, so no bearer token is sent.
         self.assertNotIn("Authorization", request.call_args.kwargs["headers"])
+
+
+class ProviderKeyTests(unittest.TestCase):
+    """A key belongs to the account that issued it, and to no other provider."""
+
+    GOOGLE_KEY = "AIzaSyDummyGoogleKeyForTests-000000000"
+    OPENAI_KEY = "sk-test-key-with-at-least-twenty-characters"
+
+    def test_each_provider_keeps_its_own_key(self):
+        from autoapply.openai_tailoring import (
+            key_configured,
+            key_path,
+            load_key_for,
+            save_base_url,
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            save_key(home, self.OPENAI_KEY)
+            gemini = save_base_url(
+                home, "https://generativelanguage.googleapis.com/v1beta/openai"
+            )
+            # Switching provider must not report the previous provider's key as
+            # this one's: it would be sent to Google and rejected.
+            self.assertFalse(key_configured(home))
+            with self.assertRaises(FileNotFoundError):
+                load_key_for(home)
+            save_key(home, self.GOOGLE_KEY)
+            self.assertEqual(key_path(home, gemini).name, "gemini.key")
+            self.assertEqual(load_key_for(home), self.GOOGLE_KEY)
+            self.assertEqual(
+                stat.S_IMODE(key_path(home, gemini).stat().st_mode), 0o600
+            )
+            # And the OpenAI key is still there, untouched, for switching back.
+            save_base_url(home, "https://api.openai.com/v1")
+            self.assertEqual(load_key_for(home), self.OPENAI_KEY)
+
+    def test_an_openai_variable_is_not_sent_to_another_provider(self):
+        from autoapply.openai_tailoring import load_key, save_base_url
+
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            save_base_url(
+                home, "https://generativelanguage.googleapis.com/v1beta/openai"
+            )
+            with patch.dict(os.environ, {"OPENAI_API_KEY": self.OPENAI_KEY}):
+                with self.assertRaises(FileNotFoundError):
+                    load_key(home)
+
+    def test_a_provider_reads_its_own_environment_variable(self):
+        from autoapply.openai_tailoring import load_key, save_base_url
+
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            save_base_url(
+                home, "https://generativelanguage.googleapis.com/v1beta/openai"
+            )
+            with patch.dict(os.environ, {"GEMINI_API_KEY": self.GOOGLE_KEY}):
+                self.assertEqual(load_key(home), self.GOOGLE_KEY)
+
+    def test_a_key_belonging_to_another_provider_is_refused_with_both_names(self):
+        from autoapply.openai_tailoring import save_base_url
+
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            save_base_url(
+                home, "https://generativelanguage.googleapis.com/v1beta/openai"
+            )
+            with self.assertRaises(ValueError) as caught:
+                save_key(home, self.OPENAI_KEY)
+            self.assertIn("OpenAI", str(caught.exception))
+            self.assertIn("Google AI Studio", str(caught.exception))
+
+    def test_an_openrouter_key_is_not_mistaken_for_an_openai_one(self):
+        from autoapply.openai_tailoring import load_key_for, save_base_url
+
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            save_base_url(home, "https://openrouter.ai/api/v1")
+            # OpenRouter's keys are `sk-or-...`, which is also a valid `sk-`.
+            save_key(home, "sk-or-v1-0000000000000000000000000000")
+            self.assertEqual(
+                load_key_for(home), "sk-or-v1-0000000000000000000000000000"
+            )
+
+    def test_an_endpoint_of_your_own_gets_a_file_of_its_own(self):
+        from autoapply.openai_tailoring import key_path
+
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            self.assertEqual(
+                key_path(home, "https://llm.example.test/v1").name,
+                "custom-llm-example-test.key",
+            )
+
+    def test_a_key_saved_under_the_old_shared_name_is_filed_by_its_prefix(self):
+        from autoapply.openai_tailoring import (
+            load_key_for, migrate_legacy_key, save_base_url
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            # What the editor wrote when every provider shared one file.
+            (home / "openai.key").write_text(self.GOOGLE_KEY + "\n", encoding="utf-8")
+            (home / "openai.key").chmod(0o600)
+            self.assertEqual(migrate_legacy_key(home), "gemini")
+            self.assertFalse((home / "openai.key").exists())
+            save_base_url(
+                home, "https://generativelanguage.googleapis.com/v1beta/openai"
+            )
+            self.assertEqual(load_key_for(home), self.GOOGLE_KEY)
+
+    def test_an_openai_key_under_its_own_name_is_left_alone(self):
+        from autoapply.openai_tailoring import load_key_for, migrate_legacy_key
+
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            save_key(home, self.OPENAI_KEY)
+            self.assertEqual(migrate_legacy_key(home), "")
+            self.assertEqual(load_key_for(home), self.OPENAI_KEY)
+
+    def test_a_migration_never_overwrites_a_key_already_filed(self):
+        from autoapply.openai_tailoring import migrate_legacy_key, save_base_url
+
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            gemini = "https://generativelanguage.googleapis.com/v1beta/openai"
+            save_base_url(home, gemini)
+            save_key(home, self.GOOGLE_KEY)
+            other = "AIzaSyAnotherGoogleKeyForTests-11111111"
+            (home / "openai.key").write_text(other + "\n", encoding="utf-8")
+            (home / "openai.key").chmod(0o600)
+            self.assertEqual(migrate_legacy_key(home), "")
+            self.assertEqual(
+                (home / "gemini.key").read_text(encoding="utf-8").strip(),
+                self.GOOGLE_KEY,
+            )
+
+    def test_a_missing_key_names_the_provider_that_needs_one(self):
+        from autoapply.openai_tailoring import load_key, save_base_url
+
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            save_base_url(home, "https://api.groq.com/openai/v1")
+            with self.assertRaises(FileNotFoundError) as caught:
+                load_key(home)
+            self.assertIn("Groq", str(caught.exception))
+
+
+class ModelNameTests(unittest.TestCase):
+    """A model id is what the endpoint calls it, slashes and suffixes included."""
+
+    def test_a_vendor_qualified_name_survives_being_saved(self):
+        from autoapply.openai_tailoring import load_model, save_model
+
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            for name in (
+                "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
+                "openai/gpt-oss-120b:free",
+            ):
+                self.assertEqual(save_model(home, name), name)
+                self.assertEqual(load_model(home), name)
+
+    def test_googles_listing_prefix_is_stripped(self):
+        from autoapply.openai_tailoring import save_model
+
+        with tempfile.TemporaryDirectory() as directory:
+            self.assertEqual(
+                save_model(Path(directory), "models/gemini-2.5-flash"),
+                "gemini-2.5-flash",
+            )
+
+    def _listing(self, ids):
+        response = Mock()
+        response.raise_for_status.return_value = None
+        response.json.return_value = {"data": [{"id": name} for name in ids]}
+        return patch(
+            "autoapply.openai_tailoring.requests.get", return_value=response
+        )
+
+    def test_a_discovered_google_model_is_offered_as_the_chat_api_spells_it(self):
+        from autoapply.openai_tailoring import PROVIDERS, models_for
+
+        with self._listing([
+            "models/gemini-2.0-flash",
+            "models/gemini-2.5-flash",
+            "models/gemini-embedding-001",
+        ]):
+            offered = models_for(PROVIDERS["gemini"]["base"], "AIza-key")
+        self.assertIn("gemini-2.5-flash", offered)
+        self.assertNotIn("models/gemini-2.5-flash", offered)
+        # An embedding model cannot answer a chat request.
+        self.assertNotIn("gemini-embedding-001", offered)
+
+    def test_the_recommendation_is_the_providers_own_order(self):
+        from autoapply.openai_tailoring import PROVIDERS, models_for
+
+        with self._listing([
+            "models/gemini-2.0-flash",
+            "models/gemini-2.5-pro",
+            "models/gemini-2.5-flash",
+        ]):
+            offered = models_for(PROVIDERS["gemini"]["base"], "AIza-key")
+        # Ranked by OpenAI's model names, the picker recommended whichever
+        # Gemini happened to sort first.
+        self.assertEqual(offered[0], "gemini-2.5-flash")
 
 
 class ProviderCompatibilityTests(unittest.TestCase):
@@ -655,6 +876,43 @@ class ProviderCompatibilityTests(unittest.TestCase):
                 "reasoning_effort",
                 _request_body("s", "u", model=model, max_tokens=10),
             )
+
+    def test_a_payload_rejected_twice_is_reduced_twice(self):
+        from autoapply.openai_tailoring import PROVIDERS, _ask_once
+
+        # Google reports one unknown field per answer, so a payload it dislikes
+        # in two ways needs two reductions to get through.
+        rejects = {
+            "max_completion_tokens": Mock(status_code=400),
+            "reasoning_effort": Mock(status_code=400),
+        }
+        for name, response in rejects.items():
+            response.json.return_value = {
+                "error": {"message": f'Unknown name "{name}": Cannot find field.'}
+            }
+        accepted = Mock(status_code=200)
+        accepted.raise_for_status.return_value = None
+        accepted.json.return_value = {
+            "choices": [{"message": {"content": '{"ok":true}'}}]
+        }
+        answers = [
+            rejects["reasoning_effort"], rejects["max_completion_tokens"], accepted
+        ]
+        with patch(
+            "autoapply.openai_tailoring.requests.post", side_effect=answers
+        ) as request:
+            self.assertEqual(
+                _ask_once(
+                    "s", "u", api_key="k", model="gemini-2.5-flash",
+                    max_tokens=10, timeout=5,
+                    base_url=PROVIDERS["gemini"]["base"],
+                ),
+                {"ok": True},
+            )
+        sent = request.call_args.kwargs["json"]
+        self.assertNotIn("reasoning_effort", sent)
+        self.assertNotIn("max_completion_tokens", sent)
+        self.assertEqual(sent["max_tokens"], 10)
 
     def test_an_error_names_the_provider_actually_being_called(self):
         from autoapply.openai_tailoring import PROVIDERS, _ask_once
