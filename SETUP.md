@@ -47,6 +47,20 @@ is used when no file is saved, which is what a headless run reads. Pressing
 chosen provider through that account; opening the editor and exporting locally
 do not call the API.
 
+**Test this provider** in the editor sends one 24-token request and reports
+exactly what came back: the endpoint, the model, the status, the provider's own
+words, any request parameters that endpoint refused, and the models it says it
+can run. Use it before blaming a rewrite — a rejected key and a working one look
+identical until something asks. The same check runs from the terminal with
+`python3 -m autoapply doctor --probe`, which also prints the endpoint, model and
+where the key is being read from.
+
+The editor's right-hand column ends with the bridge **build** — the timestamp of
+the code answering the page. A bridge is started once and left running for weeks
+while the checkout moves on, so a symptom can belong to a version no longer on
+disk; `start-autoapply.command` now compares the running build with the working
+copy and restarts a stale helper instead of reusing it.
+
 The daily watcher and cockpit do not require the extra packages:
 
 ```bash
@@ -56,6 +70,26 @@ open apply_cockpit.html
 ```
 
 `apply_cockpit.html` is generated locally and ignored by Git.
+
+### Checking the editor itself
+
+The unit suite runs with no browser and no network:
+
+```bash
+python3 -m unittest discover -s tests -t .
+```
+
+The editor page is a single-page application, so its own behaviour is checked by
+driving it in a real browser against a fake OpenAI-compatible provider — opening
+the editor, testing the provider, generating a rewrite, accepting it, exporting
+the PDF, drafting the answers, and saving the tailoring as its own CV:
+
+```bash
+python3 tests/browser_editor_flow.py
+```
+
+It is deliberately not collected by `unittest discover`, because it needs a
+browser the read-only CI job does not have.
 
 ## GitHub click-to-tailor workflow
 

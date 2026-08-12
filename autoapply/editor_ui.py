@@ -364,6 +364,21 @@ border-radius:13px;font-size:13px}
       never leaves the machine.</p>
       <select id="providerSelect" class="key" style="margin-top:6px"></select>
       <p class="hint" id="providerNote"></p>
+      <details id="customEndpoint" style="margin-top:6px">
+        <summary class="hint" style="cursor:pointer">Use my own endpoint</summary>
+        <p class="hint" style="margin-top:6px">Any OpenAI-compatible base URL —
+        LM Studio, llama.cpp, a company proxy. HTTPS, or a local address.</p>
+        <input class="key" id="customBase" autocomplete="off" spellcheck="false"
+          placeholder="https://… or http://127.0.0.1:1234/v1" style="margin:6px 0">
+        <button class="secondary" id="saveCustomBase" style="width:100%">Use this endpoint</button>
+      </details>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="secondary" id="testProvider" style="flex:1">Test this provider</button>
+      </div>
+      <p class="hint" id="testNote"></p>
+      <pre id="testReport" style="display:none;white-space:pre-wrap;word-break:break-word;
+        margin:8px 0 0;padding:9px 10px;border-radius:9px;background:#0c1714;
+        border:1px solid var(--line);font-size:11.5px;line-height:1.45;max-height:230px;overflow:auto"></pre>
     </div>
 
     <div class="card" id="modelCard">
@@ -382,6 +397,8 @@ border-radius:13px;font-size:13px}
       <button class="secondary" id="saveKey" style="width:100%">Save key locally</button>
       <p class="hint" id="keyHint"></p>
     </div>
+
+    <p class="hint" id="buildNote" style="margin:2px 4px 0"></p>
 
   </div>
 </aside>
@@ -1266,15 +1283,64 @@ async function saveProvider(url){
       body:JSON.stringify({base_url:url})});
     state.base_url=r.base_url;state.models=r.models||[];
     if(r.provider)state.provider=r.provider;
+    // The model belongs to the provider that serves it, so it comes back with
+    // the switch. Keeping the previous provider's model is how a Gemini id got
+    // posted to OpenAI and came back as a bad request with no stated cause.
+    if(r.model)state.model=r.model;
     if(state.models.length&&!state.models.includes(state.model)){
       await saveModel(state.models[0]);
     }
-    // The key card follows the provider: the previous provider's key is still
-    // on disk, but it is not this provider's key and will not be sent to it.
+    // The key card follows the provider too: the previous provider's key is
+    // still on disk, but it is not this provider's key and is never sent to it.
+    hideTestReport();
     renderProvider();renderModel();renderKey();
     toast(state.provider&&state.provider.configured===false&&!state.provider.local
       ?`Provider set — paste a ${state.provider.label} key`:"Provider set");
   }catch(err){notice(err.message,"error")}
+}
+function hideTestReport(){
+  $("testReport").style.display="none";$("testReport").textContent="";
+  $("testNote").textContent="";
+}
+async function saveCustomBase(){
+  const url=$("customBase").value.trim();
+  if(!url){notice("Paste the base URL of an OpenAI-compatible endpoint.","error");return}
+  await saveProvider(url);
+  $("customBase").value="";
+}
+// One cheap round trip, reported exactly as it came back. Until this existed a
+// rejected key and a working key looked identical, because a failed model
+// listing falls back to the seeded recommendations without saying so.
+async function testProvider(){
+  const button=$("testProvider");button.disabled=true;
+  const before=button.textContent;button.textContent="Testing…";
+  $("testNote").textContent="";
+  try{
+    const r=await api("/api/settings/test",{method:"POST",body:JSON.stringify({})});
+    const report=r.report||{};
+    const lines=[
+      `provider  ${report.provider||"?"}`,
+      `endpoint  ${report.endpoint||"?"}`,
+      `model     ${report.model||"?"}`,
+      `status    ${report.status||"no answer"}${report.ok?"  ok":""}`,
+    ];
+    if((report.dropped||[]).length)
+      lines.push(`dropped   ${report.dropped.join(", ")} (this endpoint refused them)`);
+    if(report.detail)lines.push(`it said   ${report.detail}`);
+    if(report.problem)lines.push(`problem   ${report.problem}`);
+    if(report.note)lines.push(`note      ${report.note}`);
+    if(report.listing_problem)lines.push(`listing   ${report.listing_problem}`);
+    if((report.models||[]).length)
+      lines.push(`offers    ${report.models.slice(0,12).join(", ")}`);
+    const box=$("testReport");box.textContent=lines.join("\\n");box.style.display="";
+    $("testNote").textContent=r.ok
+      ?"This provider answered. Rewriting will work."
+      :"This provider did not answer. The reason is above, in its own words.";
+    // A working test proves the key, and the listing it returned is better than
+    // the seeded guess the picker may be showing.
+    if((report.models||[]).length){state.models=report.models;renderModel()}
+  }catch(err){notice(err.message,"error")}
+  finally{button.disabled=false;button.textContent=before}
 }
 function renderModel(){
   const sel=$("modelSelect");sel.replaceChildren();
@@ -1327,6 +1393,13 @@ function renderKey(){
     link.href=provider.key_page;link.target="_blank";link.rel="noopener";
     link.textContent=`Get a ${provider.label} key`;hint.append(link);
   }
+  // The build serving this page. A bridge is started once and left running for
+  // weeks, so the code answering a request can be many commits behind the
+  // checkout — and then every symptom belongs to code that is no longer there.
+  $("buildNote").textContent=
+    `Bridge build ${provider.build||"unknown"}`
+    +(provider.key_source?` · key from ${provider.key_source}`:"")
+    +(provider.problem?` · ${provider.problem}`:"");
 }
 async function exportPdf(){
   $("exportPdf").disabled=true;
@@ -1391,6 +1464,9 @@ $("newCvName").oninput=()=>{nameTouched=true};
 $("writeAnswers").onclick=writeAnswers;
 $("modelSelect").onchange=e=>saveModel(e.target.value);
 $("providerSelect").onchange=e=>saveProvider(e.target.value);
+$("testProvider").onclick=testProvider;
+$("saveCustomBase").onclick=saveCustomBase;
+$("customBase").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();saveCustomBase()}};
 $("tabs").onclick=e=>{if(e.target.dataset.tab)showTab(e.target.dataset.tab)};
 $("cvSelect").onchange=async e=>{
   try{await loadCv(e.target.value);toast("Switched CV")}
