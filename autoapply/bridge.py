@@ -43,6 +43,7 @@ from .editor_ui import EDITOR_PAGE
 from .fit import assess_all, read_postings
 from .jobs import jobs_from_tracker
 from .openai_tailoring import (
+    BUILD,
     PROVIDERS,
     models_for,
     find_questions,
@@ -50,11 +51,15 @@ from .openai_tailoring import (
     key_configured,
     key_hint,
     key_path,
+    key_source,
     endpoint_name,
+    endpoint_problem,
     load_base_url,
     load_key_for,
     load_model,
     migrate_legacy_key,
+    migrate_legacy_model,
+    probe,
     provider_id,
     save_base_url,
     save_key,
@@ -379,6 +384,14 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 "key_env", ["OPENAI_API_KEY"]
             )),
             "key_page": str(PROVIDERS.get(identifier, {}).get("key_page", "")),
+            "key_source": key_source(self.server.home, base),
+            # When the code answering this page was written. A bridge left
+            # running for weeks serves an editor built from code that may be
+            # many commits behind the checkout, and every symptom then belongs
+            # to code that is no longer on disk.
+            "build": BUILD,
+            # Said out loud rather than silently falling back to OpenAI.
+            "problem": endpoint_problem(self.server.home),
         }
 
     def _person_name(self) -> str:
@@ -418,7 +431,9 @@ class BridgeHandler(BaseHTTPRequestHandler):
             if not self._authorized():
                 self._json(401, {"error": "Bridge token required"})
                 return
-            self._json(200, {"ok": True, "service": "autoapply-cv-bridge"})
+            self._json(200, {
+                "ok": True, "service": "autoapply-cv-bridge", "build": BUILD,
+            })
             return
         if parsed_request.path == "/connect":
             self._html(200, CONNECT_PAGE)
@@ -446,6 +461,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 job = self._find_job(url)
                 document, _profile = self._document(cv_id)
                 draft = load_draft(self.server.home, job.id, cv_id)
+                base = load_base_url(self.server.home)
                 self._json(
                     200,
                     {
@@ -467,9 +483,9 @@ class BridgeHandler(BaseHTTPRequestHandler):
                         # the job by default; the user edits it before saving.
                         "suggested_cv_name": _suggested_cv_name(job),
                         "provider": self._provider(),
-                        "model": load_model(self.server.home),
+                        "model": load_model(self.server.home, base),
                         "models": self._models(),
-                        "base_url": load_base_url(self.server.home),
+                        "base_url": base,
                         "providers": [
                             {"id": key, **value} for key, value in PROVIDERS.items()
                         ],
@@ -590,6 +606,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
             "/api/settings/key",
             "/api/settings/openai",
             "/api/settings/model",
+            "/api/settings/test",
             "/api/settings/endpoint",
             "/api/suggest",
             "/api/answers",
@@ -613,13 +630,15 @@ class BridgeHandler(BaseHTTPRequestHandler):
         if parsed_request.path == "/api/settings/endpoint":
             try:
                 url = save_base_url(self.server.home, payload.get("base_url", ""))
-                # The new provider's own key state travels with the answer:
-                # switching provider changes which key is in play, and the card
-                # has to stop claiming the previous one.
+                # The new provider's own key state and its own model travel with
+                # the answer: switching provider changes which key and which
+                # model are in play, and the cards have to stop claiming the
+                # previous provider's.
                 self._json(200, {
                     "ok": True, "base_url": url,
                     "models": self._models(), "local": is_local(url),
                     "provider": self._provider(),
+                    "model": load_model(self.server.home, url),
                 })
             except (OSError, RuntimeError, ValueError) as exc:
                 self._json(422, {"error": str(exc)})
@@ -627,10 +646,37 @@ class BridgeHandler(BaseHTTPRequestHandler):
 
         if parsed_request.path == "/api/settings/model":
             try:
-                chosen = save_model(self.server.home, payload.get("model", ""))
+                base = load_base_url(self.server.home)
+                chosen = save_model(
+                    self.server.home, str(payload.get("model", "")), base,
+                    offered=self._models(),
+                )
                 self._json(200, {"ok": True, "model": chosen})
             except (OSError, RuntimeError, ValueError) as exc:
                 self._json(422, {"error": str(exc)})
+            return
+
+        # One cheap round trip, reported exactly as it came back. This is the
+        # only way to tell a rejected key from a working one without spending a
+        # whole tailoring on it.
+        if parsed_request.path == "/api/settings/test":
+            base = load_base_url(self.server.home)
+            try:
+                key = load_key_for(self.server.home)
+            except (FileNotFoundError, RuntimeError) as exc:
+                self._json(200, {
+                    "ok": False,
+                    "report": {
+                        "provider": endpoint_name(base),
+                        "endpoint": f"{base}/chat/completions",
+                        "model": load_model(self.server.home, base),
+                        "ok": False, "status": 0, "dropped": [], "models": [],
+                        "problem": str(exc),
+                    },
+                })
+                return
+            report = probe(base, key, load_model(self.server.home, base))
+            self._json(200, {"ok": bool(report.get("ok")), "report": report})
             return
 
         # The key is stored against the provider currently selected, never a
@@ -684,6 +730,10 @@ class BridgeHandler(BaseHTTPRequestHandler):
             url = self._job_url(payload.get("url"))
             cv_id = safe_cv_id(payload.get("cv_id", "")) or MASTER_CV_ID
             job = self._find_job(url)
+            # The endpoint every model call on this path belongs to. Read once,
+            # so the key, the model and the request can never disagree about
+            # which provider is being asked.
+            base = load_base_url(self.server.home)
 
             if parsed_request.path == "/api/suggest":
                 # Fetch at generation time so opening the editor is instant and
@@ -709,8 +759,8 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     api_key=load_key_for(self.server.home),
                     instructions=instructions,
                     mode=mode,
-                    model=load_model(self.server.home),
-                    base_url=load_base_url(self.server.home),
+                    model=load_model(self.server.home, base),
+                    base_url=base,
                 )
                 generated["cv_id"] = cv_id
                 saved = save_draft(
@@ -736,7 +786,6 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 document, _profile = self._document(cv_id)
                 draft = load_draft(self.server.home, job.id, cv_id)
                 key = load_key_for(self.server.home)
-                base = load_base_url(self.server.home)
                 questions = [
                     question
                     for question in (draft.get("questions") or [])
@@ -744,7 +793,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 ]
                 if not questions:
                     questions = find_questions(
-                        job, api_key=key, model=load_model(self.server.home),
+                        job, api_key=key, model=load_model(self.server.home, base),
                         base_url=base,
                     )
                 extra = str(payload.get("question", "")).strip()
@@ -759,7 +808,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 written = write_answers(
                     job, document, draft, questions,
                     api_key=key,
-                    model=load_model(self.server.home),
+                    model=load_model(self.server.home, base),
                     base_url=base,
                     instructions=str(payload.get("instructions", ""))[:2000],
                     want_cover_letter=bool(payload.get("cover_letter", True)),
@@ -909,6 +958,7 @@ def run_bridge(home: Path, tracker: Path, port: int) -> None:
         raise ValueError("Bridge port must be between 1024 and 65535")
     token = load_or_create_bridge_token(home)
     filed = migrate_legacy_key(home)
+    refiled = migrate_legacy_model(home)
     with Store(database_path(home)) as store:
         imported = store.import_jobs(
             jobs_from_tracker(tracker, include_unknown=True)
@@ -919,14 +969,28 @@ def run_bridge(home: Path, tracker: Path, port: int) -> None:
         tracker=tracker,
         token=token,
     )
+    base = load_base_url(home)
     print("")
     print("Autoapply CV bridge is ready")
     print(f"  address : http://127.0.0.1:{port}")
+    # The three settings that decide whether a rewrite can work at all. Printed
+    # because the terminal this runs in is the one place a person looks when the
+    # editor says a request was rejected, and it used to say nothing about them.
+    print(f"  provider: {endpoint_name(base)}  {base}")
+    print(f"  model   : {load_model(home, base)}")
+    print(f"  key     : {key_source(home, base)}")
+    print(f"  build   : {BUILD}")
     print(f"  jobs    : {imported}")
     print(f"  token   : {token}")
+    problem = endpoint_problem(home)
+    if problem:
+        print(f"  warning : {problem}")
     if filed:
         print(f"  keys    : moved a {endpoint_name(PROVIDERS[filed]['base'])} "
               f"key out of openai.key into {filed}.key")
+    if refiled:
+        print(f"  models  : moved a {endpoint_name(PROVIDERS[refiled]['base'])} "
+              f"model out of openai-model.txt into {refiled}-model.txt")
     print("")
     print("Paste the token once into the GitHub CV + Apply userscript.")
     print("Keep this terminal open. Press Ctrl-C to stop.")

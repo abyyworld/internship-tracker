@@ -13,16 +13,39 @@ if [[ ! -x ".venv/bin/python" ]] || ! ".venv/bin/python" -c "import yaml, reques
   echo "Done."
 fi
 
+# A bridge is started once and left running for weeks while the checkout moves
+# on, so "already running" was quietly answering the editor from code that is no
+# longer on disk — and every symptom then belonged to a version nobody has. The
+# build it reports is compared with the build in the working copy, and a stale
+# process is replaced rather than reused.
 if [[ -f "private/bridge.token" ]]; then
   BRIDGE_TOKEN="$(<private/bridge.token)"
-  if curl -fsS -H "X-Autoapply-Token: $BRIDGE_TOKEN" \
-      "http://127.0.0.1:8765/health" >/dev/null 2>&1; then
-    print -rn -- "$BRIDGE_TOKEN" | pbcopy
-    open "http://127.0.0.1:8765/connect#$BRIDGE_TOKEN"
-    echo "Autoapply is already running."
-    echo "The dashboard is opening and the private token is on your clipboard."
-    sleep 2
-    exit 0
+  HEALTH="$(curl -fsS -H "X-Autoapply-Token: $BRIDGE_TOKEN" \
+      "http://127.0.0.1:8765/health" 2>/dev/null || true)"
+  if [[ -n "$HEALTH" ]]; then
+    RUNNING_BUILD="$(printf '%s' "$HEALTH" | sed -n 's/.*"build": *"\([^"]*\)".*/\1/p')"
+    CHECKOUT_BUILD="$(".venv/bin/python" -c \
+      'from autoapply.openai_tailoring import BUILD; print(BUILD)' 2>/dev/null || true)"
+    if [[ -n "$RUNNING_BUILD" && "$RUNNING_BUILD" == "$CHECKOUT_BUILD" ]]; then
+      print -rn -- "$BRIDGE_TOKEN" | pbcopy
+      open "http://127.0.0.1:8765/connect#$BRIDGE_TOKEN"
+      echo "Autoapply is already running (build $RUNNING_BUILD)."
+      echo "The dashboard is opening and the private token is on your clipboard."
+      sleep 2
+      exit 0
+    fi
+    echo "The running helper is out of date:"
+    echo "  running  : ${RUNNING_BUILD:-unknown (a version from before this check)}"
+    echo "  on disk  : ${CHECKOUT_BUILD:-unknown}"
+    echo "Stopping it so this window serves the current code…"
+    # Only this project's bridge, and only if it is ours to stop.
+    pkill -f "python -m autoapply bridge" 2>/dev/null || true
+    pkill -f "autoapply/__main__.py bridge" 2>/dev/null || true
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+      curl -fsS -H "X-Autoapply-Token: $BRIDGE_TOKEN" \
+        "http://127.0.0.1:8765/health" >/dev/null 2>&1 || break
+      sleep 1
+    done
   fi
 fi
 
