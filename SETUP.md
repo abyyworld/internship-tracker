@@ -55,6 +55,31 @@ identical until something asks. The same check runs from the terminal with
 `python3 -m autoapply doctor --probe`, which also prints the endpoint, model and
 where the key is being read from.
 
+### When a fix does not seem to arrive
+
+The helper is started once and left running for weeks. The checkout moves on, a
+macOS login service quietly respawns the old process, and the editor keeps being
+answered by code that is no longer on disk — so a fix that is pushed, pulled and
+tested still does not reach the browser. `update-autoapply.command` does every
+step of that in one go and says which build ends up serving:
+
+```bash
+./update-autoapply.command                 # update the current branch
+./update-autoapply.command some-branch     # switch to that branch first
+```
+
+It reports the build answering right now, parks local changes with `git stash`
+(never discards them), fast-forwards, stops the bridge *including a login
+service that would otherwise restart the old copy*, and starts the helper from
+this folder. To check which code is serving without changing anything:
+
+```bash
+curl -s -H "X-Autoapply-Token: $(cat private/bridge.token)" \
+  http://127.0.0.1:8765/health
+```
+
+A reply with no `"build"` field is a helper from before August 2026.
+
 The editor's right-hand column ends with the bridge **build** — the timestamp of
 the code answering the page. A bridge is started once and left running for weeks
 while the checkout moves on, so a symptom can belong to a version no longer on
