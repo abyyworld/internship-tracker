@@ -361,7 +361,7 @@ footer a{color:var(--green)}
 </section>
 <section class="helper">
   <div><strong>⚡ Local AI CV Studio</strong><p>Every role opens your complete CV with reviewable AI suggestions. Accept, reject, directly edit, then export — nothing is silently removed.</p></div>
-  <a class="btn primary" href="http://127.0.0.1:8765/connect" target="_blank">Check local connection</a>
+  <a class="btn primary" href="http://127.0.0.1:8765/connect" target="_blank" title="Pairs this browser with the local CV helper, and reports which build, provider and model it is set up to use">Connect this browser</a>
 </section>
 <section class="filters" aria-label="Job filters">
   <div class="searchrow">
