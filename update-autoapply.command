@@ -57,30 +57,66 @@ ON_DISK="$(".venv/bin/python" -c \
 line "On disk : ${ON_DISK:-unknown (the virtual environment may need rebuilding)}"
 
 # ── Stop everything that could keep serving the old code ─────────────────────
-# A login service is the one that survives every other attempt: killing the
-# process just makes launchd start the same old copy again.
+# The helper is a background service, so updating it means restarting that
+# service — not holding a terminal window open. Anything else claiming port
+# 8765 is stopped first, including an older service pointing at a stale copy.
+LABEL="com.autoapply.bridge"
+DOMAIN="gui/$(id -u)"
+INSTALLED=""
 { launchctl list 2>/dev/null || true; } | awk '/autoapply|internship/ {print $3}' \
-  | while read -r LABEL; do
-  [ -z "$LABEL" ] && continue
-  line "Stopping: login service $LABEL"
-  launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null \
-    || launchctl unload "$HOME/Library/LaunchAgents/$LABEL.plist" 2>/dev/null \
-    || true
-done
-pkill -f "autoapply bridge" 2>/dev/null || true
-PIDS="$(lsof -ti "tcp:$PORT" 2>/dev/null || true)"
-if [[ -n "$PIDS" ]]; then
-  line "Stopping: process on port $PORT"
-  printf '%s\n' "$PIDS" | while read -r PID; do kill "$PID" 2>/dev/null || true; done
+  | while read -r OTHER; do
+      [ -z "$OTHER" ] && continue
+      [ "$OTHER" = "$LABEL" ] && continue
+      line "Stopping: the older login service $OTHER"
+      launchctl bootout "$DOMAIN/$OTHER" 2>/dev/null \
+        || launchctl unload "$HOME/Library/LaunchAgents/$OTHER.plist" 2>/dev/null || true
+    done
+if launchctl print "$DOMAIN/$LABEL" >/dev/null 2>&1; then
+  INSTALLED="yes"
 fi
-for _ in 1 2 3 4 5 6 7 8 9 10; do
-  lsof -ti "tcp:$PORT" >/dev/null 2>&1 || break
+
+if [[ -z "$INSTALLED" ]]; then
+  line ""
+  line "The CV editor is not installed as a background service yet, so it only"
+  line "runs while a window is open. Installing it now — after this you will not"
+  line "need a terminal again."
+  if [[ -x "./install-login-service.command" ]]; then
+    exec "./install-login-service.command"
+  fi
+  line "install-login-service.command is not in this folder, so the helper will"
+  line "run in this window instead. Keep it open."
+  exec "./start-autoapply.command"
+fi
+
+pkill -f "autoapply bridge" 2>/dev/null || true
+line "Restarting the background service with the code in this folder…"
+launchctl kickstart -k "$DOMAIN/$LABEL" 2>/dev/null || {
+  launchctl bootout "$DOMAIN/$LABEL" 2>/dev/null || true
+  launchctl bootstrap "$DOMAIN" "$HOME/Library/LaunchAgents/$LABEL.plist" 2>/dev/null || true
+}
+
+SERVING=""
+for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+  if [[ -f "private/bridge.token" ]]; then
+    HEALTH="$(curl -fsS -H "X-Autoapply-Token: $(<private/bridge.token)" \
+      "http://127.0.0.1:$PORT/health" 2>/dev/null || true)"
+    if [[ -n "$HEALTH" ]]; then
+      SERVING="$(printf '%s' "$HEALTH" | sed -n 's/.*"build": *"\([^"]*\)".*/\1/p')"
+      [[ -n "$SERVING" ]] && break
+    fi
+  fi
   sleep 1
 done
 
 line ""
-line "Starting the helper from this folder. Keep this window open."
-line "If a login service was stopped above, this window is now the helper —"
-line "closing it stops the CV editor until you run this again."
-line ""
-exec "./start-autoapply.command"
+if [[ -n "$SERVING" ]]; then
+  line "Serving : $SERVING   ← the editor is now answering from this folder"
+  BRIDGE_TOKEN="$(<private/bridge.token)"
+  printf '%s' "$BRIDGE_TOKEN" | pbcopy 2>/dev/null || true
+  open "http://127.0.0.1:$PORT/connect#$BRIDGE_TOKEN" 2>/dev/null || true
+  line "The editor keeps running without this window. You can close it."
+else
+  line "The service did not answer. Its output is in private/bridge.log:"
+  tail -n 12 "private/bridge.log" 2>/dev/null || true
+fi
+sleep 3
