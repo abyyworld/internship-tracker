@@ -40,6 +40,20 @@ fi
       rm -f "$AGENTS/$OLD.plist"
     done
 
+# ── Nothing else may hold the port the service is about to bind ─────────────
+# A helper started by hand in a Terminal window owns 8765 just as firmly as a
+# service does, and launchd would sit in a crash loop behind it.
+pkill -f "autoapply bridge" 2>/dev/null || true
+PIDS="$(lsof -ti "tcp:$PORT" 2>/dev/null || true)"
+if [[ -n "$PIDS" ]]; then
+  line "Stopping : the helper already running on port $PORT"
+  printf '%s\n' "$PIDS" | while read -r PID; do kill "$PID" 2>/dev/null || true; done
+fi
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+  lsof -ti "tcp:$PORT" >/dev/null 2>&1 || break
+  sleep 1
+done
+
 # ── The service itself ───────────────────────────────────────────────────────
 mkdir -p "$AGENTS" "private"
 # & < > are legal in a folder name and would otherwise break the XML.
@@ -102,7 +116,7 @@ if [[ -z "$BUILD" ]]; then
   tail -n 12 "private/bridge.log" 2>/dev/null || true
   line ""
   line "Press Return to close this window."
-  read -r _
+  read -t 300 -r _ 2>/dev/null || true
   exit 1
 fi
 
