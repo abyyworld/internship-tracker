@@ -42,6 +42,7 @@ from .cv_library import (
 from .editor_ui import EDITOR_PAGE
 from .fit import assess_all, read_postings
 from .jobs import jobs_from_tracker
+from .models import Job, digest
 from .openai_tailoring import (
     BUILD,
     PROVIDERS,
@@ -132,6 +133,64 @@ def _application_url(job: Any) -> str:
     if job.ats == "lever" and not url.endswith("/apply"):
         return f"{url}/apply"
     return job.url
+
+
+# A posting handed over from a page the applicant is reading. Generous enough
+# for a long advert, bounded so a runaway page cannot fill the database.
+MAX_ADOPTED_DESCRIPTION = 60000
+MAX_ADOPTED_FIELD = 200
+
+
+def _adopted_field(value: Any, limit: int = MAX_ADOPTED_FIELD) -> str:
+    return re.sub(r"\s+", " ", str(value or "")).strip()[:limit]
+
+
+def adopt_posting(home: Path, payload: dict[str, Any]) -> Any:
+    """Record a posting the tracker does not know, so it can be tailored for.
+
+    The watcher follows a few hundred boards. The job someone actually wants is
+    routinely on none of them — a company careers page, a lab's own site, a link
+    from a friend — and the editor refused to open for any of them. Anything
+    arriving here is text scraped from a page by the browser extension, so it is
+    normalised and bounded before it goes near the database, and it is marked as
+    having come from the browser rather than from a verified feed.
+    """
+    url = str(payload.get("url", "")).strip()
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.hostname or len(url) > 2048:
+        raise ValueError("Only absolute HTTPS job URLs can be tailored for")
+    role = _adopted_field(payload.get("role")) or "Role"
+    company = _adopted_field(payload.get("company")) or (
+        parsed.hostname.removeprefix("www.")
+    )
+    description = re.sub(
+        r"[ \t]+", " ", str(payload.get("description", ""))
+    ).strip()[:MAX_ADOPTED_DESCRIPTION]
+    job = Job(
+        id=f"browser-{digest(url)[:16]}",
+        company=company,
+        role=role,
+        url=url,
+        ats=_adopted_field(payload.get("ats"), 40) or "unknown",
+        location=_adopted_field(payload.get("location")),
+        description=description,
+        source_status="open",
+    )
+    with Store(database_path(home)) as store:
+        try:
+            existing = store.find_job_by_url(url)
+        except (KeyError, ValueError):
+            existing = None
+        if existing is not None:
+            # Already known — from the tracker or from an earlier visit. Keep
+            # its identity and only improve the description, so re-reading a page
+            # cannot rename a tracked job.
+            if description and description != existing.description:
+                store.update_description(existing.id, description)
+                existing.description = description
+            return existing
+        store.upsert_job(job)
+    return job
 
 
 def bridge_token_path(home: Path) -> Path:
@@ -620,6 +679,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
             "/api/settings/model",
             "/api/settings/test",
             "/api/settings/endpoint",
+            "/api/adopt",
             "/api/suggest",
             "/api/answers",
             "/api/draft",
@@ -664,6 +724,31 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     offered=self._models(),
                 )
                 self._json(200, {"ok": True, "model": chosen})
+            except (OSError, RuntimeError, ValueError) as exc:
+                self._json(422, {"error": str(exc)})
+            return
+
+        # A posting the tracker has never seen, handed over by the browser
+        # extension from whatever page the applicant is reading. The tracker
+        # watches a few hundred boards; the job someone actually wants is
+        # routinely on none of them, and until now that meant no editor at all.
+        if parsed_request.path == "/api/adopt":
+            try:
+                adopted = adopt_posting(self.server.home, payload)
+                self._json(200, {
+                    "ok": True,
+                    "job": {
+                        "id": adopted.id,
+                        "company": adopted.company,
+                        "role": adopted.role,
+                        "url": adopted.url,
+                        "description_chars": len(adopted.description),
+                    },
+                    "editor_url": (
+                        f"http://127.0.0.1:{self.server.server_address[1]}"
+                        f"/editor?url={quote(adopted.url, safe='')}"
+                    ),
+                })
             except (OSError, RuntimeError, ValueError) as exc:
                 self._json(422, {"error": str(exc)})
             return

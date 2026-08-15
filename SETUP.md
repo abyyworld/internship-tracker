@@ -125,6 +125,17 @@ configured provider for a small patch set. Accept, reject, or directly edit each
 then press **Export accepted PDF**. Simplify can autofill the employer form;
 choose the newly downloaded PDF as the resume and review the whole application.
 
+### Tailoring for a posting the tracker has never seen
+
+The watcher follows a few hundred boards, and the job you actually want is
+routinely on none of them — a company careers page, a lab's own site, a link
+from a friend. Install `tailor-anywhere.user.js` in Tampermonkey and a small
+**✦ Tailor my CV** button appears on any page that reads like a job advert
+(always available from the Tampermonkey menu, whatever the page). It reads the
+posting — schema.org JobPosting where the site publishes it, the densest block
+of advert prose otherwise — hands it to the helper on `127.0.0.1`, and opens the
+same editor for it. The page text goes to the local helper and nowhere else.
+
 The bridge does not control or impersonate Simplify, fill legal answers, or click
 Submit. The optional Tampermonkey userscript still enhances links in the GitHub
 README, but the dashboard's native CV button does not depend on Tampermonkey.
