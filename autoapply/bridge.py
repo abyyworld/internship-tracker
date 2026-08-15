@@ -431,8 +431,20 @@ class BridgeHandler(BaseHTTPRequestHandler):
             if not self._authorized():
                 self._json(401, {"error": "Bridge token required"})
                 return
+            # Behind the token, so this can say what is actually configured.
+            # "Is the helper running" was never the question people had: it was
+            # which code is running, which provider it will call, and whether
+            # that provider has a key.
+            base = load_base_url(self.server.home)
             self._json(200, {
-                "ok": True, "service": "autoapply-cv-bridge", "build": BUILD,
+                "ok": True,
+                "service": "autoapply-cv-bridge",
+                "build": BUILD,
+                "provider": endpoint_name(base),
+                "endpoint": base,
+                "model": load_model(self.server.home, base),
+                "key": key_source(self.server.home, base),
+                "key_configured": key_configured(self.server.home, base),
             })
             return
         if parsed_request.path == "/connect":
@@ -1029,24 +1041,58 @@ CONNECT_PAGE = f"""<!doctype html><html><head><meta charset="utf-8">
 <title>Connect local CV helper</title><style>{PAGE_STYLE}</style></head>
 <body><main><div class="eyebrow">Private local helper</div>
 <h1 id="title">Connecting…</h1><p id="message">The token stays in this browser on
-127.0.0.1 and is never sent to GitHub.</p><div class="actions">
+127.0.0.1 and is never sent to GitHub.</p>
+<pre id="status" style="display:none;white-space:pre-wrap;margin:16px 0 0;padding:11px 13px;
+border-radius:11px;background:#0c1714;border:1px solid var(--line);color:var(--muted);
+font-size:12px;line-height:1.6"></pre><div class="actions">
 <a class="secondary" href="https://abyyworld.github.io/internship-tracker/">Open dashboard</a>
 </div></main><script>
 const fragmentToken=decodeURIComponent(location.hash.slice(1));
 const token=fragmentToken||localStorage.getItem("autoapply_bridge_token_v1")||"";
+const title=document.getElementById("title");
+const message=document.getElementById("message");
 if(token.length>=32){{
   if(fragmentToken) localStorage.setItem("autoapply_bridge_token_v1",token);
   history.replaceState(null,"","/connect");
-  document.getElementById("title").textContent="Connected ✓";
-  document.getElementById("title").className="ok";
-  document.getElementById("message").textContent=
-    "Every dashboard job can now generate and download a private tailored CV. Opening Role Radar…";
-  setTimeout(()=>location.replace("https://abyyworld.github.io/internship-tracker/"),900);
+  title.textContent="Connected ✓";title.className="ok";
+  // Arriving with a token in the fragment is the launcher pairing this browser,
+  // so it goes straight on to the dashboard. Arriving without one is a person
+  // asking what the state is — and bouncing them away was the whole reason this
+  // page looked pointless. They get the answer instead.
+  if(fragmentToken){{
+    message.textContent=
+      "Every dashboard job can now generate and download a private tailored CV. Opening Role Radar…";
+    setTimeout(()=>location.replace("https://abyyworld.github.io/internship-tracker/"),900);
+  }}else{{
+    message.textContent="This browser is paired with the local helper. What it is set up to do:";
+    fetch("/health",{{headers:{{"X-Autoapply-Token":token}}}})
+      .then(r=>r.json())
+      .then(h=>{{
+        const box=document.getElementById("status");
+        box.textContent=[
+          "build     "+(h.build||"unknown"),
+          "provider  "+(h.provider||"?")+"  "+(h.endpoint||""),
+          "model     "+(h.model||"?"),
+          "key       "+(h.key||"?"),
+        ].join("\\n");
+        box.style.display="";
+        if(!h.key_configured){{
+          message.textContent="This browser is paired, but the provider below has no key yet. "
+            +"Open any job's CV editor and paste one into the key card.";
+        }}
+      }})
+      .catch(()=>{{
+        title.textContent="Helper not answering";title.className="error";
+        message.textContent="The browser is paired, but nothing is listening on 127.0.0.1:8765. "
+          +"Double-click start-autoapply.command in the project folder.";
+      }});
+  }}
 }}else{{
-  document.getElementById("title").textContent="Token missing";
-  document.getElementById("title").className="error";
-  document.getElementById("message").textContent=
-    "Open start-autoapply.command again to connect this browser.";
+  title.textContent="This browser is not paired yet";
+  title.className="error";
+  message.textContent=
+    "Double-click start-autoapply.command in the project folder. It pairs this "
+    +"browser with the local helper, and every job's CV editor works from then on.";
 }}
 </script></body></html>"""
 
