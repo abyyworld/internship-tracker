@@ -8,7 +8,47 @@
 
 set -euo pipefail
 
-PROJECT_DIR="${0:A:h}"
+# Where the project actually is. Normally this file sits in it — but the whole
+# point of a one-file installer is that it can be downloaded on its own, from a
+# browser, by someone who does not want a terminal at all. Downloaded, it lands
+# in ~/Downloads, so it goes looking for the checkout rather than installing a
+# service that points at the Downloads folder.
+find_project() {
+  local here="${0:A:h}"
+  local candidate
+  if [[ -f "$here/autoapply/bridge.py" ]]; then
+    print -r -- "$here"
+    return 0
+  fi
+  for candidate in \
+    "$HOME/Desktop/other projects/internship watcher" \
+    "$HOME/Desktop/internship watcher" \
+    "$HOME/Documents/internship watcher" \
+    "$HOME/internship-tracker" \
+    "$HOME/Desktop/internship-tracker"; do
+    if [[ -f "$candidate/autoapply/bridge.py" ]]; then
+      print -r -- "$candidate"
+      return 0
+    fi
+  done
+  candidate="$(find "$HOME/Desktop" "$HOME/Documents" "$HOME/Developer" "$HOME/Projects" \
+    -maxdepth 4 -type f -path "*/autoapply/bridge.py" 2>/dev/null | head -1)"
+  if [[ -n "$candidate" ]]; then
+    print -r -- "${candidate:h:h}"
+    return 0
+  fi
+  return 1
+}
+
+if ! PROJECT_DIR="$(find_project)"; then
+  printf '%s\n' ""
+  printf '%s\n' "Could not find the internship-watcher folder on this Mac."
+  printf '%s\n' "Move this file into that folder and open it again."
+  printf '%s\n' ""
+  printf '%s\n' "Press Return to close this window."
+  read -t 300 -r _ 2>/dev/null || true
+  exit 1
+fi
 cd "$PROJECT_DIR"
 LABEL="com.autoapply.bridge"
 AGENTS="$HOME/Library/LaunchAgents"
@@ -20,6 +60,30 @@ line() { printf '%s\n' "$1"; }
 line ""
 line "Installing the CV editor as a background service"
 line "Project : $PROJECT_DIR"
+
+# ── The code it will run ─────────────────────────────────────────────────────
+# A service pointed at a stale checkout is the failure this whole file exists to
+# end, so the checkout is brought up to date first. Nothing is discarded: local
+# changes are parked with git stash and the command to restore them is printed.
+if [[ -d ".git" ]] && command -v git >/dev/null 2>&1; then
+  if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
+    git stash push -u -m "autoapply install $(date +%Y-%m-%dT%H:%M:%S)" >/dev/null 2>&1 \
+      && line "Parked  : local changes stashed — restore them with  git stash pop"
+  fi
+  if git fetch origin --quiet 2>/dev/null; then
+    BEFORE="$(git rev-parse --short HEAD 2>/dev/null || true)"
+    git checkout -B main origin/main --quiet 2>/dev/null \
+      || git pull --ff-only --quiet 2>/dev/null || true
+    AFTER="$(git rev-parse --short HEAD 2>/dev/null || true)"
+    if [[ "$BEFORE" != "$AFTER" ]]; then
+      line "Updated : $BEFORE → $AFTER"
+    else
+      line "Code    : already current ($AFTER)"
+    fi
+  else
+    line "Offline : could not reach GitHub, installing the code already here"
+  fi
+fi
 
 # ── The environment it will run in ───────────────────────────────────────────
 if [[ ! -x ".venv/bin/python" ]] || ! ".venv/bin/python" -c "import yaml, requests" 2>/dev/null; then
