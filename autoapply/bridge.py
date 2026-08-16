@@ -42,22 +42,31 @@ from .cv_library import (
 from .editor_ui import EDITOR_PAGE
 from .fit import assess_all, read_postings
 from .jobs import jobs_from_tracker
+from .models import Job, digest
 from .openai_tailoring import (
-    OPENAI_MODEL_DEFAULT,
+    BUILD,
     PROVIDERS,
-    available_models,
     models_for,
     find_questions,
     is_local,
+    key_configured,
+    key_hint,
+    key_path,
+    key_source,
+    endpoint_name,
+    endpoint_problem,
     load_base_url,
     load_key_for,
     load_model,
+    migrate_legacy_key,
+    migrate_legacy_model,
+    probe,
+    provider_id,
     save_base_url,
+    save_key,
     save_model,
+    seeded_models,
     generate_suggestions,
-    load_openai_key,
-    openai_key_configured,
-    save_openai_key,
     write_answers,
 )
 from .resume import render_resume
@@ -124,6 +133,64 @@ def _application_url(job: Any) -> str:
     if job.ats == "lever" and not url.endswith("/apply"):
         return f"{url}/apply"
     return job.url
+
+
+# A posting handed over from a page the applicant is reading. Generous enough
+# for a long advert, bounded so a runaway page cannot fill the database.
+MAX_ADOPTED_DESCRIPTION = 60000
+MAX_ADOPTED_FIELD = 200
+
+
+def _adopted_field(value: Any, limit: int = MAX_ADOPTED_FIELD) -> str:
+    return re.sub(r"\s+", " ", str(value or "")).strip()[:limit]
+
+
+def adopt_posting(home: Path, payload: dict[str, Any]) -> Any:
+    """Record a posting the tracker does not know, so it can be tailored for.
+
+    The watcher follows a few hundred boards. The job someone actually wants is
+    routinely on none of them — a company careers page, a lab's own site, a link
+    from a friend — and the editor refused to open for any of them. Anything
+    arriving here is text scraped from a page by the browser extension, so it is
+    normalised and bounded before it goes near the database, and it is marked as
+    having come from the browser rather than from a verified feed.
+    """
+    url = str(payload.get("url", "")).strip()
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.hostname or len(url) > 2048:
+        raise ValueError("Only absolute HTTPS job URLs can be tailored for")
+    role = _adopted_field(payload.get("role")) or "Role"
+    company = _adopted_field(payload.get("company")) or (
+        parsed.hostname.removeprefix("www.")
+    )
+    description = re.sub(
+        r"[ \t]+", " ", str(payload.get("description", ""))
+    ).strip()[:MAX_ADOPTED_DESCRIPTION]
+    job = Job(
+        id=f"browser-{digest(url)[:16]}",
+        company=company,
+        role=role,
+        url=url,
+        ats=_adopted_field(payload.get("ats"), 40) or "unknown",
+        location=_adopted_field(payload.get("location")),
+        description=description,
+        source_status="open",
+    )
+    with Store(database_path(home)) as store:
+        try:
+            existing = store.find_job_by_url(url)
+        except (KeyError, ValueError):
+            existing = None
+        if existing is not None:
+            # Already known — from the tracker or from an earlier visit. Keep
+            # its identity and only improve the description, so re-reading a page
+            # cannot rename a tracked job.
+            if description and description != existing.description:
+                store.update_description(existing.id, description)
+                existing.description = description
+            return existing
+        store.upsert_job(job)
+    return job
 
 
 def bridge_token_path(home: Path) -> Path:
@@ -350,7 +417,41 @@ class BridgeHandler(BaseHTTPRequestHandler):
         try:
             return models_for(base, load_key_for(self.server.home))[:16]
         except (FileNotFoundError, RuntimeError):
-            return []
+            # No key yet, so the endpoint cannot be asked. Its own
+            # recommendations still populate the picker.
+            return seeded_models(base)
+
+    def _provider(self) -> dict[str, Any]:
+        """Who is being called, and whether this provider's key is on disk.
+
+        The key card reads this. Everything in it used to be hard-coded to
+        OpenAI, so choosing Google left the card reporting an OpenAI key
+        configured — true, and useless, because Google will not accept it.
+        """
+        base = load_base_url(self.server.home)
+        identifier = provider_id(base)
+        return {
+            "id": identifier,
+            "label": endpoint_name(base),
+            "base_url": base,
+            "local": is_local(base),
+            "configured": key_configured(self.server.home, base),
+            "key_hint": key_hint(base),
+            # Shown so the file can be found, replaced, or deleted by hand.
+            "key_file": str(key_path(self.server.home, base)),
+            "key_env": list(PROVIDERS.get(identifier, {}).get(
+                "key_env", ["OPENAI_API_KEY"]
+            )),
+            "key_page": str(PROVIDERS.get(identifier, {}).get("key_page", "")),
+            "key_source": key_source(self.server.home, base),
+            # When the code answering this page was written. A bridge left
+            # running for weeks serves an editor built from code that may be
+            # many commits behind the checkout, and every symptom then belongs
+            # to code that is no longer on disk.
+            "build": BUILD,
+            # Said out loud rather than silently falling back to OpenAI.
+            "problem": endpoint_problem(self.server.home),
+        }
 
     def _person_name(self) -> str:
         try:
@@ -389,7 +490,21 @@ class BridgeHandler(BaseHTTPRequestHandler):
             if not self._authorized():
                 self._json(401, {"error": "Bridge token required"})
                 return
-            self._json(200, {"ok": True, "service": "autoapply-cv-bridge"})
+            # Behind the token, so this can say what is actually configured.
+            # "Is the helper running" was never the question people had: it was
+            # which code is running, which provider it will call, and whether
+            # that provider has a key.
+            base = load_base_url(self.server.home)
+            self._json(200, {
+                "ok": True,
+                "service": "autoapply-cv-bridge",
+                "build": BUILD,
+                "provider": endpoint_name(base),
+                "endpoint": base,
+                "model": load_model(self.server.home, base),
+                "key": key_source(self.server.home, base),
+                "key_configured": key_configured(self.server.home, base),
+            })
             return
         if parsed_request.path == "/connect":
             self._html(200, CONNECT_PAGE)
@@ -417,6 +532,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 job = self._find_job(url)
                 document, _profile = self._document(cv_id)
                 draft = load_draft(self.server.home, job.id, cv_id)
+                base = load_base_url(self.server.home)
                 self._json(
                     200,
                     {
@@ -437,12 +553,10 @@ class BridgeHandler(BaseHTTPRequestHandler):
                         # Pre-fills the "save as" box so the CV is named after
                         # the job by default; the user edits it before saving.
                         "suggested_cv_name": _suggested_cv_name(job),
-                        "ai_configured": openai_key_configured(
-                            self.server.home
-                        ),
-                        "model": load_model(self.server.home),
+                        "provider": self._provider(),
+                        "model": load_model(self.server.home, base),
                         "models": self._models(),
-                        "base_url": load_base_url(self.server.home),
+                        "base_url": base,
                         "providers": [
                             {"id": key, **value} for key, value in PROVIDERS.items()
                         ],
@@ -560,9 +674,12 @@ class BridgeHandler(BaseHTTPRequestHandler):
         parsed_request = urlparse(self.path)
         if parsed_request.path not in {
             "/prepare",
+            "/api/settings/key",
             "/api/settings/openai",
             "/api/settings/model",
+            "/api/settings/test",
             "/api/settings/endpoint",
+            "/api/adopt",
             "/api/suggest",
             "/api/answers",
             "/api/draft",
@@ -585,9 +702,15 @@ class BridgeHandler(BaseHTTPRequestHandler):
         if parsed_request.path == "/api/settings/endpoint":
             try:
                 url = save_base_url(self.server.home, payload.get("base_url", ""))
+                # The new provider's own key state and its own model travel with
+                # the answer: switching provider changes which key and which
+                # model are in play, and the cards have to stop claiming the
+                # previous provider's.
                 self._json(200, {
                     "ok": True, "base_url": url,
                     "models": self._models(), "local": is_local(url),
+                    "provider": self._provider(),
+                    "model": load_model(self.server.home, url),
                 })
             except (OSError, RuntimeError, ValueError) as exc:
                 self._json(422, {"error": str(exc)})
@@ -595,19 +718,82 @@ class BridgeHandler(BaseHTTPRequestHandler):
 
         if parsed_request.path == "/api/settings/model":
             try:
-                chosen = save_model(self.server.home, payload.get("model", ""))
+                base = load_base_url(self.server.home)
+                chosen = save_model(
+                    self.server.home, str(payload.get("model", "")), base,
+                    offered=self._models(),
+                )
                 self._json(200, {"ok": True, "model": chosen})
             except (OSError, RuntimeError, ValueError) as exc:
                 self._json(422, {"error": str(exc)})
             return
 
-        if parsed_request.path == "/api/settings/openai":
+        # A posting the tracker has never seen, handed over by the browser
+        # extension from whatever page the applicant is reading. The tracker
+        # watches a few hundred boards; the job someone actually wants is
+        # routinely on none of them, and until now that meant no editor at all.
+        if parsed_request.path == "/api/adopt":
             try:
-                save_openai_key(
-                    self.server.home,
-                    str(payload.get("api_key", "")),
+                adopted = adopt_posting(self.server.home, payload)
+                self._json(200, {
+                    "ok": True,
+                    "job": {
+                        "id": adopted.id,
+                        "company": adopted.company,
+                        "role": adopted.role,
+                        "url": adopted.url,
+                        "description_chars": len(adopted.description),
+                    },
+                    "editor_url": (
+                        f"http://127.0.0.1:{self.server.server_address[1]}"
+                        f"/editor?url={quote(adopted.url, safe='')}"
+                    ),
+                })
+            except (OSError, RuntimeError, ValueError) as exc:
+                self._json(422, {"error": str(exc)})
+            return
+
+        # One cheap round trip, reported exactly as it came back. This is the
+        # only way to tell a rejected key from a working one without spending a
+        # whole tailoring on it.
+        if parsed_request.path == "/api/settings/test":
+            base = load_base_url(self.server.home)
+            try:
+                key = load_key_for(self.server.home)
+            except (FileNotFoundError, RuntimeError) as exc:
+                self._json(200, {
+                    "ok": False,
+                    "report": {
+                        "provider": endpoint_name(base),
+                        "endpoint": f"{base}/chat/completions",
+                        "model": load_model(self.server.home, base),
+                        "ok": False, "status": 0, "dropped": [], "models": [],
+                        "problem": str(exc),
+                    },
+                })
+                return
+            report = probe(base, key, load_model(self.server.home, base))
+            self._json(200, {"ok": bool(report.get("ok")), "report": report})
+            return
+
+        # The key is stored against the provider currently selected, never a
+        # single shared file. `/api/settings/openai` is the name this route had
+        # when OpenAI was the only endpoint, kept so an editor page left open
+        # across the change still saves.
+        if parsed_request.path in {"/api/settings/key", "/api/settings/openai"}:
+            try:
+                save_key(self.server.home, str(payload.get("api_key", "")))
+                self._json(
+                    200,
+                    {
+                        "ok": True,
+                        "configured": True,
+                        "provider": self._provider(),
+                        # A key is what the model listing was waiting for, so
+                        # the picker fills in without a second round trip.
+                        "models": self._models(),
+                    },
                 )
-                self._json(200, {"ok": True, "configured": True})
             except (OSError, RuntimeError, ValueError) as exc:
                 self._json(422, {"error": str(exc)})
             return
@@ -641,6 +827,10 @@ class BridgeHandler(BaseHTTPRequestHandler):
             url = self._job_url(payload.get("url"))
             cv_id = safe_cv_id(payload.get("cv_id", "")) or MASTER_CV_ID
             job = self._find_job(url)
+            # The endpoint every model call on this path belongs to. Read once,
+            # so the key, the model and the request can never disagree about
+            # which provider is being asked.
+            base = load_base_url(self.server.home)
 
             if parsed_request.path == "/api/suggest":
                 # Fetch at generation time so opening the editor is instant and
@@ -666,8 +856,8 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     api_key=load_key_for(self.server.home),
                     instructions=instructions,
                     mode=mode,
-                    model=load_model(self.server.home),
-                    base_url=load_base_url(self.server.home),
+                    model=load_model(self.server.home, base),
+                    base_url=base,
                 )
                 generated["cv_id"] = cv_id
                 saved = save_draft(
@@ -693,7 +883,6 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 document, _profile = self._document(cv_id)
                 draft = load_draft(self.server.home, job.id, cv_id)
                 key = load_key_for(self.server.home)
-                base = load_base_url(self.server.home)
                 questions = [
                     question
                     for question in (draft.get("questions") or [])
@@ -701,7 +890,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 ]
                 if not questions:
                     questions = find_questions(
-                        job, api_key=key, model=load_model(self.server.home),
+                        job, api_key=key, model=load_model(self.server.home, base),
                         base_url=base,
                     )
                 extra = str(payload.get("question", "")).strip()
@@ -716,7 +905,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 written = write_answers(
                     job, document, draft, questions,
                     api_key=key,
-                    model=load_model(self.server.home),
+                    model=load_model(self.server.home, base),
                     base_url=base,
                     instructions=str(payload.get("instructions", ""))[:2000],
                     want_cover_letter=bool(payload.get("cover_letter", True)),
@@ -865,6 +1054,8 @@ def run_bridge(home: Path, tracker: Path, port: int) -> None:
     if not 1024 <= port <= 65535:
         raise ValueError("Bridge port must be between 1024 and 65535")
     token = load_or_create_bridge_token(home)
+    filed = migrate_legacy_key(home)
+    refiled = migrate_legacy_model(home)
     with Store(database_path(home)) as store:
         imported = store.import_jobs(
             jobs_from_tracker(tracker, include_unknown=True)
@@ -875,11 +1066,28 @@ def run_bridge(home: Path, tracker: Path, port: int) -> None:
         tracker=tracker,
         token=token,
     )
+    base = load_base_url(home)
     print("")
     print("Autoapply CV bridge is ready")
     print(f"  address : http://127.0.0.1:{port}")
+    # The three settings that decide whether a rewrite can work at all. Printed
+    # because the terminal this runs in is the one place a person looks when the
+    # editor says a request was rejected, and it used to say nothing about them.
+    print(f"  provider: {endpoint_name(base)}  {base}")
+    print(f"  model   : {load_model(home, base)}")
+    print(f"  key     : {key_source(home, base)}")
+    print(f"  build   : {BUILD}")
     print(f"  jobs    : {imported}")
     print(f"  token   : {token}")
+    problem = endpoint_problem(home)
+    if problem:
+        print(f"  warning : {problem}")
+    if filed:
+        print(f"  keys    : moved a {endpoint_name(PROVIDERS[filed]['base'])} "
+              f"key out of openai.key into {filed}.key")
+    if refiled:
+        print(f"  models  : moved a {endpoint_name(PROVIDERS[refiled]['base'])} "
+              f"model out of openai-model.txt into {refiled}-model.txt")
     print("")
     print("Paste the token once into the GitHub CV + Apply userscript.")
     print("Keep this terminal open. Press Ctrl-C to stop.")
@@ -918,24 +1126,58 @@ CONNECT_PAGE = f"""<!doctype html><html><head><meta charset="utf-8">
 <title>Connect local CV helper</title><style>{PAGE_STYLE}</style></head>
 <body><main><div class="eyebrow">Private local helper</div>
 <h1 id="title">Connecting…</h1><p id="message">The token stays in this browser on
-127.0.0.1 and is never sent to GitHub.</p><div class="actions">
+127.0.0.1 and is never sent to GitHub.</p>
+<pre id="status" style="display:none;white-space:pre-wrap;margin:16px 0 0;padding:11px 13px;
+border-radius:11px;background:#0c1714;border:1px solid var(--line);color:var(--muted);
+font-size:12px;line-height:1.6"></pre><div class="actions">
 <a class="secondary" href="https://abyyworld.github.io/internship-tracker/">Open dashboard</a>
 </div></main><script>
 const fragmentToken=decodeURIComponent(location.hash.slice(1));
 const token=fragmentToken||localStorage.getItem("autoapply_bridge_token_v1")||"";
+const title=document.getElementById("title");
+const message=document.getElementById("message");
 if(token.length>=32){{
   if(fragmentToken) localStorage.setItem("autoapply_bridge_token_v1",token);
   history.replaceState(null,"","/connect");
-  document.getElementById("title").textContent="Connected ✓";
-  document.getElementById("title").className="ok";
-  document.getElementById("message").textContent=
-    "Every dashboard job can now generate and download a private tailored CV. Opening Role Radar…";
-  setTimeout(()=>location.replace("https://abyyworld.github.io/internship-tracker/"),900);
+  title.textContent="Connected ✓";title.className="ok";
+  // Arriving with a token in the fragment is the launcher pairing this browser,
+  // so it goes straight on to the dashboard. Arriving without one is a person
+  // asking what the state is — and bouncing them away was the whole reason this
+  // page looked pointless. They get the answer instead.
+  if(fragmentToken){{
+    message.textContent=
+      "Every dashboard job can now generate and download a private tailored CV. Opening Role Radar…";
+    setTimeout(()=>location.replace("https://abyyworld.github.io/internship-tracker/"),900);
+  }}else{{
+    message.textContent="This browser is paired with the local helper. What it is set up to do:";
+    fetch("/health",{{headers:{{"X-Autoapply-Token":token}}}})
+      .then(r=>r.json())
+      .then(h=>{{
+        const box=document.getElementById("status");
+        box.textContent=[
+          "build     "+(h.build||"unknown"),
+          "provider  "+(h.provider||"?")+"  "+(h.endpoint||""),
+          "model     "+(h.model||"?"),
+          "key       "+(h.key||"?"),
+        ].join("\\n");
+        box.style.display="";
+        if(!h.key_configured){{
+          message.textContent="This browser is paired, but the provider below has no key yet. "
+            +"Open any job's CV editor and paste one into the key card.";
+        }}
+      }})
+      .catch(()=>{{
+        title.textContent="Helper not answering";title.className="error";
+        message.textContent="The browser is paired, but nothing is listening on 127.0.0.1:8765. "
+          +"Double-click start-autoapply.command in the project folder.";
+      }});
+  }}
 }}else{{
-  document.getElementById("title").textContent="Token missing";
-  document.getElementById("title").className="error";
-  document.getElementById("message").textContent=
-    "Open start-autoapply.command again to connect this browser.";
+  title.textContent="This browser is not paired yet";
+  title.className="error";
+  message.textContent=
+    "Double-click start-autoapply.command in the project folder. It pairs this "
+    +"browser with the local helper, and every job's CV editor works from then on.";
 }}
 </script></body></html>"""
 
