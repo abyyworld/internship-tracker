@@ -1,5 +1,7 @@
 import json
 import unittest
+
+from autoapply.ai_tailoring import _named_tokens
 from unittest.mock import Mock, patch
 
 from autoapply.ai_tailoring import rewrite_with_ollama
@@ -106,6 +108,29 @@ class LocalAiTailoringTests(unittest.TestCase):
                 model="model",
                 endpoint="https://example.com",
             )
+
+
+class NamedTokenTests(unittest.TestCase):
+    """What counts as a name the CV must already evidence."""
+
+    def test_the_first_person_pronoun_is_not_a_claim(self):
+        # A cover letter is written in the first person by instruction, and "I"
+        # is upper-case, so every letter came back flagged: "The cover letter
+        # names 'I', which your CV does not".
+        self.assertEqual(_named_tokens("I built a controller"), set())
+        self.assertEqual(_named_tokens("A controller was built"), set())
+
+    def test_single_letter_technologies_are_still_checked(self):
+        # C and R name real things a CV either evidences or does not.
+        self.assertIn("c", _named_tokens("Wrote the solver in C"))
+        self.assertIn("r", _named_tokens("Analysed the traces in R"))
+
+    def test_acronyms_and_versioned_names_are_still_caught(self):
+        # "C++" tokenises to its leading letter, which is still a name that has
+        # to be evidenced.
+        found = _named_tokens("Used ROS 2 with PyTorch and C++ on CUDA 12")
+        for token in ("ros", "pytorch", "c", "cuda"):
+            self.assertIn(token, found)
 
 
 if __name__ == "__main__":

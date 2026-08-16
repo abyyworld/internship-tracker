@@ -298,7 +298,7 @@ border-radius:13px;font-size:13px}
       <div class="eyebrow">Instructions</div>
       <textarea class="instruction" id="instructions" maxlength="4000"
         placeholder="Optional: e.g. Lead with the robot-learning infrastructure work. Keep my academic tone."></textarea>
-      <p class="hint">Sends this posting and your CV to OpenAI through your own key — never via GitHub.</p>
+      <p class="hint" id="sendNote">Sends this posting and your CV to the provider below through your own key — never via GitHub.</p>
       <div class="modes">
         <button data-mode="targeted">Touch up</button>
         <button data-mode="full" class="on">Full rewrite</button>
@@ -364,6 +364,21 @@ border-radius:13px;font-size:13px}
       never leaves the machine.</p>
       <select id="providerSelect" class="key" style="margin-top:6px"></select>
       <p class="hint" id="providerNote"></p>
+      <details id="customEndpoint" style="margin-top:6px">
+        <summary class="hint" style="cursor:pointer">Use my own endpoint</summary>
+        <p class="hint" style="margin-top:6px">Any OpenAI-compatible base URL —
+        LM Studio, llama.cpp, a company proxy. HTTPS, or a local address.</p>
+        <input class="key" id="customBase" autocomplete="off" spellcheck="false"
+          placeholder="https://… or http://127.0.0.1:1234/v1" style="margin:6px 0">
+        <button class="secondary" id="saveCustomBase" style="width:100%">Use this endpoint</button>
+      </details>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="secondary" id="testProvider" style="flex:1">Test this provider</button>
+      </div>
+      <p class="hint" id="testNote"></p>
+      <pre id="testReport" style="display:none;white-space:pre-wrap;word-break:break-word;
+        margin:8px 0 0;padding:9px 10px;border-radius:9px;background:#0c1714;
+        border:1px solid var(--line);font-size:11.5px;line-height:1.45;max-height:230px;overflow:auto"></pre>
     </div>
 
     <div class="card" id="modelCard">
@@ -376,12 +391,14 @@ border-radius:13px;font-size:13px}
     </div>
 
     <div class="card" id="keyCard">
-      <div class="eyebrow">OpenAI key</div>
+      <div class="eyebrow" id="keyTitle">API key</div>
       <p class="muted" style="font-size:12px" id="keyStatus">Checking…</p>
-      <input class="key" id="keyInput" type="password" autocomplete="off" placeholder="sk-…" style="margin:8px 0">
+      <input class="key" id="keyInput" type="password" autocomplete="off" style="margin:8px 0">
       <button class="secondary" id="saveKey" style="width:100%">Save key locally</button>
-      <p class="hint">Stored in <code>private/openai.key</code> with mode 0600. Never enters GitHub.</p>
+      <p class="hint" id="keyHint"></p>
     </div>
+
+    <p class="hint" id="buildNote" style="margin:2px 4px 0"></p>
 
   </div>
 </aside>
@@ -1221,8 +1238,17 @@ function renderCvPicker(){
   }
 }
 async function saveKey(){
-  try{await api("/api/settings/openai",{method:"POST",body:JSON.stringify({api_key:$("keyInput").value})});
-    $("keyInput").value="";state.ai_configured=true;renderKey();toast("OpenAI key saved privately")}
+  try{
+    const r=await api("/api/settings/key",{method:"POST",body:JSON.stringify({api_key:$("keyInput").value})});
+    $("keyInput").value="";
+    // The key belongs to the provider selected now, so the card's state comes
+    // back from the bridge rather than being assumed here. The endpoint can be
+    // asked what it runs as soon as it has a key, so the picker fills in too.
+    if(r.provider)state.provider=r.provider;
+    if((r.models||[]).length)state.models=r.models;
+    renderProvider();renderKey();renderModel();
+    toast(`${(state.provider||{}).label||"API"} key saved privately`);
+  }
   catch(err){notice(err.message,"error")}
 }
 function renderProvider(){
@@ -1238,28 +1264,92 @@ function renderProvider(){
     const o=document.createElement("option");o.value=state.base_url;
     o.textContent="Custom — "+state.base_url;o.selected=true;sel.append(o);
   }
-  const local=/^http:\/\/(127\.0\.0\.1|localhost)/.test(state.base_url||"");
+  const provider=state.provider||{};
+  const local=provider.local;
+  const who=provider.label||"this provider";
   $("providerNote").textContent=local
     ?"Running locally. No key needed, no usage limit, nothing sent off this machine."
-    :"Needs a key for this provider below. Free tiers exist for Groq, Google AI Studio, OpenRouter and GitHub Models.";
+    :(provider.configured
+      ?`Using your ${who} key. Free tiers exist for Groq, Google AI Studio, OpenRouter and GitHub Models.`
+      :`Needs a key for ${who} below — each provider keeps its own. Free tiers exist for Groq, Google AI Studio, OpenRouter and GitHub Models.`);
   $("keyCard").style.display=local?"none":"";
+  $("sendNote").textContent=local
+    ?"Runs on this machine. Nothing is sent to any provider, and nothing to GitHub."
+    :`Sends this posting and your CV to ${who} through your own key — never via GitHub.`;
 }
 async function saveProvider(url){
   try{
     const r=await api("/api/settings/endpoint",{method:"POST",
       body:JSON.stringify({base_url:url})});
     state.base_url=r.base_url;state.models=r.models||[];
+    if(r.provider)state.provider=r.provider;
+    // The model belongs to the provider that serves it, so it comes back with
+    // the switch. Keeping the previous provider's model is how a Gemini id got
+    // posted to OpenAI and came back as a bad request with no stated cause.
+    if(r.model)state.model=r.model;
     if(state.models.length&&!state.models.includes(state.model)){
       await saveModel(state.models[0]);
     }
-    renderProvider();renderModel();toast("Provider set");
+    // The key card follows the provider too: the previous provider's key is
+    // still on disk, but it is not this provider's key and is never sent to it.
+    hideTestReport();
+    renderProvider();renderModel();renderKey();
+    toast(state.provider&&state.provider.configured===false&&!state.provider.local
+      ?`Provider set — paste a ${state.provider.label} key`:"Provider set");
   }catch(err){notice(err.message,"error")}
+}
+function hideTestReport(){
+  $("testReport").style.display="none";$("testReport").textContent="";
+  $("testNote").textContent="";
+}
+async function saveCustomBase(){
+  const url=$("customBase").value.trim();
+  if(!url){notice("Paste the base URL of an OpenAI-compatible endpoint.","error");return}
+  await saveProvider(url);
+  $("customBase").value="";
+}
+// One cheap round trip, reported exactly as it came back. Until this existed a
+// rejected key and a working key looked identical, because a failed model
+// listing falls back to the seeded recommendations without saying so.
+async function testProvider(){
+  const button=$("testProvider");button.disabled=true;
+  const before=button.textContent;button.textContent="Testing…";
+  $("testNote").textContent="";
+  try{
+    const r=await api("/api/settings/test",{method:"POST",body:JSON.stringify({})});
+    const report=r.report||{};
+    const lines=[
+      `provider  ${report.provider||"?"}`,
+      `endpoint  ${report.endpoint||"?"}`,
+      `model     ${report.model||"?"}`,
+      `status    ${report.status||"no answer"}${report.ok?"  ok":""}`,
+    ];
+    if((report.dropped||[]).length)
+      lines.push(`dropped   ${report.dropped.join(", ")} (this endpoint refused them)`);
+    if(report.detail)lines.push(`it said   ${report.detail}`);
+    if(report.problem)lines.push(`problem   ${report.problem}`);
+    if(report.note)lines.push(`note      ${report.note}`);
+    if(report.listing_problem)lines.push(`listing   ${report.listing_problem}`);
+    if((report.models||[]).length)
+      lines.push(`offers    ${report.models.slice(0,12).join(", ")}`);
+    const box=$("testReport");box.textContent=lines.join("\\n");box.style.display="";
+    $("testNote").textContent=r.ok
+      ?"This provider answered. Rewriting will work."
+      :"This provider did not answer. The reason is above, in its own words.";
+    // A working test proves the key, and the listing it returned is better than
+    // the seeded guess the picker may be showing.
+    if((report.models||[]).length){state.models=report.models;renderModel()}
+  }catch(err){notice(err.message,"error")}
+  finally{button.disabled=false;button.textContent=before}
 }
 function renderModel(){
   const sel=$("modelSelect");sel.replaceChildren();
   const list=state.models||[];
   if(!list.length){
-    $("modelNote").textContent="Add your key to choose a model.";
+    const provider=state.provider||{};
+    $("modelNote").textContent=provider.local
+      ?"No model is running on this machine yet."
+      :`Add your ${provider.label?provider.label+" ":""}key to choose a model.`;
     sel.disabled=true;return;
   }
   sel.disabled=false;
@@ -1277,10 +1367,39 @@ async function saveModel(name){
   }catch(err){notice(err.message,"error")}
 }
 function renderKey(){
-  $("keyStatus").textContent=state.ai_configured?
-    "Configured ✓  Replace only if needed.":"Not configured — paste your OpenAI key.";
-  $("keyInput").placeholder=state.ai_configured?"Paste replacement key (sk-…)":"sk-…";
-  $("saveKey").textContent=state.ai_configured?"Replace key":"Save key locally";
+  // Every label here names the provider actually selected. Reading "OpenAI key
+  // — configured" while pointed at Google is how a key that cannot work looks
+  // like one that does.
+  const provider=state.provider||{};
+  const shape=provider.key_hint||"";
+  const named=provider.label?provider.label+" ":"";
+  $("keyTitle").textContent=`${provider.label||"API"} key`;
+  $("keyStatus").textContent=provider.configured
+    ?"Configured ✓  Replace only if needed."
+    :`Not configured — paste your ${named}key${shape?" ("+shape+")":""}.`;
+  $("keyInput").placeholder=provider.configured
+    ?"Paste replacement key"+(shape?" ("+shape+")":""):(shape||"Paste your key");
+  $("saveKey").textContent=provider.configured?"Replace key":"Save key locally";
+  const hint=$("keyHint");hint.replaceChildren();
+  hint.append(document.createTextNode("Stored in "));
+  const file=document.createElement("code");
+  file.textContent=provider.key_file||"";hint.append(file);
+  hint.append(document.createTextNode(
+    " with mode 0600. Never enters GitHub. Each provider keeps its own key"
+    +((provider.key_env||[]).length?`, and ${provider.key_env.join(" or ")} is used when no file is saved.`:".")));
+  if(provider.key_page){
+    hint.append(document.createTextNode(" "));
+    const link=document.createElement("a");
+    link.href=provider.key_page;link.target="_blank";link.rel="noopener";
+    link.textContent=`Get a ${provider.label} key`;hint.append(link);
+  }
+  // The build serving this page. A bridge is started once and left running for
+  // weeks, so the code answering a request can be many commits behind the
+  // checkout — and then every symptom belongs to code that is no longer there.
+  $("buildNote").textContent=
+    `Bridge build ${provider.build||"unknown"}`
+    +(provider.key_source?` · key from ${provider.key_source}`:"")
+    +(provider.problem?` · ${provider.problem}`:"");
 }
 async function exportPdf(){
   $("exportPdf").disabled=true;
@@ -1345,6 +1464,9 @@ $("newCvName").oninput=()=>{nameTouched=true};
 $("writeAnswers").onclick=writeAnswers;
 $("modelSelect").onchange=e=>saveModel(e.target.value);
 $("providerSelect").onchange=e=>saveProvider(e.target.value);
+$("testProvider").onclick=testProvider;
+$("saveCustomBase").onclick=saveCustomBase;
+$("customBase").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();saveCustomBase()}};
 $("tabs").onclick=e=>{if(e.target.dataset.tab)showTab(e.target.dataset.tab)};
 $("cvSelect").onchange=async e=>{
   try{await loadCv(e.target.value);toast("Switched CV")}

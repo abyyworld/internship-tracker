@@ -24,12 +24,14 @@ from __future__ import annotations
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
+from datetime import datetime, timezone
 import threading
 import json
 import os
 from pathlib import Path
 import re
 from typing import Any
+from urllib.parse import urlparse
 
 import requests
 
@@ -58,57 +60,175 @@ from .models import Job
 # Ollama, Groq, OpenRouter, Google's compatibility layer, and GitHub Models,
 # so pointing at a different base URL is the whole of switching provider —
 # including to a model running on this machine for nothing.
+#
+# `key_env` names the variables that provider's own documentation uses, and
+# nothing else: an OPENAI_API_KEY left in the shell was being sent to Google,
+# which answers it with an authentication error that names no cause.
+# `key_page` is where a key comes from, because a key card that reports one
+# missing and cannot say where to get one is half a message.
 OPENAI_BASE_DEFAULT = "https://api.openai.com/v1"
 PROVIDERS = {
     "openai": {"label": "OpenAI", "base": "https://api.openai.com/v1",
-               "key": "required", "models": []},
+               "key": "required", "models": [],
+               "key_env": ["OPENAI_API_KEY"],
+               "key_page": "https://platform.openai.com/api-keys"},
     "ollama": {"label": "Ollama (on this machine, free)",
-               "base": "http://127.0.0.1:11434/v1", "key": "none", "models": []},
+               "base": "http://127.0.0.1:11434/v1", "key": "none", "models": [],
+               "key_env": [], "key_page": ""},
     "groq": {"label": "Groq (free tier)", "base": "https://api.groq.com/openai/v1",
-             "key": "required", "models": []},
+             "key": "required", "models": [],
+             "key_env": ["GROQ_API_KEY"],
+             "key_page": "https://console.groq.com/keys"},
     "openrouter": {"label": "OpenRouter (has free models)",
                    "base": "https://openrouter.ai/api/v1", "key": "required",
-                   "models": []},
+                   "models": [],
+                   "key_env": ["OPENROUTER_API_KEY"],
+                   "key_page": "https://openrouter.ai/keys"},
     "cerebras": {"label": "Cerebras (free tier)", "base": "https://api.cerebras.ai/v1",
-                 "key": "required", "models": []},
+                 "key": "required", "models": [],
+                 "key_env": ["CEREBRAS_API_KEY"],
+                 "key_page": "https://cloud.cerebras.ai"},
     "together": {"label": "Together AI", "base": "https://api.together.xyz/v1",
-                 "key": "required", "models": []},
+                 "key": "required", "models": [],
+                 "key_env": ["TOGETHER_API_KEY"],
+                 "key_page": "https://api.together.xyz/settings/api-keys"},
+    # GitHub serves inference from models.github.ai; the older
+    # models.inference.ai.azure.com host is retired, and its bare model names
+    # (`gpt-4o`) are publisher-qualified here (`openai/gpt-4o`). Anyone who still
+    # needs the old host can enter it as their own endpoint.
     "github": {"label": "GitHub Models (free with a GitHub account)",
-               "base": "https://models.inference.ai.azure.com", "key": "required",
-               "models": []},
-    # Google serves an OpenAI-compatible chat endpoint but no model listing on
-    # it, so the picker is seeded rather than discovered.
+               "base": "https://models.github.ai/inference", "key": "required",
+               "models": ["openai/gpt-4.1", "openai/gpt-4o", "openai/gpt-4o-mini"],
+               "key_env": ["GITHUB_MODELS_TOKEN", "GITHUB_TOKEN"],
+               "key_page": "https://github.com/settings/tokens"},
+    # Google's listing prefixes every id with `models/`; `_model_id` strips it.
+    # These are recommendations for the picker before a key exists — once there
+    # is one, the endpoint's own listing supersedes them, which is the only
+    # honest source of what an account can currently run. Flash-Lite carries the
+    # largest free daily allowance of the three, Pro the smallest.
     "gemini": {"label": "Google AI Studio (free tier)",
                "base": "https://generativelanguage.googleapis.com/v1beta/openai",
                "key": "required",
-               "models": ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"]},
+               "models": ["gemini-2.5-flash", "gemini-2.5-flash-lite",
+                          "gemini-2.5-pro"],
+               "key_env": ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+               "key_page": "https://aistudio.google.com/apikey"},
 }
+# What each provider's keys look like. Used to tell someone they have pasted
+# one provider's key while another is selected — the failure this catches
+# otherwise surfaces as an authentication error from a provider they believe
+# they configured. OpenRouter is checked before OpenAI: its keys start `sk-or-`,
+# which is also a valid `sk-` prefix.
+KEY_SHAPES = {
+    "openrouter": ("sk-or-",),
+    "openai": ("sk-",),
+    "gemini": ("AIza",),
+    "groq": ("gsk_",),
+    "cerebras": ("csk-",),
+    "github": ("ghp_", "gho_", "github_pat_"),
+}
+
+
+# When the code answering a request was written. A bridge is started once and
+# left running for weeks, so a checkout can move many commits ahead of the
+# process serving the editor — and every symptom then belongs to code that is no
+# longer on disk. Taken from this file's own timestamp, so it needs no git and
+# names the code the interpreter actually loaded.
+try:
+    BUILD = datetime.fromtimestamp(
+        Path(__file__).stat().st_mtime, timezone.utc
+    ).strftime("%Y-%m-%d %H:%M UTC")
+except OSError:  # pragma: no cover - a source file that cannot be stat'ed
+    BUILD = "unknown"
 
 
 def base_url_path(home: Path) -> Path:
     return home / "ai-endpoint.txt"
 
 
+def key_source(home: Path, base_url: str | None = None) -> str:
+    """Where the key being used comes from, in words fit for a terminal."""
+    base = load_base_url(home) if base_url is None else base_url
+    if is_local(base):
+        return "not needed (runs on this machine)"
+    path = key_path(home, base)
+    if path.exists():
+        return str(path)
+    for name in PROVIDERS.get(provider_id(base), {}).get(
+        "key_env", ["OPENAI_API_KEY"]
+    ):
+        if os.environ.get(name, "").strip():
+            return f"${name} (from the environment)"
+    return "not configured"
+
+
+ENDPOINT_SCHEMES = ("https://", "http://127.0.0.1", "http://localhost")
+
+
 def load_base_url(home: Path) -> str:
     path = base_url_path(home)
     if path.exists() and not path.is_symlink():
         value = path.read_text(encoding="utf-8").strip()
-        if value.startswith(("https://", "http://127.0.0.1", "http://localhost")):
+        if value.startswith(ENDPOINT_SCHEMES):
             return value.rstrip("/")
     return OPENAI_BASE_DEFAULT
+
+
+def endpoint_problem(home: Path) -> str:
+    """Why the configured endpoint is being ignored, if it is.
+
+    `load_base_url` answers with OpenAI's endpoint when the file cannot be
+    trusted, because a bridge that will not start is worse than one calling the
+    default. Silently, though, that is indistinguishable from having chosen
+    OpenAI — so the reason is available to say out loud.
+    """
+    path = base_url_path(home)
+    if not path.exists():
+        return ""
+    if path.is_symlink():
+        return f"{path} is a symbolic link, so it is ignored"
+    try:
+        value = path.read_text(encoding="utf-8").strip()
+    except OSError as exc:
+        return f"{path} could not be read ({exc}), so it is ignored"
+    if not value:
+        return ""
+    if not value.startswith(ENDPOINT_SCHEMES):
+        return (
+            f"{path} holds {value[:80]!r}, which is not an HTTPS or local "
+            f"address, so it is ignored"
+        )
+    return ""
 
 
 def save_base_url(home: Path, value: str) -> str:
     url = str(value or "").strip().rstrip("/")
     # Remote providers must be HTTPS; a local runtime is exempt because
     # loopback traffic never leaves the machine.
-    if not url.startswith(("https://", "http://127.0.0.1", "http://localhost")):
+    if not url.startswith(ENDPOINT_SCHEMES):
         raise ValueError("The endpoint must be HTTPS, or a local address")
     if len(url) > 200:
         raise ValueError("That endpoint URL is too long")
+    if urlparse(url).hostname in (None, ""):
+        raise ValueError("That endpoint URL has no host")
     home.mkdir(parents=True, exist_ok=True, mode=0o700)
     path = base_url_path(home)
-    path.write_text(url + "\n", encoding="utf-8")
+    # Written the way the key is: a symlink here would be followed on save and
+    # then refused on load, which reverts the endpoint to OpenAI while the editor
+    # reports the provider that was chosen.
+    if path.is_symlink():
+        raise RuntimeError("Refusing a symbolic-link endpoint file")
+    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(path, flags, 0o600)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            descriptor = -1
+            handle.write(url + "\n")
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
     path.chmod(0o600)
     return url
 
@@ -164,8 +284,20 @@ REASONING_EFFORT = {
 }
 
 
+def model_family(model: str) -> str:
+    """A model id reduced to the family these tables are keyed on.
+
+    Ids are vendor-qualified almost everywhere but OpenAI — `google/gemini-2.5-flash`
+    on OpenRouter, `openai/gpt-5-mini` on GitHub Models — and may carry a tier
+    suffix like `:free`. Matched whole, none of those hit a table keyed on the
+    bare family, so the thinking-budget guard silently stopped applying on the
+    exact providers whose free models need it most.
+    """
+    return str(model or "").lower().rsplit("/", 1)[-1].split(":", 1)[0]
+
+
 def _reasoning_effort(model: str) -> str:
-    name = str(model or "").lower()
+    name = model_family(model)
     for prefix, effort in REASONING_EFFORT.items():
         if name.startswith(prefix):
             return effort
@@ -196,15 +328,62 @@ MAX_ADDED_PER_ENTRY = 2
 TEMPERATURE = 0.35
 
 
-def openai_key_path(home: Path) -> Path:
-    return home / "openai.key"
+def provider_id(base_url: str) -> str:
+    """The provider serving this endpoint, or "" for an endpoint of your own."""
+    wanted = str(base_url or "").rstrip("/")
+    for identifier, provider in PROVIDERS.items():
+        if provider["base"] == wanted:
+            return identifier
+    return ""
 
 
-def openai_key_configured(home: Path) -> bool:
-    if is_local(load_base_url(home)):
+def _endpoint_slug(base_url: str) -> str:
+    identifier = provider_id(base_url)
+    if identifier:
+        return identifier
+    host = urlparse(str(base_url or "")).hostname or "endpoint"
+    name = re.sub(r"[^a-z0-9]+", "-", host.lower()).strip("-")
+    return f"custom-{name or 'endpoint'}"
+
+
+def endpoint_name(base_url: str) -> str:
+    """What to call this endpoint in a label: the provider, or its host.
+
+    `provider_label` reads as prose in an error ("The AI endpoint timed out"),
+    which is wrong on a heading: "The AI endpoint key" names nothing.
+    """
+    identifier = provider_id(base_url)
+    if identifier:
+        return _provider_name(identifier)
+    return urlparse(str(base_url or "")).hostname or "your endpoint"
+
+
+def key_hint(base_url: str) -> str:
+    """What a key for this endpoint looks like, for the box you paste it into."""
+    return " or ".join(
+        f"{prefix}…" for prefix in KEY_SHAPES.get(provider_id(base_url), ())
+    )
+
+
+def key_path(home: Path, base_url: str | None = None) -> Path:
+    """Where this endpoint's key is kept. Every provider gets its own file.
+
+    One shared file meant switching provider silently kept the previous
+    provider's key: the editor reported a key configured, and every request
+    came back as an authentication failure from a provider whose key had never
+    been pasted. `openai.key` is still OpenAI's own path, so an existing key
+    keeps working.
+    """
+    base = load_base_url(home) if base_url is None else base_url
+    return home / f"{_endpoint_slug(base)}.key"
+
+
+def key_configured(home: Path, base_url: str | None = None) -> bool:
+    base = load_base_url(home) if base_url is None else base_url
+    if is_local(base):
         return True
     try:
-        return bool(load_openai_key(home))
+        return bool(load_key(home, base))
     except (FileNotFoundError, RuntimeError):
         return False
 
@@ -213,34 +392,73 @@ def load_key_for(home: Path) -> str:
     """The key for the configured endpoint, or none when it is local."""
     if is_local(load_base_url(home)):
         return ""
-    return load_openai_key(home)
+    return load_key(home)
 
 
-def load_openai_key(home: Path) -> str:
-    # Allow env var override (useful for CI / cloud runners)
-    env_key = os.environ.get("OPENAI_API_KEY", "").strip()
-    if env_key and len(env_key) >= 20 and not any(c.isspace() for c in env_key):
-        return env_key
-    path = openai_key_path(home)
+def _env_key(base_url: str) -> str:
+    """A key from this provider's own environment variables, if one is set.
+
+    Only the configured provider's variables are read. A key belongs to the
+    account that issued it, and handing OpenAI's to Google is a request that
+    can only fail.
+    """
+    names = PROVIDERS.get(provider_id(base_url), {}).get(
+        # An endpoint of one's own speaks the OpenAI API, so it inherits its
+        # variable; anything else would need a name this program invented.
+        "key_env", ["OPENAI_API_KEY"],
+    )
+    for name in names:
+        value = os.environ.get(name, "").strip()
+        if len(value) >= 20 and not any(character.isspace() for character in value):
+            return value
+    return ""
+
+
+def load_key(home: Path, base_url: str | None = None) -> str:
+    base = load_base_url(home) if base_url is None else base_url
+    who = provider_label(base)
+    path = key_path(home, base)
+    # The pasted key wins over the environment: it is the one the person chose
+    # in the editor. The environment is the fallback that lets a headless run
+    # work with no file at all.
     if not path.exists():
-        raise FileNotFoundError("OpenAI API key is not configured")
+        from_env = _env_key(base)
+        if from_env:
+            return from_env
+        raise FileNotFoundError(f"No {who} API key is configured")
     if path.is_symlink() or path.stat().st_mode & 0o077:
-        raise RuntimeError("OpenAI key must be a private regular file with mode 0600")
+        raise RuntimeError(
+            f"The {who} key must be a private regular file with mode 0600"
+        )
     value = path.read_text(encoding="utf-8").strip()
     if len(value) < 20 or any(character.isspace() for character in value):
-        raise RuntimeError("OpenAI API key is invalid")
+        raise RuntimeError(f"The stored {who} API key is invalid")
     return value
 
 
-def save_openai_key(home: Path, value: str) -> None:
+def save_key(home: Path, value: str, base_url: str | None = None) -> Path:
+    base = load_base_url(home) if base_url is None else base_url
+    who = provider_label(base)
     key = str(value).strip()
     if len(key) < 20 or any(character.isspace() for character in key):
-        raise ValueError("Paste a valid OpenAI API key (sk-...)")
+        hint = key_hint(base)
+        raise ValueError(
+            f"Paste a valid {who} API key" + (f" ({hint})" if hint else "")
+        )
+    owner = _key_shape_owner(key)
+    identifier = provider_id(base)
+    if owner and identifier and owner != identifier:
+        raise ValueError(
+            f"That is a {_provider_name(owner)} key and {who} is the selected "
+            f"provider. Switch the provider above, or paste a {who} key"
+            + (f" ({key_hint(base)})" if key_hint(base) else "")
+            + "."
+        )
     home.mkdir(parents=True, exist_ok=True, mode=0o700)
     home.chmod(0o700)
-    path = openai_key_path(home)
+    path = key_path(home, base)
     if path.exists() and path.is_symlink():
-        raise RuntimeError("Refusing a symbolic-link OpenAI key")
+        raise RuntimeError(f"Refusing a symbolic-link {who} key")
     flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
     if hasattr(os, "O_NOFOLLOW"):
         flags |= os.O_NOFOLLOW
@@ -254,6 +472,51 @@ def save_openai_key(home: Path, value: str) -> None:
         if descriptor >= 0:
             os.close(descriptor)
     path.chmod(0o600)
+    return path
+
+
+def migrate_legacy_key(home: Path) -> str:
+    """File a key that was saved when every provider shared one file.
+
+    `openai.key` used to hold whatever was pasted, so a Google or Groq key
+    ended up under OpenAI's name. The prefix says whose it is, so it is filed
+    once here rather than the applicant being asked to find and paste it again.
+    Returns the provider it was filed under, or "" when there was nothing to do.
+    """
+    legacy = home / "openai.key"
+    if not legacy.is_file() or legacy.is_symlink():
+        return ""
+    try:
+        value = legacy.read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+    owner = _key_shape_owner(value)
+    # Only a key whose own prefix names another provider is moved. Anything
+    # ambiguous stays where it is: guessing wrong would hand one account's key
+    # to another, which is the failure this whole change exists to stop.
+    if not owner or owner == "openai":
+        return ""
+    destination = key_path(home, PROVIDERS[owner]["base"])
+    if destination.exists():
+        return ""
+    try:
+        save_key(home, value, PROVIDERS[owner]["base"])
+        legacy.unlink()
+    except (OSError, RuntimeError, ValueError):
+        return ""
+    return owner
+
+
+def _key_shape_owner(key: str) -> str:
+    """Whose key this is, by its prefix, or "" when the shape says nothing."""
+    for identifier, prefixes in KEY_SHAPES.items():
+        if key.startswith(prefixes):
+            return identifier
+    return ""
+
+
+def _provider_name(identifier: str) -> str:
+    return str(PROVIDERS.get(identifier, {}).get("label", identifier)).split(" (")[0]
 
 
 def _salvage_json(text: str) -> dict[str, Any] | None:
@@ -294,28 +557,140 @@ def _salvage_json(text: str) -> dict[str, Any] | None:
     return parsed if isinstance(parsed, dict) else None
 
 
-def model_path(home: Path) -> Path:
-    return home / "openai-model.txt"
+def model_path(home: Path, base_url: str | None = None) -> Path:
+    """Where the chosen model for this endpoint is kept, one file per provider.
+
+    A model id belongs to the provider that serves it. Kept in a single file, the
+    Gemini model chosen for Google survived a switch to OpenAI and was posted to
+    OpenAI, which answers a name it has never heard of with a bad request — the
+    "HTTP 400 with a free model selected" that started this. `openai-model.txt`
+    is still OpenAI's own path, so an existing choice keeps working.
+    """
+    base = load_base_url(home) if base_url is None else base_url
+    return home / f"{_endpoint_slug(base)}-model.txt"
 
 
-def load_model(home: Path) -> str:
-    path = model_path(home)
+def default_model(base_url: str) -> str:
+    """The model to use for an endpoint nobody has chosen one for.
+
+    Falling back to an OpenAI id whatever the endpoint was is how a Google
+    endpoint ended up being asked for `gpt-5.4`.
+    """
+    seeded = seeded_models(base_url)
+    return seeded[0] if seeded else OPENAI_MODEL_DEFAULT
+
+
+# A model name is vendor-qualified at most providers — `meta-llama/Llama-3.3-70B`
+# on OpenRouter and Together, `openai/gpt-4o` on GitHub Models — and may carry a
+# tier suffix such as `:free`. Stripping the slash out of one, as sanitising to
+# `[A-Za-z0-9._-]` did, produced a name no endpoint has ever heard of: the model
+# picker offered a working model and the request came back as model-not-found.
+MODEL_ID_REJECT = re.compile(r"[^A-Za-z0-9._:/-]")
+MAX_MODEL_CHARS = 96
+
+
+def _model_id(value: str) -> str:
+    """The name to send, as this endpoint's own chat API spells it.
+
+    Google's listing returns `models/gemini-2.5-flash` while its chat endpoint
+    wants the bare name, so the prefix comes off here rather than in the picker.
+    """
+    name = MODEL_ID_REJECT.sub("", str(value or "")).strip().strip("/")
+    if name.startswith("models/"):
+        name = name[len("models/"):]
+    return name
+
+
+def load_model(home: Path, base_url: str | None = None) -> str:
+    base = load_base_url(home) if base_url is None else base_url
+    path = model_path(home, base)
     if path.exists() and not path.is_symlink():
-        chosen = path.read_text(encoding="utf-8").strip()
-        if chosen and len(chosen) < 64:
+        chosen = _model_id(path.read_text(encoding="utf-8").strip())
+        if chosen and len(chosen) <= MAX_MODEL_CHARS:
             return chosen
-    return OPENAI_MODEL_DEFAULT
+    return default_model(base)
 
 
-def save_model(home: Path, value: str) -> str:
-    chosen = re.sub(r"[^A-Za-z0-9._-]", "", str(value or "")).strip()
-    if not chosen or len(chosen) > 63:
+def save_model(
+    home: Path,
+    value: str,
+    base_url: str | None = None,
+    *,
+    offered: tuple[str, ...] | list[str] = (),
+) -> str:
+    """Record the model for this endpoint, refusing one it does not serve.
+
+    `offered` is what the endpoint said it can run. A model outside that list is
+    a request that can only fail later, reported then as a bad request with no
+    stated cause — so it is refused here, while the list to choose from is on
+    screen. An empty `offered` means nobody could ask, and anything is allowed.
+    """
+    base = load_base_url(home) if base_url is None else base_url
+    chosen = _model_id(value)
+    if not chosen or len(chosen) > MAX_MODEL_CHARS:
         raise ValueError("Choose a model from the list")
+    if offered and chosen not in offered:
+        raise ValueError(
+            f"{endpoint_name(base)} does not offer {chosen!r}. Choose one of: "
+            + ", ".join(list(offered)[:6])
+        )
     home.mkdir(parents=True, exist_ok=True, mode=0o700)
-    path = model_path(home)
+    path = model_path(home, base)
     path.write_text(chosen + "\n", encoding="utf-8")
     path.chmod(0o600)
     return chosen
+
+
+def model_owner(model: str) -> str:
+    """The provider a model id plainly belongs to, or "" when it says nothing.
+
+    Only used to unpick the single-file era: a Gemini id found under OpenAI's
+    name was chosen for Google, and pointing OpenAI at it can only fail.
+    """
+    name = _model_id(model)
+    if not name:
+        return ""
+    for identifier, provider in PROVIDERS.items():
+        # Compared whole, never by family: `gpt-4o-mini` and GitHub Models'
+        # `openai/gpt-4o-mini` share a family but not an endpoint, and reading
+        # the bare OpenAI id as GitHub's would move a model nobody chose.
+        if identifier != "openai" and name in provider.get("models", []):
+            return identifier
+    if model_family(name).startswith("gemini-"):
+        return "gemini"
+    return ""
+
+
+def migrate_legacy_model(home: Path) -> str:
+    """File a model chosen before every provider had its own file.
+
+    Returns the provider it was filed under, or "" when there was nothing to do.
+    """
+    legacy = model_path(home, OPENAI_BASE_DEFAULT)
+    if not legacy.is_file() or legacy.is_symlink():
+        return ""
+    try:
+        chosen = _model_id(legacy.read_text(encoding="utf-8").strip())
+    except OSError:
+        return ""
+    owner = model_owner(chosen)
+    if not owner or owner == "openai":
+        return ""
+    destination = model_path(home, PROVIDERS[owner]["base"])
+    try:
+        if not destination.exists():
+            save_model(home, chosen, PROVIDERS[owner]["base"])
+        # OpenAI's own file goes back to unset rather than keeping a name OpenAI
+        # will reject; load_model then answers with OpenAI's default.
+        legacy.unlink()
+    except (OSError, RuntimeError, ValueError):
+        return ""
+    return owner
+
+
+def seeded_models(base_url: str) -> list[str]:
+    """The recommendation order for a provider whose listing needs no discovery."""
+    return list(PROVIDERS.get(provider_id(base_url), {}).get("models", []))
 
 
 def available_models(
@@ -327,22 +702,73 @@ def available_models(
     """Chat models this endpoint offers, best first, then the rest."""
     try:
         response = requests.get(
-            f"{base_url}/models",
+            f"{catalog_url(base_url)}",
             headers=({"Authorization": f"Bearer {api_key}"} if api_key else {}),
             timeout=timeout,
         )
-        response.raise_for_status()
-        found = {str(item.get("id", "")) for item in response.json().get("data", [])}
-    except (requests.RequestException, KeyError, TypeError, ValueError) as exc:
-        raise RuntimeError(f"Could not list OpenAI models: {exc}") from exc
-    skip = ("audio", "realtime", "transcribe", "tts", "image", "embedding",
-            "moderation", "search", "codex", "instruct", "whisper", "guard")
-    usable = sorted(
-        name for name in found
-        if not any(word in name for word in skip)
-    )
-    preferred = [name for name in MODEL_PREFERENCE if name in found]
+        if not response.ok:
+            # The endpoint's own words, not "400 Client Error": a listing that
+            # fails because the key was refused should say so.
+            raise RuntimeError(
+                f"Could not list {provider_label(base_url)} models: "
+                + (_error_message(response, api_key) or f"HTTP {response.status_code}")
+            )
+        payload = response.json()
+        # `{"data": [...]}` is the OpenAI shape; a bare array is what a catalog
+        # route answers with.
+        items = payload.get("data", []) if isinstance(payload, dict) else payload
+        found = {
+            _model_id(str(item.get("id") or item.get("name") or ""))
+            for item in (items or [])
+            if isinstance(item, dict)
+        } - {""}
+    except (requests.RequestException, AttributeError, KeyError, TypeError, ValueError) as exc:
+        raise RuntimeError(
+            f"Could not list {provider_label(base_url)} models: {exc}"
+        ) from exc
+    usable = sorted(name for name in found if is_chat_model(name))
+    # This provider's own recommendation first where it has one, then the
+    # measured OpenAI order. Ranking a discovered Google listing by OpenAI model
+    # names left the picker recommending whichever Gemini sorted first. Ranked
+    # out of `usable`, never out of `found`, so a filtered id cannot be offered.
+    preference = seeded_models(base_url) + list(MODEL_PREFERENCE)
+    preferred = [name for name in preference if name in usable]
     return preferred + [name for name in usable if name not in preferred]
+
+
+# Families that cannot answer a chat completion with JSON, so they have no place
+# in the picker. Matched on a lowercased id: matching the raw id meant Together's
+# capitalised ids survived a filter that removed Groq's identical lowercase ones.
+#
+# "instruct" was in this list, which deleted almost every free chat model the
+# free providers actually serve — llama-3.3-70b-instruct, mistral-7b-instruct,
+# kimi-k2-instruct — leaving the picker looking empty or wrong on exactly the
+# providers this feature exists for. An instruction-tuned model is the point.
+NON_CHAT_FAMILIES = (
+    "audio", "realtime", "transcribe", "tts", "whisper", "voice",
+    "image", "imagen", "dall-e", "veo", "video",
+    "embedding", "embed", "rerank",
+    "moderation", "guard", "safety",
+    "aqa", "-live-", "computer-use",
+)
+
+
+def is_chat_model(name: str) -> bool:
+    lowered = str(name or "").lower()
+    return bool(lowered) and not any(word in lowered for word in NON_CHAT_FAMILIES)
+
+
+def catalog_url(base_url: str) -> str:
+    """Where this endpoint lists its models.
+
+    Every OpenAI-compatible endpoint answers `{base}/models` except the ones
+    that do not: GitHub Models serves its catalogue off the account host rather
+    than the inference path.
+    """
+    base = str(base_url or "").rstrip("/")
+    if provider_id(base) == "github":
+        return "https://models.github.ai/catalog/models"
+    return f"{base}/models"
 
 
 def models_for(base_url: str, api_key: str) -> list[str]:
@@ -351,12 +777,7 @@ def models_for(base_url: str, api_key: str) -> list[str]:
         found = available_models(api_key, base_url=base_url)
     except RuntimeError:
         found = []
-    if found:
-        return found
-    for provider in PROVIDERS.values():
-        if provider["base"] == base_url and provider["models"]:
-            return list(provider["models"])
-    return []
+    return found or seeded_models(base_url)
 
 
 def best_available_model(api_key: str) -> str:
@@ -367,25 +788,25 @@ def best_available_model(api_key: str) -> str:
     return models[0] if models else OPENAI_MODEL_DEFAULT
 
 
-def _json_object(value: str) -> dict[str, Any]:
+def _json_object(value: str, who: str = "The AI endpoint") -> dict[str, Any]:
     cleaned = re.sub(r"<think>.*?</think>", "", value or "", flags=re.S).strip()
     cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.I)
     cleaned = re.sub(r"\s*```$", "", cleaned)
     start = cleaned.find("{")
     end = cleaned.rfind("}")
     if start < 0:
-        raise RuntimeError("OpenAI returned no JSON suggestion object")
+        raise RuntimeError(f"{who} returned no JSON suggestion object")
     if end > start:
         try:
             parsed = json.loads(cleaned[start : end + 1])
             if not isinstance(parsed, dict):
-                raise RuntimeError("OpenAI returned an invalid suggestion object")
+                raise RuntimeError(f"{who} returned an invalid suggestion object")
             return parsed
         except json.JSONDecodeError:
             pass
     salvaged = _salvage_json(cleaned[start:])
     if salvaged is None:
-        raise RuntimeError("OpenAI returned malformed suggestion JSON")
+        raise RuntimeError(f"{who} returned malformed suggestion JSON")
     return salvaged
 
 
@@ -423,7 +844,7 @@ def _ask(
         except RuntimeError as exc:
             if attempt == 2 or "timed out" not in str(exc):
                 raise
-    raise RuntimeError("OpenAI request failed")
+    raise RuntimeError(f"{provider_label(base_url)} request failed")
 
 
 # Token accounting. Every provider reports usage the same way, so the cost of
@@ -477,7 +898,7 @@ def _request_body(
         # waste a whole generation and force the user to retry.
         "response_format": {"type": "json_object"},
     }
-    if not model.startswith(FIXED_TEMPERATURE_MODELS):
+    if not model_family(model).startswith(FIXED_TEMPERATURE_MODELS):
         body["temperature"] = TEMPERATURE
     effort = _reasoning_effort(model)
     if effort:
@@ -492,42 +913,157 @@ def provider_label(base_url: str) -> str:
     endpoint. Telling someone their OpenAI key is invalid while they are
     pointed at Google is a small lie that costs a long debugging session.
     """
-    for provider in PROVIDERS.values():
-        if provider["base"] == str(base_url or "").rstrip("/"):
-            return str(provider["label"]).split(" (")[0]
-    return "The AI endpoint"
+    identifier = provider_id(base_url)
+    return _provider_name(identifier) if identifier else "The AI endpoint"
 
 
 _AUTH_WORDING = re.compile(
-    r"\bauthoriz|\bauthentic|\bapi[ _-]?key\b|\bcredential|\bunauthenticated\b", re.I
+    # "authoriz" bare, so it catches both "Authorization header" and
+    # "Unauthorized"; anchoring it to a word boundary missed the second.
+    r"authoriz|\bauthentic|api[ _-]?key|\bcredential|unauthenticated"
+    r"|permission[ _-]denied|\bforbidden\b"
+    r"|\b(?:access[ _-])?token\b.{0,40}(?:missing|invalid|expired|revoked)"
+    r"|not accessible by personal access token",
+    re.I,
 )
+# A model the endpoint will not serve. Every provider words this differently and
+# not all of them use 404 for it, so it is matched on wording as well as status.
+_MODEL_WORDING = re.compile(
+    r"model[ _-]?not[ _-]?found|unknown[ _-]?model|invalid[ _-]?model"
+    r"|is not found for api version|does not exist|no such model"
+    r"|not supported for|no (?:allowed providers|endpoints found)"
+    r"|unsupported[ _-]?model",
+    re.I,
+)
+_BILLING_WORDING = re.compile(
+    r"insufficient[ _-](?:balance|quota|credit|funds)|billing|payment"
+    r"|exceeded your current quota|add credit|top up|purchase",
+    re.I,
+)
+MAX_PROVIDER_DETAIL = 300
+
+
+def _error_message(response: Any, api_key: str = "") -> str:
+    """The provider's own words about a failure, whatever shape it wrapped them in.
+
+    This is the one piece of text that says what is actually wrong, and it was
+    being dropped on the floor. Reading it needs to be shape-tolerant, because
+    OpenAI-compatible only ever meant the success path:
+
+      OpenAI, Groq, OpenRouter   {"error": {"message": ...}}
+      Google (chat completions)  [{"error": {"code": 400, "message": ...}}]
+      Google (model listing)     {"error": {"code": 400, "message": ...}}
+      Cerebras, GitHub Models    {"message": ..., "param": ..., "code": ...}
+
+    Google's array is what broke this outright: `.get` on a list raised, both
+    callers swallowed the exception, and every Google failure read as blank —
+    so a rejected key was reported as a bare HTTP 400 with advice to check an
+    account balance that has nothing to do with it.
+    """
+    fields = _error_fields(response)
+    # The sentence a person should read. `param` and `code` stand in for it on
+    # the endpoints that send no sentence at all.
+    message = " ".join(
+        value for value in (fields.get("message"), fields.get("param")) if value
+    ) or fields.get("code", "") or fields.get("body", "")
+    message = re.sub(r"\s+", " ", message).strip()
+    # A provider that echoes the rejected key back must not put it in a message
+    # the user pastes into a chat window.
+    if api_key and api_key in message:
+        message = message.replace(api_key, "…")
+    return message[:MAX_PROVIDER_DETAIL]
+
+
+def _error_fields(response: Any) -> dict[str, str]:
+    """Every field of an error body, flattened, whatever shape it arrived in."""
+    try:
+        payload = response.json()
+    except Exception:
+        payload = None
+    if isinstance(payload, list):
+        payload = next((item for item in payload if isinstance(item, dict)), {})
+    if not isinstance(payload, dict):
+        return {"body": _plain_body(response)}
+    error = payload.get("error", payload)
+    if isinstance(error, str):
+        return {"message": error}
+    if not isinstance(error, dict):
+        return {"body": _plain_body(response)}
+    fields = {
+        name: str(error.get(name, ""))
+        for name in ("message", "param", "code", "status", "type")
+        if error.get(name) not in (None, "")
+    }
+    return fields or {"body": _plain_body(response)}
+
+
+def _plain_body(response: Any) -> str:
+    """A body that is not an API error at all, summarised rather than dumped.
+
+    A proxy, a wrong path, or a captive portal answers with an HTML page. Pasting
+    a whole page into an error message buries the one useful part of it.
+    """
+    text = re.sub(r"\s+", " ", str(getattr(response, "text", "") or "")).strip()
+    if not text.startswith("<"):
+        return text
+    title = re.search(r"<title[^>]*>(.*?)</title>", text, re.I | re.S)
+    said = re.sub(r"\s+", " ", title.group(1)).strip() if title else ""
+    return f"an HTML page, not an API answer" + (f" ({said})" if said else "")
+
+
+def _error_signals(response: Any) -> str:
+    """Everything an error body says, for matching rather than for reading.
+
+    A provider that names the rejected parameter only in `param`, or the cause
+    only in `code`, still has to be understood — so classification reads wider
+    than the sentence shown to the user.
+    """
+    return " ".join(_error_fields(response).values())
 
 
 def _is_auth_error(response: Any) -> bool:
-    try:
-        message = str(response.json().get("error", {}).get("message", ""))
-    except Exception:
-        return False
-    return bool(_AUTH_WORDING.search(message))
+    return bool(_AUTH_WORDING.search(_error_signals(response)))
 
 
 def _without_rejected(
     body: dict[str, Any], response: Any
 ) -> dict[str, Any] | None:
-    """Drop the parameter a 400 complained about, if it is an optional one."""
-    try:
-        message = str(response.json().get("error", {}).get("message", ""))
-    except Exception:
-        return None
+    """Drop the parameter a 400 complained about, if it is an optional one.
+
+    When the complaint names no parameter at all — which is most of them — every
+    optional parameter still in the payload comes out at once. A request without
+    them is less constrained, not broken, and that beats reporting a 400 while
+    holding a payload the endpoint may simply not understand.
+    """
+    signals = _error_signals(response)
     for name in OPTIONAL_PARAMS:
-        if name in message and name in body:
-            reduced = dict(body)
-            value = reduced.pop(name)
-            # An endpoint that rejects the new spelling wants the old one.
-            if name == "max_completion_tokens":
-                reduced["max_tokens"] = value
-            return reduced
-    return None
+        if name in signals and name in body:
+            return _dropping(body, name)
+    # A key, model, or quota rejection is not a payload the endpoint failed to
+    # understand. Stripping the payload for those wastes a request and reports
+    # parameters as unsupported when they were never looked at.
+    if (
+        _AUTH_WORDING.search(signals)
+        or _MODEL_WORDING.search(signals)
+        or _BILLING_WORDING.search(signals)
+    ):
+        return None
+    remaining = [name for name in OPTIONAL_PARAMS if name in body]
+    if not remaining:
+        return None
+    reduced = body
+    for name in remaining:
+        reduced = _dropping(reduced, name)
+    return reduced
+
+
+def _dropping(body: dict[str, Any], name: str) -> dict[str, Any]:
+    reduced = dict(body)
+    value = reduced.pop(name)
+    # An endpoint that rejects the new spelling wants the old one.
+    if name == "max_completion_tokens":
+        reduced["max_tokens"] = value
+    return reduced
 
 
 def _ask_once(
@@ -555,13 +1091,22 @@ def _ask_once(
         # Providers differ on which optional parameters they accept. Rather
         # than maintain a compatibility matrix, drop whatever one objects to
         # and ask again: the request still works, just less constrained.
-        if response.status_code == 400:
+        #
+        # One retry was not enough. A payload can be wrong in more than one way
+        # for the same provider, and Google's parser names one unknown field per
+        # answer — so dropping the first and giving up returned the second
+        # rejection as a bare HTTP 400.
+        for _ in OPTIONAL_PARAMS:
+            if response.status_code != 400:
+                break
             reduced = _without_rejected(body, response)
-            if reduced is not None:
-                response = requests.post(
-                    f"{base_url}/chat/completions",
-                    headers=headers, json=reduced, timeout=timeout,
-                )
+            if reduced is None:
+                break
+            body = reduced
+            response = requests.post(
+                f"{base_url}/chat/completions",
+                headers=headers, json=body, timeout=timeout,
+            )
         response.raise_for_status()
         payload = response.json()
         _record_usage(payload)
@@ -572,29 +1117,139 @@ def _ask_once(
                 for part in content
                 if isinstance(part, dict)
             )
-        return _json_object(str(content))
+        return _json_object(str(content), who)
     except requests.Timeout as exc:
         raise RuntimeError(
             f"{who} timed out. Retry once; no CV changes were saved."
         ) from exc
     except requests.HTTPError as exc:
-        status = exc.response.status_code if exc.response is not None else "unknown"
-        # Not every provider answers a missing key with 401: Google returns a
-        # 400 saying so. Reporting that as a generic bad request sends someone
-        # hunting through their request instead of their key.
-        if status == 401 or (status == 400 and _is_auth_error(exc.response)):
-            raise RuntimeError(
-                f"The {who} API key is missing, invalid, or expired. Check your key."
-            ) from exc
-        if status == 429:
-            raise RuntimeError(
-                f"{who} rate limit hit. Wait a moment and retry."
-            ) from exc
         raise RuntimeError(
-            f"{who} returned HTTP {status}. Check the key and account balance."
+            http_failure(exc.response, who=who, model=model, api_key=api_key)
         ) from exc
     except (requests.RequestException, KeyError, IndexError, TypeError, ValueError) as exc:
         raise RuntimeError(f"{who} request failed: {exc}") from exc
+
+
+def http_failure(
+    response: Any, *, who: str, model: str = "", api_key: str = ""
+) -> str:
+    """Say what failed, in the provider's own words, and what to do about it.
+
+    Every one of these used to be "returned HTTP n. Check the key and account
+    balance." — which names the wrong cause for a rejected model, is false on a
+    free tier that has no balance, and discards the one sentence in the response
+    that says what is actually wrong.
+    """
+    status = getattr(response, "status_code", None) or "unknown"
+    said = _error_message(response, api_key)
+    signals = _error_signals(response)
+    detail = f' It said: "{said}"' if said else ""
+    if status in (401, 403) or (status == 400 and _AUTH_WORDING.search(signals)):
+        return (
+            f"{who} rejected the API key: it is missing, invalid, expired, or "
+            f"not allowed to use this model.{detail}"
+        )
+    if _MODEL_WORDING.search(signals) or (status == 404 and not said):
+        named = f" a model called {model!r}" if model else " that model"
+        return (
+            f"{who} does not serve{named}. Pick another in the model picker — "
+            f"if the list looks wrong, use Test this provider to reload it."
+            f"{detail}"
+        )
+    if status == 429:
+        return (
+            f"{who} rate limit or free-tier quota hit. Wait a moment and retry, "
+            f"or choose a model with a larger free allowance.{detail}"
+        )
+    if status == 402 or _BILLING_WORDING.search(signals):
+        return f"{who} reports a billing or quota problem on this account.{detail}"
+    if isinstance(status, int) and status >= 500:
+        return (
+            f"{who} is having trouble ({status}) — this is at their end. "
+            f"Retry in a moment.{detail}"
+        )
+    # Anything left is a request this endpoint would not accept. Say so, quote
+    # it, and never invent a cause.
+    return f"{who} rejected the request (HTTP {status}).{detail}"
+
+
+PROBE_TOKENS = 24
+
+
+def probe(
+    base_url: str,
+    api_key: str,
+    model: str,
+    *,
+    timeout: int = 30,
+) -> dict[str, Any]:
+    """One cheap round trip, reported exactly as it came back.
+
+    Until this existed there was no way to tell a working provider from a broken
+    one without spending a whole tailoring: a rejected key and an accepted key
+    rendered the same, because a failed model listing quietly falls back to the
+    seeded recommendations. Twenty-four output tokens is free on every free tier.
+    """
+    url = f"{base_url}/chat/completions"
+    headers = {"Content-Type": "application/json"}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+    body = _request_body(
+        'Reply with {"ok":true} and nothing else.', "ping",
+        model=model, max_tokens=PROBE_TOKENS,
+    )
+    report: dict[str, Any] = {
+        "provider": endpoint_name(base_url),
+        "endpoint": url,
+        "model": model,
+        "ok": False,
+        "status": 0,
+        "dropped": [],
+        "detail": "",
+        "problem": "",
+        "models": [],
+    }
+    try:
+        response = requests.post(url, headers=headers, json=body, timeout=timeout)
+        for _ in OPTIONAL_PARAMS:
+            if response.status_code != 400:
+                break
+            reduced = _without_rejected(body, response)
+            if reduced is None:
+                break
+            # Accumulated, not replaced: a payload can be reduced several times
+            # and every parameter this endpoint refused is worth reporting.
+            report["dropped"] = sorted(
+                set(report["dropped"]) | (set(body) - set(reduced))
+            )
+            body = reduced
+            response = requests.post(url, headers=headers, json=body, timeout=timeout)
+        report["status"] = response.status_code
+        report["detail"] = _error_message(response, api_key) if not response.ok else ""
+        report["ok"] = bool(response.ok)
+        if not response.ok:
+            report["problem"] = http_failure(
+                response, who=report["provider"], model=model, api_key=api_key
+            )
+    except requests.RequestException as exc:
+        report["problem"] = f"{report['provider']} could not be reached: {exc}"
+        return report
+    # What the endpoint says it can run. Asked after the chat call so a working
+    # key is confirmed by the thing the editor actually does.
+    try:
+        report["models"] = available_models(api_key, base_url=base_url)[:24]
+    except RuntimeError as exc:
+        report["listing_problem"] = str(exc)
+    if report["ok"] and model not in report["models"] and report["models"]:
+        report["note"] = (
+            f"{model} answered, but it is not in this endpoint's listing."
+        )
+    if not report["ok"] and report["models"] and model not in report["models"]:
+        report["note"] = (
+            f"{model} is not among the {len(report['models'])} models this "
+            f"endpoint lists. Choose one of those instead."
+        )
+    return report
 
 
 # ── Rules every call shares ──────────────────────────────────────────────────
@@ -1230,7 +1885,7 @@ def generate_suggestions(
             for reason, count in sorted(Counter(rejected.values()).items())
         )
         raise RuntimeError(
-            "OpenAI produced no evidence-safe suggestions. "
+            f"{provider_label(base_url)} produced no evidence-safe suggestions. "
             f"Try a more specific instruction ({reasons or 'empty response'})."
         )
     return draft

@@ -3,9 +3,10 @@
 The watcher, cockpit, PDF editor, and guarded application assistant run locally.
 The watcher itself uses the Python standard library. The application assistant
 uses free Python packages and an installed copy of Microsoft Edge, and requires
-Python 3.11 or newer. AI CV suggestions use your own OpenAI API account (model
-`gpt-4o-mini` by default); browsing, manual editing, accepting/rejecting prior
-suggestions, PDF export, and the job tracker do not consume API credits.
+Python 3.11 or newer. AI CV suggestions use your own account with whichever
+OpenAI-compatible provider you select in the editor; browsing, manual editing,
+accepting/rejecting prior suggestions, PDF export, and the job tracker do not
+consume API credits.
 
 The system deliberately separates discovery from submission:
 
@@ -32,11 +33,58 @@ python -m pip install -r requirements-autoapply.txt
 The guarded browser workflow currently expects Microsoft Edge to be installed.
 
 No local model download is required for the AI CV Studio. The first time an
-editor opens, paste an OpenAI API key (`sk-…`) into the key card in the right
-panel. The bridge stores it in `private/openai.key` with mode 0600 and never
-exposes it to the public dashboard or browser URL. Pressing **Generate
-suggestions** sends the job description and master CV text to OpenAI through
-that API account; opening the editor and exporting locally do not call the API.
+editor opens, choose a provider in the right panel — OpenAI, Groq, OpenRouter,
+Cerebras, Together, GitHub Models, Google AI Studio, or a model running on this
+machine under Ollama, which needs no key at all — and paste that provider's key
+into the key card below it. The bridge stores each provider's key in its own
+file (`private/openai.key`, `private/gemini.key`, and so on) with mode 0600, and
+never exposes it to the public dashboard or browser URL. Switching provider
+therefore asks for the new provider's key rather than sending the previous one
+to an account that never issued it. A key left in the environment under the
+provider's own variable (`OPENAI_API_KEY`, `GEMINI_API_KEY`, `GROQ_API_KEY`, …)
+is used when no file is saved, which is what a headless run reads. Pressing
+**Generate suggestions** sends the job description and master CV text to the
+chosen provider through that account; opening the editor and exporting locally
+do not call the API.
+
+**Test this provider** in the editor sends one 24-token request and reports
+exactly what came back: the endpoint, the model, the status, the provider's own
+words, any request parameters that endpoint refused, and the models it says it
+can run. Use it before blaming a rewrite — a rejected key and a working one look
+identical until something asks. The same check runs from the terminal with
+`python3 -m autoapply doctor --probe`, which also prints the endpoint, model and
+where the key is being read from.
+
+### When a fix does not seem to arrive
+
+The helper is started once and left running for weeks. The checkout moves on, a
+macOS login service quietly respawns the old process, and the editor keeps being
+answered by code that is no longer on disk — so a fix that is pushed, pulled and
+tested still does not reach the browser. `update-autoapply.command` does every
+step of that in one go and says which build ends up serving:
+
+```bash
+./update-autoapply.command                 # update the current branch
+./update-autoapply.command some-branch     # switch to that branch first
+```
+
+It reports the build answering right now, parks local changes with `git stash`
+(never discards them), fast-forwards, stops the bridge *including a login
+service that would otherwise restart the old copy*, and starts the helper from
+this folder. To check which code is serving without changing anything:
+
+```bash
+curl -s -H "X-Autoapply-Token: $(cat private/bridge.token)" \
+  http://127.0.0.1:8765/health
+```
+
+A reply with no `"build"` field is a helper from before August 2026.
+
+The editor's right-hand column ends with the bridge **build** — the timestamp of
+the code answering the page. A bridge is started once and left running for weeks
+while the checkout moves on, so a symptom can belong to a version no longer on
+disk; `start-autoapply.command` now compares the running build with the working
+copy and restarts a stale helper instead of reusing it.
 
 The daily watcher and cockpit do not require the extra packages:
 
@@ -47,6 +95,26 @@ open apply_cockpit.html
 ```
 
 `apply_cockpit.html` is generated locally and ignored by Git.
+
+### Checking the editor itself
+
+The unit suite runs with no browser and no network:
+
+```bash
+python3 -m unittest discover -s tests -t .
+```
+
+The editor page is a single-page application, so its own behaviour is checked by
+driving it in a real browser against a fake OpenAI-compatible provider — opening
+the editor, testing the provider, generating a rewrite, accepting it, exporting
+the PDF, drafting the answers, and saving the tailoring as its own CV:
+
+```bash
+python3 tests/browser_editor_flow.py
+```
+
+It is deliberately not collected by `unittest discover`, because it needs a
+browser the read-only CI job does not have.
 
 ## GitHub click-to-tailor workflow
 
@@ -77,10 +145,21 @@ cd "$HOME/Desktop/other projects/internship watcher"
 
 The localhost bridge imports every open HTTPS role in the current tracker. The
 editor immediately displays the complete master CV without spending API credits.
-Press **Generate suggestions** to fetch the current job description and ask
-OpenAI for a small patch set. Accept, reject, or directly edit each proposal,
+Press **Generate suggestions** to fetch the current job description and ask the
+configured provider for a small patch set. Accept, reject, or directly edit each proposal,
 then press **Export accepted PDF**. Simplify can autofill the employer form;
 choose the newly downloaded PDF as the resume and review the whole application.
+
+### Tailoring for a posting the tracker has never seen
+
+The watcher follows a few hundred boards, and the job you actually want is
+routinely on none of them — a company careers page, a lab's own site, a link
+from a friend. Install `tailor-anywhere.user.js` in Tampermonkey and a small
+**✦ Tailor my CV** button appears on any page that reads like a job advert
+(always available from the Tampermonkey menu, whatever the page). It reads the
+posting — schema.org JobPosting where the site publishes it, the densest block
+of advert prose otherwise — hands it to the helper on `127.0.0.1`, and opens the
+same editor for it. The page text goes to the local helper and nowhere else.
 
 The bridge does not control or impersonate Simplify, fill legal answers, or click
 Submit. The optional Tampermonkey userscript still enhances links in the GitHub

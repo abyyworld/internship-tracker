@@ -65,9 +65,20 @@ def _number_tokens(value: str) -> set[str]:
     return set(re.findall(r"(?<!\w)\d+(?:[.,]\d+)?%?", value or ""))
 
 
+# Capitalised words that name nothing. "I" is upper-case, so it read as an
+# acronym the CV had never claimed — and the cover letter and application answers
+# are written in the first person by instruction, so every one of them came back
+# with "names 'I', which your CV does not" against it. Single letters that really
+# are technologies — C, R, D — stay checkable; these two are a pronoun and an
+# article and can never be evidence of anything.
+NOT_NAMES = frozenset({"i", "a"})
+
+
 def _named_tokens(value: str) -> set[str]:
     values = set()
     for token in re.findall(r"\b[A-Za-z][A-Za-z0-9+#.-]*\b", value or ""):
+        if token.casefold() in NOT_NAMES:
+            continue
         if (
             token.isupper()
             or any(character.isdigit() for character in token)

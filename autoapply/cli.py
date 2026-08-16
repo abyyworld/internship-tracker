@@ -129,7 +129,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Private data directory (default: %(default)s)",
     )
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("doctor", help="Check local dependencies and private configuration")
+    doctor_command = commands.add_parser(
+        "doctor", help="Check local dependencies and private configuration"
+    )
+    doctor_command.add_argument(
+        "--probe",
+        action="store_true",
+        help=(
+            "Also send one cheap request to the configured AI provider and "
+            "report exactly what it answered."
+        ),
+    )
 
     importer = commands.add_parser(
         "import-tracker",
@@ -183,7 +193,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def doctor(home: Path) -> tuple[dict[str, Any], bool]:
+def doctor(home: Path, *, probe_provider: bool = False) -> tuple[dict[str, Any], bool]:
     edge = Path("/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge")
     configs_ok = True
     config_error = ""
@@ -274,6 +284,51 @@ def doctor(home: Path) -> tuple[dict[str, Any], bool]:
                 "available_models": [],
                 "error": str(exc),
             }
+    # Which endpoint, which model, which key. Every "the API is not working"
+    # report comes down to one of these three, and doctor used to name none of
+    # them: its only AI check was for a local Ollama that most people never
+    # configure.
+    from .openai_tailoring import (
+        BUILD,
+        endpoint_name,
+        endpoint_problem,
+        is_local,
+        key_configured,
+        key_source,
+        load_base_url,
+        load_key_for,
+        load_model,
+        probe as probe_endpoint,
+    )
+
+    base = load_base_url(home)
+    endpoint_issue = endpoint_problem(home)
+    ai_provider: dict[str, Any] = {
+        "ok": not endpoint_issue,
+        "provider": endpoint_name(base),
+        "endpoint": base,
+        "model": load_model(home, base),
+        "key": key_source(home, base),
+        "key_configured": key_configured(home, base),
+        "build": BUILD,
+        "error": endpoint_issue,
+    }
+    if probe_provider:
+        try:
+            key = "" if is_local(base) else load_key_for(home)
+        except (FileNotFoundError, RuntimeError) as exc:
+            ai_provider.update({"ok": False, "error": str(exc)})
+        else:
+            report = probe_endpoint(base, key, ai_provider["model"])
+            ai_provider.update({
+                "ok": bool(report["ok"]) and not endpoint_issue,
+                "status": report["status"],
+                "dropped_parameters": report["dropped"],
+                "offers": report["models"][:12],
+                "error": report.get("problem", "") or endpoint_issue,
+            })
+            if report.get("note"):
+                ai_provider["note"] = report["note"]
     checks = {
         "python": {
             "ok": sys.version_info >= (3, 11),
@@ -288,6 +343,7 @@ def doctor(home: Path) -> tuple[dict[str, Any], bool]:
         "resume_facts": {"ok": facts_path(home).is_file(), "path": str(facts_path(home))},
         "configuration": {"ok": configs_ok, "error": config_error},
         "local_ai_tailoring": local_ai_check,
+        "ai_provider": ai_provider,
         "application_profile": {
             "ok": application_profile_ok,
             "missing_required_values": missing_profile_values,
@@ -316,7 +372,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     home = ensure_home(args.home.expanduser().resolve())
     if args.command == "doctor":
-        result, ok = doctor(home)
+        result, ok = doctor(home, probe_provider=args.probe)
         _print(result)
         return 0 if ok else 1
     if args.command == "bridge":
