@@ -239,6 +239,13 @@ h1 span{color:var(--green)}
   border:1px solid #396b55;border-radius:14px;background:#102b20;margin:0 0 14px}
 .helper strong{color:var(--green)}.helper p{margin:2px 0;color:var(--muted);font-size:13px}
 .helper a{white-space:nowrap}
+.helper-help{margin-top:6px}
+.helper-help summary{color:var(--green);font-size:12.5px;cursor:pointer;list-style:none}
+.helper-help summary::-webkit-details-marker{display:none}
+.helper-help summary::before{content:"▸ "}
+.helper-help[open] summary::before{content:"▾ "}
+.helper-help p{margin-top:6px;max-width:70ch}
+.helper-help code{background:#0b1f18;border:1px solid #2c5c47;border-radius:5px;padding:1px 5px;font-size:12px}
 .filters{position:sticky;top:0;z-index:20;background:#0b1714ee;backdrop-filter:blur(18px);
   border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow)}
 .searchrow{display:grid;grid-template-columns:minmax(240px,1.8fr) repeat(5,minmax(125px,.7fr));gap:10px}
@@ -360,7 +367,12 @@ footer a{color:var(--green)}
   <div class="stat"><strong id="tailorStat">0</strong><span>AI CV editor ready</span></div>
 </section>
 <section class="helper">
-  <div><strong>⚡ Local AI CV Studio</strong><p>Every role opens your complete CV with reviewable AI suggestions. Accept, reject, directly edit, then export — nothing is silently removed.</p></div>
+  <div><strong>⚡ Local AI CV Studio</strong><p>Every role opens your complete CV with reviewable AI suggestions. Accept, reject, directly edit, then export — nothing is silently removed.</p>
+  <!-- This button is a link to the reader's own machine. When the helper is not
+       running it can only fail, and a browser error page explains nothing — so
+       the fix lives here, on a page that is readable without the helper. -->
+  <details class="helper-help"><summary>The button does nothing?</summary>
+  <p>It opens the CV helper on your own machine, so it only works while that helper is running. Open the project folder and double-click <code>install-login-service.command</code>. It installs the helper as a background service: it starts at login, restarts itself if it stops, and needs no window kept open. <code>start-autoapply.command</code> starts it once in a window if you prefer.</p></details></div>
   <a class="btn primary" href="http://127.0.0.1:8765/connect" target="_blank" title="Pairs this browser with the local CV helper, and reports which build, provider and model it is set up to use">Connect this browser</a>
 </section>
 <section class="filters" aria-label="Job filters">
