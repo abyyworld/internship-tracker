@@ -172,7 +172,7 @@ footer a{color:var(--green)}
        the fix lives here, on a page that is readable without the helper. -->
   <details class="helper-help"><summary>The button does nothing?</summary>
   <p>It opens the CV helper on your own machine, so it only works while that helper is running. Open the project folder and double-click <code>install-login-service.command</code>. It installs the helper as a background service: it starts at login, restarts itself if it stops, and needs no window kept open. <code>start-autoapply.command</code> starts it once in a window if you prefer.</p></details></div>
-  <a class="btn primary" href="http://127.0.0.1:8765/connect" target="_blank" title="Pairs this browser with the local CV helper, and reports which build, provider and model it is set up to use">Connect this browser</a>
+  <a class="btn primary" href="./open.html" target="_blank" title="Checks the local CV helper, pairs this browser with it, and reports which build, provider and model it is set up to use">Connect this browser</a>
 </section>
 <section class="filters" aria-label="Job filters">
   <div class="searchrow">
@@ -206,7 +206,7 @@ footer a{color:var(--green)}
   <span class="muted" style="font-size:12px">Your local helper can mark which of these
   you can actually apply to, by work authorisation and graduation date. It stays on your machine.</span>
   <span class="spacer"></span>
-  <a class="btn primary" href="http://127.0.0.1:8765/dashboard">Open my local tracker</a>
+  <a class="btn primary" href="./open.html?to=dashboard">Open my local tracker</a>
 </div>
 <div class="fitbar" id="fitbar">
   <b id="fitSummary"></b>
@@ -326,7 +326,10 @@ function card(j){
       ?`<span class="badge fit-${esc(fitOf(j).status)}">${esc(FIT_LABELS[fitOf(j).status])}</span>`:""
   ].filter(Boolean).join("");
   const focus=j.focus?`<p class="focus">${esc(j.focus.replaceAll(",",", "))}</p>`:"";
-  const localUrl=`http://127.0.0.1:8765/editor?url=${encodeURIComponent(j.url)}`;
+  // Not a direct link to 127.0.0.1: when the helper is not running that answers
+  // with a browser error page that explains nothing. open.html tries the helper
+  // and, if nothing is listening, says so and says what to do.
+  const localUrl=`./open.html?url=${encodeURIComponent(j.url)}`;
   const f=fitOf(j);
   return `<article class="card${f&&f.status==="mismatch"?" dim":""}">
     <div class="cardhead"><div class="logo">${esc(initials(j.company))}</div><div>
