@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Opening your local CV editor</title>
+<!--
+  Every "Edit CV for this job" button points at a helper running on the reader's
+  own machine. When that helper is not running the browser answers with
+  ERR_CONNECTION_REFUSED, which explains nothing and offers nothing — and it is
+  the single most common state, because the helper has to be started once.
+
+  This page stands in front of that. It tries the local editor, and if the helper
+  does not answer it says so and says what to do, on a page that is served from
+  GitHub Pages and therefore always available.
+-->
+<style>
+:root{color-scheme:dark;--bg:#07110f;--panel:#10211c;--line:#315346;--text:#f1f8f5;
+--muted:#a6b9b2;--green:#70efad;--green2:#25b875;--red:#ff8b82}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;
+background:radial-gradient(circle at top,#174b3766,transparent 34rem),var(--bg);
+color:var(--text);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{width:min(680px,100%);background:linear-gradient(150deg,#13271f,#0c1714);
+border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:0 24px 70px #0009}
+.eyebrow{color:var(--green);font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+h1{margin:9px 0 10px;font-size:29px;line-height:1.1;letter-spacing:-.03em}
+p{color:var(--muted);margin:9px 0}
+.role{color:var(--text);font-weight:600}
+ol{color:var(--muted);padding-left:22px;margin:14px 0}
+li{margin:8px 0}
+code{background:#0b1f18;border:1px solid #2c5c47;border-radius:6px;padding:2px 6px;font-size:13px;color:var(--green)}
+.progress{height:7px;background:#1b332a;border-radius:99px;overflow:hidden;margin:20px 0}
+.progress i{display:block;width:35%;height:100%;background:var(--green2);border-radius:99px;
+animation:move 1.1s ease-in-out infinite alternate}
+@keyframes move{to{transform:translateX(185%)}}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+a.btn,button.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 15px;border-radius:11px;
+text-decoration:none;font-weight:700;font-size:13.5px;cursor:pointer;border:1px solid transparent}
+.primary{background:var(--green2);color:#04150d}
+.secondary{background:#12241d;border-color:var(--line);color:var(--text)}
+.hidden{display:none}
+.err{color:var(--red)}
+.ok{color:var(--green)}
+.small{font-size:12.5px}
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Local AI CV Studio</div>
+
+  <section id="trying">
+    <h1>Opening your CV editor…</h1>
+    <p>Checking the private helper on this machine for <span class="role" id="roleTrying">this posting</span>.</p>
+    <div class="progress"><i></i></div>
+  </section>
+
+  <section id="down" class="hidden">
+    <h1>Your CV helper isn’t running</h1>
+    <p>The editor runs entirely on <strong>this machine</strong> — that is how your CV, your
+    fact bank and your API key stay off the internet. Nothing is listening on
+    <code>127.0.0.1:8765</code> right now, so there is nothing to open.</p>
+    <ol>
+      <li>Open the project folder — <code>Desktop → other projects → internship watcher</code>.</li>
+      <li>Double-click <code>install-login-service.command</code>. It installs the helper so macOS
+        starts it at every login and restarts it if it stops: no window to keep open.</li>
+      <li>Come back here and press <strong>Try again</strong>.</li>
+    </ol>
+    <p class="small">Haven’t got that file? Download it from
+      <a id="rawLink" href="https://github.com/abyyworld/internship-tracker/blob/main/install-login-service.command" target="_blank" rel="noopener">GitHub</a>,
+      then in Finder right-click it → <strong>Open</strong> (macOS warns about downloaded scripts once).
+      It finds the project folder by itself. <code>start-autoapply.command</code> starts the helper
+      just for the current session instead.</p>
+    <div class="actions">
+      <button class="btn primary" id="retry">Try again</button>
+      <a class="btn secondary" id="openAnyway" href="#">Open the editor anyway</a>
+      <a class="btn secondary" id="postingLink" href="#" target="_blank" rel="noopener">Open the posting</a>
+      <a class="btn secondary" href="./">Back to the dashboard</a>
+    </div>
+  </section>
+
+  <section id="nourl" class="hidden">
+    <h1>No posting was given</h1>
+    <p>This page opens a job posting in your local CV editor, so it needs to be reached
+    from a role on the dashboard.</p>
+    <div class="actions"><a class="btn primary" href="./">Back to the dashboard</a></div>
+  </section>
+</main>
+<script>
+const BRIDGE = "http://127.0.0.1:8765";
+const params = new URLSearchParams(location.search);
+const postingUrl = params.get("url") || "";
+const cvId = params.get("cv") || "";
+// Three things arrive here: a posting to tailor for, a request to pair this
+// browser, and a request for the local tracker. All three fail the same way when
+// the helper is down, so all three come through this page.
+const destination = params.get("to") === "dashboard" ? "dashboard" : (postingUrl ? "editor" : "connect");
+const editorUrl = destination === "editor"
+  ? `${BRIDGE}/editor?url=${encodeURIComponent(postingUrl)}` + (cvId ? `&cv=${encodeURIComponent(cvId)}` : "")
+  : destination === "dashboard" ? `${BRIDGE}/dashboard` : `${BRIDGE}/connect`;
+
+function show(id) {
+  for (const section of ["trying", "down", "nourl"]) {
+    document.getElementById(section).classList.toggle("hidden", section !== id);
+  }
+}
+
+if (destination === "editor" && !/^https:\/\//.test(postingUrl)) {
+  show("nourl");
+} else {
+  document.getElementById("openAnyway").href = editorUrl;
+  const postingLink = document.getElementById("postingLink");
+  if (postingUrl) {
+    postingLink.href = postingUrl;
+    try {
+      document.getElementById("roleTrying").textContent =
+        new URL(postingUrl).hostname.replace(/^www\./, "");
+    } catch (error) { /* the hostname is decoration only */ }
+  } else {
+    postingLink.classList.add("hidden");
+    document.getElementById("roleTrying").textContent =
+      destination === "dashboard" ? "your local tracker" : "this browser";
+  }
+  attempt();
+}
+
+// The helper answers a favicon request without a token, and an <img> probe is
+// the one cross-origin check a static page can rely on for a loopback address:
+// fetch is subject to private-network preflights the helper does not answer.
+// Whatever the probe says, the redirect is attempted anyway after it — a false
+// negative must never keep someone out of a helper that is running.
+function attempt() {
+  show("trying");
+  let settled = false;
+  const decide = (alive) => {
+    if (settled) return;
+    settled = true;
+    if (alive) {
+      location.replace(editorUrl);
+    } else {
+      show("down");
+    }
+  };
+  const probe = new Image();
+  probe.onload = () => decide(true);
+  probe.onerror = () => decide(false);
+  probe.src = `${BRIDGE}/favicon.ico?t=${Date.now()}`;
+  // No answer either way inside two seconds: try the editor rather than
+  // guessing. A slow machine is not a missing helper.
+  setTimeout(() => decide(true), 2000);
+}
+
+document.getElementById("retry").addEventListener("click", attempt);
+</script>
+</body>
+</html>
