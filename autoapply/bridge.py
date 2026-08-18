@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -73,6 +74,12 @@ from .resume import render_resume
 from .runner import prepare
 from .store import Store
 
+
+# A 1x1 transparent GIF: the smallest thing a browser will load as an image, so
+# a static page can probe whether this helper is running at all.
+ALIVE_PIXEL = base64.b64decode(
+    b"R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+)
 
 MAX_REQUEST_BYTES = 262144
 DOWNLOAD_TTL = timedelta(minutes=5)
@@ -505,6 +512,20 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 "key": key_source(self.server.home, base),
                 "key_configured": key_configured(self.server.home, base),
             })
+            return
+        # A one-pixel image, no token required, so a page that cannot make an
+        # authenticated cross-origin call can still find out whether the helper
+        # is running — which is what stands between "Edit CV for this job" and a
+        # browser error page that explains nothing. It says only that something
+        # is listening; every route that carries data still needs the token.
+        if parsed_request.path == "/favicon.ico":
+            self.send_response(200)
+            self._cors()
+            self.send_header("Content-Type", "image/gif")
+            self.send_header("Content-Length", str(len(ALIVE_PIXEL)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(ALIVE_PIXEL)
             return
         if parsed_request.path == "/connect":
             self._html(200, CONNECT_PAGE)
