@@ -7,47 +7,46 @@
 <meta name="description" content="Tailor your CV for a specific posting in the browser. Your CV and your API key stay in this browser; nothing is installed.">
 <link rel="icon" href="./favicon.svg">
 <!--
-  The CV editor has always run as a helper on the reader's own machine, which is
-  how their CV, their fact bank and their API key stay off the internet. It is
-  the better editor and it stays the default. But it has to be installed once,
-  and until it is, every "Edit CV for this job" button led to a page explaining
-  which file to double-click — which is not an answer for someone who just wants
-  their CV tailored.
+  The CV editor with nothing to install. The CV is stored in this browser, the
+  key is stored in this browser, the rewrite request goes straight from this
+  page to the provider the reader chose, and the PDF is written here — a real
+  file, not a screenshot of a web page and not the print dialog.
 
-  This page is that answer. It runs entirely in the browser: the CV is stored
-  here, the key is stored here, the rewrite request goes straight from this page
-  to the provider the reader chose, and the PDF comes out of the browser's own
-  print dialog. Nothing is installed and nothing is uploaded — not to GitHub,
-  not anywhere but the model endpoint the reader picked.
+  It is a document, not a text box. The page below is A4 at true size with the
+  same typography the local editor prints: Times body, letterspaced
+  Helvetica-Bold section heads in #14324F, right-aligned dates. What you edit
+  is what comes out, because the PDF writer at the bottom of this file lays out
+  the same blocks with the same measurements.
 
-  Where it is honestly worse than the local helper: it cannot read the advert
-  (job boards refuse cross-origin requests, so the text has to be pasted), it
-  has no fact bank to check claims against, and it keeps no library of saved
-  CVs. When the helper is running this page says so and offers to hand over.
+  Where it is honestly worse than the helper on your own machine: it cannot
+  read the advert (job boards refuse cross-origin requests, so the text is
+  pasted), it has no fact bank to check claims against, and it keeps no library
+  of saved CVs.
 -->
 <style>
 :root{color-scheme:dark;--bg:#07110f;--panel:#10211c;--line:#315346;--text:#f1f8f5;
---muted:#a6b9b2;--green:#70efad;--green2:#25b875;--red:#ff8b82;--amber:#ffd479}
+--muted:#a6b9b2;--green:#70efad;--green2:#25b875;--red:#ff8b82;
+--accent:#14324F;--rule:#9DB2C2;--date:#2B3A47}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#174b3766,transparent 40rem),var(--bg);
 color:var(--text);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 a{color:var(--green)}
-.wrap{max-width:1180px;margin:0 auto;padding:20px 18px 60px}
-header{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.wrap{max-width:1220px;margin:0 auto;padding:18px 18px 60px}
+header{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
 .eyebrow{color:var(--green);font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
 h1{margin:6px 0 4px;font-size:26px;line-height:1.15;letter-spacing:-.03em}
 h2{font-size:15px;margin:0 0 6px}
 .sub{color:var(--muted);font-size:13.5px;margin:0}
-.cols{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
-@media (max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+@media (max-width:980px){.cols{grid-template-columns:minmax(0,1fr)}}
 .card{background:linear-gradient(150deg,#13271f,#0c1714);border:1px solid var(--line);
-border-radius:16px;padding:16px;margin-bottom:14px}
+border-radius:16px;padding:15px;margin-bottom:13px}
 .hint{color:var(--muted);font-size:12.5px;margin:6px 0 0}
 label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
 input,select,textarea{width:100%;background:#0b1f18;border:1px solid #2c5c47;border-radius:10px;
 color:var(--text);padding:9px 10px;font:inherit;font-size:13.5px}
-textarea{min-height:120px;resize:vertical;line-height:1.5}
-button{font:inherit;font-weight:700;font-size:13.5px;border-radius:11px;padding:10px 14px;
+textarea{min-height:110px;resize:vertical;line-height:1.5}
+button{font:inherit;font-weight:700;font-size:13.5px;border-radius:11px;padding:9px 13px;
 cursor:pointer;border:1px solid transparent;white-space:nowrap}
 button:disabled{opacity:.55;cursor:default}
 .primary{background:var(--green2);color:#04150d}
@@ -59,45 +58,58 @@ a.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border-rad
 text-decoration:none;font-weight:700;font-size:13px;border:1px solid var(--line);
 background:#12241d;color:var(--text)}
 .banner{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;
-border:1px solid var(--line);background:#0e1f19;border-radius:14px;padding:11px 14px;margin-bottom:14px}
-.banner.hidden{display:none}
-/* Beats a.btn's own display, which is more specific than a bare class. */
-.hidden{display:none!important}
+border:1px solid var(--line);background:#0e1f19;border-radius:14px;padding:11px 14px;margin-bottom:13px}
 .notice{border-radius:11px;padding:10px 12px;font-size:13px;margin:0 0 12px;border:1px solid var(--line);background:#0e1f19}
 .notice.error{border-color:#6f3430;color:var(--red)}
 .notice.ok{border-color:#2c5c47;color:var(--green)}
-.notice.hidden{display:none}
-/* ── The CV itself ───────────────────────────────────────────────────────── */
-#doc{background:#f7fbf9;color:#10201a;border-radius:12px;padding:26px 30px;min-height:320px;
-font:14.5px/1.6 "Iowan Old Style",Georgia,"Times New Roman",serif}
-#doc .line{position:relative;padding:3px 6px;border-radius:6px;margin:1px -6px;outline:none;white-space:pre-wrap}
-#doc .line:focus{background:#e7f4ee}
-#doc .line.blank{min-height:10px}
-#doc .line.head{font-weight:700;font-size:16px;letter-spacing:-.01em;margin-top:14px}
-#doc .line.changed{background:#e3f6ea}
-.proposal{background:#eef8f2;border:1px solid #bfe3cd;border-left:3px solid var(--green2);
-border-radius:8px;padding:8px 10px;margin:4px -6px 8px}
-.proposal .was{color:#5c7a6c;font-size:12.5px;text-decoration:line-through;margin-bottom:4px}
-.proposal .now{color:#10201a}
-.proposal .why{color:#4d6d5e;font-size:12px;margin-top:5px;font-style:italic}
-.proposal .acts{display:flex;gap:6px;margin-top:8px}
-.proposal button{padding:4px 9px;font-size:12px;border-radius:7px}
-.proposal .yes{background:var(--green2);color:#04150d}
-.proposal .no{background:#e6efe9;color:#2c4438;border:1px solid #c6d9cd}
-.empty{color:var(--muted);text-align:center;padding:48px 20px;border:1px dashed var(--line);border-radius:12px}
+.banner.hidden,.notice.hidden{display:none}
+/* Beats a.btn's own display, which is more specific than a bare class. */
+.hidden{display:none!important}
 .count{color:var(--muted);font-size:12.5px}
 .pill{display:inline-block;background:#0f2a20;border:1px solid #2c5c47;color:var(--green);
 border-radius:99px;padding:2px 9px;font-size:11.5px;margin:0 5px 5px 0}
-/* ── Print: the CV only, on paper ────────────────────────────────────────── */
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+
+/* ── The document ─────────────────────────────────────────────────────────
+   A4 at true size, in points, so what is on screen is what the PDF writer
+   lays out. The whole sheet is scaled to fit its column; nothing inside it
+   is resized, so the proportions survive. */
+#paper{overflow:hidden}
+#sheet{width:595.28pt;min-height:841.89pt;padding:36pt 42.52pt 40pt;background:#fff;color:#111;
+transform-origin:top left;box-shadow:0 18px 50px #0008;border-radius:2px}
+#sheet .b{outline:none;white-space:pre-wrap}
+#sheet .b:focus{background:#eef5ff;border-radius:3px}
+#sheet .name{font:700 24pt/27pt "Times New Roman",Times,serif;text-align:center;color:#111}
+#sheet .contact{font:8.3pt/11pt Helvetica,Arial,sans-serif;text-align:center;color:var(--date);margin-top:4pt}
+#sheet .section{font:700 10pt/12pt Helvetica,Arial,sans-serif;color:var(--accent);
+letter-spacing:1.6pt;text-transform:uppercase;margin:13pt 0 1pt;
+border-bottom:1.1px solid var(--rule);padding-bottom:3pt}
+#sheet .entry{display:flex;gap:10pt;align-items:baseline;margin-top:7pt}
+#sheet .entry .title{font:700 10.8pt/13pt "Times New Roman",Times,serif;flex:1}
+#sheet .entry .when{font:700 8.4pt/13pt Helvetica,Arial,sans-serif;color:var(--date);white-space:nowrap}
+#sheet .body{font:9.7pt/12.1pt "Times New Roman",Times,serif;margin-top:2pt;text-align:justify}
+#sheet .bullet{font:9.7pt/12.1pt "Times New Roman",Times,serif;margin-top:2pt;
+padding-left:11pt;text-indent:-11pt}
+#sheet .gap{height:6pt}
+#sheet .changed{background:#eaf6ee;border-radius:3px}
+.proposal{background:#eef8f2;border:1px solid #bfe3cd;border-left:3px solid var(--green2);
+border-radius:6px;padding:6pt 8pt;margin:5pt 0}
+.proposal .was{color:#5c7a6c;font:8.6pt/11pt "Times New Roman",Times,serif;text-decoration:line-through}
+.proposal .now{color:#10201a;font:9.7pt/12.1pt "Times New Roman",Times,serif;margin-top:3pt}
+.proposal .why{color:#4d6d5e;font:italic 8.4pt/11pt "Times New Roman",Times,serif;margin-top:3pt}
+.proposal .acts{display:flex;gap:6px;margin-top:6pt}
+.proposal button{padding:3px 8px;font-size:11px;border-radius:6px}
+.proposal .yes{background:var(--green2);color:#04150d}
+.proposal .no{background:#e6efe9;color:#2c4438;border:1px solid #c6d9cd}
+.empty{color:#5c7a6c;text-align:center;padding:60pt 20pt;border:1px dashed #c6d9cd;border-radius:8px;
+font:11pt/1.5 "Times New Roman",Times,serif}
 @media print{
   body{background:#fff}
   .wrap{max-width:none;padding:0}
-  header,.cols>aside,.banner,.notice,#docTools,#pasteCard,footer{display:none!important}
+  header,.cols>aside,.banner,.notice,.toolbar,#pasteCard,footer{display:none!important}
   .cols{display:block}
   .card{border:0;background:none;padding:0;margin:0}
-  #doc{background:#fff;color:#000;padding:0;font-size:11.2pt;line-height:1.45}
-  #doc .line{margin:0;padding:0}
-  #doc .line.changed{background:none}
+  #sheet{box-shadow:none;transform:none!important;width:auto;min-height:0;padding:0}
   .proposal{display:none}
   @page{margin:14mm}
 }
@@ -122,7 +134,7 @@ border-radius:99px;padding:2px 9px;font-size:11.5px;margin:0 5px 5px 0}
   <div>
     <strong id="helperTitle">Your machine’s CV helper is running.</strong>
     <div class="hint" style="margin-top:2px" id="helperNote">It has your private CV files, your
-      saved CVs and proper PDF export. This page is the version that needs no install.</div>
+      saved CVs and your fact bank. This page is the version that needs no install.</div>
   </div>
   <a class="btn" id="helperLink" href="#">Open the full editor</a>
 </div>
@@ -135,10 +147,10 @@ border-radius:99px;padding:2px 9px;font-size:11.5px;margin:0 5px 5px 0}
     <div class="card" id="pasteCard">
       <h2>Your CV</h2>
       <p class="hint">Paste it as plain text — straight out of your PDF, Word or Google Doc.
-      It is stored in this browser only: not uploaded, not sent to GitHub, and not visible
-      to anyone else on this machine’s network.</p>
+      It is laid out as a document below, and stored in this browser only: not uploaded,
+      not sent to GitHub.</p>
       <textarea id="cvPaste" spellcheck="false" placeholder="Ada Lovelace
-London · ada@example.com
+London · ada@example.com · +44 20 7946 0000
 
 EXPERIENCE
 Robotics Intern — Robot Co, Summer 2025
@@ -149,21 +161,21 @@ EDUCATION
 BSc Computer Science, University of London, 2027"></textarea>
       <div class="row" style="margin-top:10px">
         <button class="primary" id="useCv">Use this CV</button>
+        <button class="secondary hidden" id="cancelPaste" style="flex:0 0 auto">Cancel</button>
       </div>
     </div>
 
     <div class="card">
-      <div id="docTools" style="display:flex;justify-content:space-between;align-items:center;
-        gap:10px;flex-wrap:wrap;margin-bottom:10px">
-        <div class="count" id="docCount">Click any line to edit it — this is exactly how it prints.</div>
+      <div class="toolbar">
+        <div class="count" id="docCount">Click any line and type — this is exactly how it prints.</div>
         <div class="row" style="flex:0 0 auto">
           <button class="secondary tiny" id="acceptAll">Accept all</button>
           <button class="secondary tiny" id="rejectAll">Reject all</button>
           <button class="secondary tiny" id="editRaw">Edit raw text</button>
-          <button class="primary tiny" id="print">Save as PDF</button>
+          <button class="primary tiny" id="download">Download PDF</button>
         </div>
       </div>
-      <div id="doc"><div class="empty">Paste your CV above to begin.</div></div>
+      <div id="paper"><div id="sheet"></div></div>
     </div>
   </main>
 
@@ -171,10 +183,14 @@ BSc Computer Science, University of London, 2027"></textarea>
     <div class="card">
       <h2>This job</h2>
       <div id="jobFacts"></div>
+      <label for="roleInput">Role</label>
+      <input id="roleInput" spellcheck="false" placeholder="Robotics Intern">
+      <label for="companyInput">Company</label>
+      <input id="companyInput" spellcheck="false" placeholder="Robot Co">
       <label for="advert">The advert</label>
       <p class="hint" style="margin:0 0 5px">A web page cannot read another site’s posting —
       job boards refuse it. Paste the description here and every rewrite is written against
-      what the role actually asks for. Without it, only the title and company are known.</p>
+      what the role actually asks for.</p>
       <textarea id="advert" spellcheck="false" placeholder="Paste the job description…"></textarea>
       <p class="hint" id="advertNote"></p>
     </div>
@@ -196,9 +212,6 @@ BSc Computer Science, University of London, 2027"></textarea>
       <div class="row" style="margin-top:10px">
         <button class="primary" id="rewrite">Rewrite for this job</button>
       </div>
-      <div class="row" style="margin-top:8px">
-        <button class="secondary tiny" id="forget" style="flex:1">Forget everything on this device</button>
-      </div>
       <p class="hint" id="status"></p>
     </div>
 
@@ -210,15 +223,18 @@ BSc Computer Science, University of London, 2027"></textarea>
       would make. It never passes through GitHub or any server of this project.</p>
       <p class="hint"><strong>Google AI Studio</strong> is the free tier and is known to accept
       requests from a web page. Some providers refuse browser requests on purpose; if yours does,
-      the message below will say exactly that, and the local helper is the way round it.</p>
+      the message will say exactly that.</p>
+      <div class="row" style="margin-top:10px">
+        <button class="secondary tiny" id="forget" style="flex:1">Forget everything on this device</button>
+      </div>
     </div>
   </aside>
 
 </div>
 
-<footer class="hint" style="margin-top:20px;text-align:center">
-  Better on this machine: the local helper reads the advert for you, checks every claim against
-  your fact bank, keeps a library of tailored CVs and exports a real PDF.
+<footer class="hint" style="margin-top:18px;text-align:center">
+  The helper on your own machine reads the advert for you, checks every claim against your fact
+  bank and keeps a library of tailored CVs.
   <a href="https://github.com/abyyworld/internship-tracker#readme" target="_blank" rel="noopener">How to install it</a>.
 </footer>
 
@@ -235,15 +251,12 @@ const posting = {
   location: params.get("location") || "",
   tags: (params.get("tags") || "").split(",").map(t => t.trim()).filter(Boolean),
 };
-// Set by open.html: "stale" means a helper answered but is running a build from
-// before it could open a posting like this one. Sending the reader back to it
-// would be sending them back into the refusal they just escaped.
+// Set by open.html: "stale" means a helper answered but runs a build from
+// before it could open a posting like this one.
 const helperState = params.get("helper") || "";
 const BRIDGE = "http://127.0.0.1:8765";
 const $ = id => document.getElementById(id);
 
-// ── Storage. Every read is guarded: a browser with storage disabled must give
-// a working page that forgets, not a broken one. ───────────────────────────
 const store = {
   get(key, fallback = "") {
     try { const value = localStorage.getItem(key); return value === null ? fallback : value; }
@@ -258,15 +271,14 @@ const KEY = {
   cv: "studio.cv",
   advert: `studio.advert.${jobKey}`,
   draft: `studio.draft.${jobKey}`,
+  role: `studio.role.${jobKey}`,
+  company: `studio.company.${jobKey}`,
   provider: "studio.provider",
   base: "studio.base",
   key: id => `studio.key.${id}`,
   model: id => `studio.model.${id}`,
 };
 
-// ── Providers. The same set the local helper speaks to, minus the ones that
-// only make sense on a machine (a model running on localhost cannot be reached
-// from a page served over https). ─────────────────────────────────────────
 const PROVIDERS = [
   {id: "gemini", label: "Google AI Studio (free tier)",
    base: "https://generativelanguage.googleapis.com/v1beta/openai",
@@ -277,7 +289,7 @@ const PROVIDERS = [
    base: "https://openrouter.ai/api/v1",
    models: ["google/gemini-2.5-flash", "meta-llama/llama-3.3-70b-instruct", "openai/gpt-4o-mini"],
    keys: "https://openrouter.ai/keys", hint: "sk-or-…",
-   note: "One key, many models. Free models are listed with a :free suffix."},
+   note: "One key, many models. Free models carry a :free suffix."},
   {id: "groq", label: "Groq",
    base: "https://api.groq.com/openai/v1",
    models: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"],
@@ -294,11 +306,56 @@ const PROVIDERS = [
 ];
 const providerById = id => PROVIDERS.find(p => p.id === id) || PROVIDERS[0];
 
-// ── State ──────────────────────────────────────────────────────────────────
-// lines: the CV, one entry per line of the pasted text. Each carries the
-// original, whatever the reader has typed, and any proposal not yet answered.
+// ── The document ───────────────────────────────────────────────────────────
+// One line of the pasted CV is one block, kept in the order it was written.
+// That is what makes a rewrite reviewable line by line, and it is what the PDF
+// writer walks. What each line IS — a heading, an entry with a date, a bullet —
+// is decided by looking at it, and only changes how it is set.
 let lines = [];
 let busy = false;
+
+const MONTHS = "jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec";
+const DATEISH = new RegExp(`(19|20)\\d{2}|present|current|ongoing|summer|spring|autumn|fall|winter|${MONTHS}`, "i");
+
+function kindOf(text, index) {
+  const value = text.trim();
+  if (!value) return "gap";
+  if (index === 0) return "name";
+  if (index <= 2 && value.length < 95 && /[·|@]|\+\d|\d{3}/.test(value)) return "contact";
+  if (/^[•\-*–]\s+/.test(value)) return "bullet";
+  // A heading is short, has no sentence punctuation, and is either shouted or
+  // Title Case: EXPERIENCE, Education, Selected Projects.
+  if (value.length <= 34 && !/[.;:,]$/.test(value)
+      && (value === value.toUpperCase() || /^[A-Z][a-z]+(\s[A-Za-z&]+){0,3}$/.test(value))) {
+    return "section";
+  }
+  if (splitDate(value)) return "entry";
+  return "body";
+}
+
+// "Robotics Intern — Robot Co, Summer 2025" → "Robotics Intern — Robot Co" on
+// the left and "Summer 2025" on the right, which is where a CV puts a date.
+//
+// Every separator in the line is a candidate, and the winner is the SHORTEST
+// tail that still reads like a date: splitting at the em dash would carry the
+// employer over to the right margin with it, and splitting on any dash at all
+// would cut ordinary sentences in half.
+function splitDate(value) {
+  const marks = [" — ", " – ", " -- ", " - ", ", ", " | ", " • "];
+  let best = null;
+  for (const mark of marks) {
+    let at = value.indexOf(mark);
+    while (at > 0) {
+      const tail = value.slice(at + mark.length).trim();
+      if (tail.length <= 42 && DATEISH.test(tail) && !/[.]$/.test(tail)
+          && (!best || tail.length < best.when.length)) {
+        best = {title: value.slice(0, at).trim(), when: tail};
+      }
+      at = value.indexOf(mark, at + 1);
+    }
+  }
+  return best;
+}
 
 function loadDraft() {
   try { return JSON.parse(store.get(KEY.draft, "{}")) || {}; }
@@ -306,11 +363,10 @@ function loadDraft() {
 }
 function saveDraft() {
   const kept = {};
-  lines.forEach((line, index) => {
-    if (line.text !== line.original) kept[index] = line.text;
-  });
+  lines.forEach((line, index) => { if (line.text !== line.original) kept[index] = line.text; });
   store.set(KEY.draft, JSON.stringify(kept));
 }
+function rawText() { return lines.map(line => line.text).join("\n"); }
 
 function setCv(text) {
   const draft = loadDraft();
@@ -322,40 +378,21 @@ function setCv(text) {
   render();
 }
 
-// A heading is a short line with no sentence punctuation — "EXPERIENCE",
-// "Education", "Projects". Only used to make the page look like the CV it is;
-// nothing is inferred from it.
-const looksLikeHeading = text =>
-  text.trim().length > 0 && text.trim().length <= 34 && !/[.;:]$/.test(text.trim())
-  && (text === text.toUpperCase() || /^[A-Z][a-z]+(\s[A-Za-z&]+){0,2}$/.test(text.trim()));
-
 function render() {
-  const doc = $("doc");
-  doc.replaceChildren();
+  const sheet = $("sheet");
+  sheet.replaceChildren();
   if (!lines.length) {
     const empty = document.createElement("div");
     empty.className = "empty";
-    empty.textContent = "Paste your CV above to begin.";
-    doc.append(empty);
+    empty.textContent = "Paste your CV above and it appears here, set as it will print.";
+    sheet.append(empty);
     $("docCount").textContent = "";
+    fitPage();
     return;
   }
   lines.forEach((line, index) => {
-    if (line.proposal) doc.append(proposalCard(line, index));
-    const row = document.createElement("div");
-    row.className = "line"
-      + (line.text.trim() ? "" : " blank")
-      + (looksLikeHeading(line.text) ? " head" : "")
-      + (line.text !== line.original ? " changed" : "");
-    row.contentEditable = "true";
-    row.spellcheck = false;
-    row.textContent = line.text;
-    row.addEventListener("input", () => {
-      line.text = row.textContent;
-      row.classList.toggle("changed", line.text !== line.original);
-      saveDraft();
-    });
-    doc.append(row);
+    if (line.proposal) sheet.append(proposalCard(line));
+    sheet.append(blockFor(line, index));
   });
   const changed = lines.filter(line => line.text !== line.original).length;
   const open = lines.filter(line => line.proposal).length;
@@ -363,10 +400,53 @@ function render() {
     ? `${open} suggested ${open === 1 ? "edit" : "edits"} waiting — accept or reject each one.`
     : (changed
       ? `${changed} ${changed === 1 ? "line differs" : "lines differ"} from your original.`
-      : "Click any line to edit it — this is exactly how it prints.");
+      : "Click any line and type — this is exactly how it prints.");
+  fitPage();
 }
 
-function proposalCard(line, index) {
+function blockFor(line, index) {
+  const kind = kindOf(line.text, index);
+  const changed = line.text !== line.original ? " changed" : "";
+  if (kind === "gap") {
+    const gap = document.createElement("div");
+    gap.className = "gap";
+    return gap;
+  }
+  if (kind === "entry") {
+    const parts = splitDate(line.text.trim());
+    const row = document.createElement("div");
+    row.className = "entry b" + changed;
+    const title = document.createElement("div");
+    title.className = "title";
+    title.textContent = parts.title;
+    const when = document.createElement("div");
+    when.className = "when";
+    when.textContent = parts.when;
+    row.append(title, when);
+    // Edited as one line, because that is the unit a rewrite replaces.
+    const read = () => `${title.textContent} — ${when.textContent}`;
+    editable(title, line, read);
+    editable(when, line, read);
+    return row;
+  }
+  const node = document.createElement("div");
+  node.className = kind + " b" + changed;
+  node.textContent = kind === "bullet" ? line.text.trim() : line.text;
+  editable(node, line, () => node.textContent);
+  return node;
+}
+
+function editable(node, line, read) {
+  node.contentEditable = "true";
+  node.spellcheck = false;
+  node.addEventListener("input", () => {
+    line.text = read();
+    saveDraft();
+  });
+  node.addEventListener("blur", render);
+}
+
+function proposalCard(line) {
   const card = document.createElement("div");
   card.className = "proposal";
   const was = document.createElement("div");
@@ -397,12 +477,236 @@ function proposalCard(line, index) {
   return card;
 }
 
+// The sheet is a fixed A4 in points. Scaling the whole thing keeps every
+// proportion honest — the alternative, resizing the type to fit, would show a
+// layout that is not the one that prints.
+function fitPage() {
+  const paper = $("paper");
+  const sheet = $("sheet");
+  if (!paper || !sheet) return;
+  sheet.style.transform = "none";
+  const natural = sheet.offsetWidth || 1;
+  const scale = Math.min(1, paper.clientWidth / natural);
+  sheet.style.transform = `scale(${scale})`;
+  paper.style.height = `${sheet.offsetHeight * scale}px`;
+}
+window.addEventListener("resize", fitPage);
+
 function say(message, kind = "") {
   const box = $("notice");
   box.className = "notice " + kind + (message ? "" : " hidden");
   box.textContent = message || "";
 }
 function status(message) { $("status").textContent = message || ""; }
+
+// ── Writing the PDF ────────────────────────────────────────────────────────
+// By hand, because a CV is text in fourteen fonts every PDF reader already
+// has, and pulling in a library to place it would mean either a CDN this page
+// refuses to load or a megabyte inlined. The layout below is the one in
+// autoapply/cv_render.py: A4, 42.52pt side margins, Times body, letterspaced
+// Helvetica-Bold heads in #14324F, right-aligned dates.
+const PAGE = {w: 595.28, h: 841.89, left: 42.52, top: 36, bottom: 40};
+const CONTENT_W = PAGE.w - 2 * PAGE.left;
+const FONTS = {
+  name: {font: "F2", size: 24, lead: 27, css: 'bold 24px "Times New Roman"'},
+  contact: {font: "F3", size: 8.3, lead: 11, css: '8.3px Helvetica, Arial'},
+  section: {font: "F4", size: 10, lead: 12, css: 'bold 10px Helvetica, Arial', track: 1.6},
+  title: {font: "F2", size: 10.8, lead: 13, css: 'bold 10.8px "Times New Roman"'},
+  when: {font: "F4", size: 8.4, lead: 13, css: 'bold 8.4px Helvetica, Arial'},
+  body: {font: "F1", size: 9.7, lead: 12.1, css: '9.7px "Times New Roman"'},
+};
+const ACCENT = [0.078, 0.196, 0.310];   // #14324F
+const RULE = [0.616, 0.698, 0.761];     // #9DB2C2
+const DATE_INK = [0.169, 0.227, 0.278]; // #2B3A47
+
+let ruler = null;
+function widthOf(text, spec) {
+  // Measured in the browser with the metrically matching family, which is what
+  // the reader will see in their own viewer. A hard-coded table of the base-14
+  // widths would be more exact and forty times the size.
+  if (!ruler) ruler = document.createElement("canvas").getContext("2d");
+  ruler.font = spec.css;
+  let width = ruler.measureText(text).width;
+  if (spec.track) width += spec.track * Math.max(0, text.length - 1);
+  return width;
+}
+
+function wrap(text, spec, width) {
+  const words = String(text).split(/\s+/).filter(Boolean);
+  const rows = [];
+  let row = "";
+  for (const word of words) {
+    const attempt = row ? `${row} ${word}` : word;
+    if (widthOf(attempt, spec) <= width || !row) row = attempt;
+    else { rows.push(row); row = word; }
+  }
+  if (row) rows.push(row);
+  return rows.length ? rows : [""];
+}
+
+// WinAnsi, which the base-14 fonts are declared with. Everything a CV pasted
+// out of Word actually contains — curly quotes, en and em dashes, bullets, the
+// middle dot — has a slot; anything else becomes a question mark rather than a
+// broken file.
+const WINANSI = {0x2018: 0x91, 0x2019: 0x92, 0x201C: 0x93, 0x201D: 0x94, 0x2013: 0x96,
+                 0x2014: 0x97, 0x2022: 0x95, 0x2026: 0x85, 0x2039: 0x8B, 0x203A: 0x9B,
+                 0x20AC: 0x80, 0x2122: 0x99, 0x0152: 0x8C, 0x0153: 0x9C};
+function pdfString(text) {
+  let out = "";
+  for (const character of String(text)) {
+    const code = character.codePointAt(0);
+    let byte;
+    if (code >= 0x20 && code <= 0x7E) byte = code;
+    else if (WINANSI[code] !== undefined) byte = WINANSI[code];
+    else if (code >= 0xA0 && code <= 0xFF) byte = code;
+    else byte = 0x3F;
+    const glyph = String.fromCharCode(byte);
+    out += (glyph === "(" || glyph === ")" || glyph === "\\") ? "\\" + glyph : glyph;
+  }
+  return out;
+}
+
+function buildPdf() {
+  const pages = [];
+  let ops = [];
+  let y = PAGE.h - PAGE.top;
+
+  const newPage = () => { pages.push(ops); ops = []; y = PAGE.h - PAGE.top; };
+  const room = need => { if (y - need < PAGE.bottom) newPage(); };
+  const colour = ink => `${ink[0]} ${ink[1]} ${ink[2]} rg`;
+
+  const put = (text, spec, x, ink) => {
+    ops.push("BT", colour(ink || [0.07, 0.07, 0.07]),
+             `/${spec.font} ${spec.size} Tf`,
+             spec.track ? `${spec.track} Tc` : "0 Tc",
+             `1 0 0 1 ${x.toFixed(2)} ${y.toFixed(2)} Tm`,
+             `(${pdfString(text)}) Tj`, "ET");
+  };
+  const paragraph = (text, spec, ink) => {
+    for (const row of wrap(text, spec, CONTENT_W)) {
+      room(spec.lead);
+      y -= spec.lead;
+      put(row, spec, PAGE.left, ink);
+    }
+  };
+
+  lines.forEach((line, index) => {
+    const kind = kindOf(line.text, index);
+    const value = line.text.trim();
+    if (kind === "gap") { y -= 6; return; }
+    if (kind === "name") {
+      room(FONTS.name.lead); y -= FONTS.name.lead;
+      put(value, FONTS.name, PAGE.left + (CONTENT_W - widthOf(value, FONTS.name)) / 2);
+      return;
+    }
+    if (kind === "contact") {
+      room(FONTS.contact.lead); y -= FONTS.contact.lead;
+      put(value, FONTS.contact,
+          PAGE.left + (CONTENT_W - widthOf(value, FONTS.contact)) / 2, DATE_INK);
+      return;
+    }
+    if (kind === "section") {
+      room(26);
+      y -= 15;
+      put(value.toUpperCase(), FONTS.section, PAGE.left, ACCENT);
+      y -= 4;
+      ops.push(`${RULE[0]} ${RULE[1]} ${RULE[2]} RG`, "1.1 w",
+               `${PAGE.left} ${y.toFixed(2)} m ${(PAGE.left + CONTENT_W).toFixed(2)} ${y.toFixed(2)} l S`);
+      return;
+    }
+    if (kind === "entry") {
+      const parts = splitDate(value) || {title: value, when: ""};
+      room(FONTS.title.lead + 5);
+      y -= FONTS.title.lead + 4;
+      const when = parts.when || "";
+      const whenWidth = when ? widthOf(when, FONTS.when) : 0;
+      const rows = wrap(parts.title, FONTS.title, CONTENT_W - whenWidth - 12);
+      put(rows[0], FONTS.title, PAGE.left);
+      if (when) put(when, FONTS.when, PAGE.left + CONTENT_W - whenWidth, DATE_INK);
+      for (const extra of rows.slice(1)) {
+        room(FONTS.title.lead); y -= FONTS.title.lead;
+        put(extra, FONTS.title, PAGE.left);
+      }
+      return;
+    }
+    if (kind === "bullet") {
+      const text = value.replace(/^[•\-*–]\s+/, "");
+      wrap(text, FONTS.body, CONTENT_W - 11).forEach((row, row_index) => {
+        room(FONTS.body.lead);
+        y -= FONTS.body.lead;
+        if (row_index === 0) put("•", FONTS.body, PAGE.left);
+        put(row, FONTS.body, PAGE.left + 11);
+      });
+      return;
+    }
+    paragraph(value, FONTS.body);
+  });
+  pages.push(ops);
+
+  // ── Assemble ─────────────────────────────────────────────────────────────
+  const objects = [];
+  const add = body => { objects.push(body); return objects.length; };   // 1-based
+  const fontIds = {
+    F1: add("<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman /Encoding /WinAnsiEncoding >>"),
+    F2: add("<< /Type /Font /Subtype /Type1 /BaseFont /Times-Bold /Encoding /WinAnsiEncoding >>"),
+    F3: add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"),
+    F4: add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>"),
+  };
+  const resources = "<< /Font << "
+    + Object.entries(fontIds).map(([name, id]) => `/${name} ${id} 0 R`).join(" ")
+    + " >> >>";
+  // Each page costs two objects, and the page tree sits after them all.
+  const pagesId = objects.length + pages.length * 2 + 1;
+  const pageIds = [];
+  for (const page of pages) {
+    const stream = page.join("\n");
+    const contentId = add(`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`);
+    pageIds.push(add(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${PAGE.w} ${PAGE.h}] `
+                     + `/Resources ${resources} /Contents ${contentId} 0 R >>`));
+  }
+  const treeId = add(`<< /Type /Pages /Kids [${pageIds.map(id => `${id} 0 R`).join(" ")}] `
+                     + `/Count ${pageIds.length} >>`);
+  const catalogId = add(`<< /Type /Catalog /Pages ${treeId} 0 R >>`);
+
+  let file = "%PDF-1.4\n";
+  const offsets = [];
+  objects.forEach((body, index) => {
+    offsets.push(file.length);
+    file += `${index + 1} 0 obj\n${body}\nendobj\n`;
+  });
+  const startxref = file.length;
+  file += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`
+    + offsets.map(offset => `${String(offset).padStart(10, "0")} 00000 n \n`).join("")
+    + `trailer\n<< /Size ${objects.length + 1} /Root ${catalogId} 0 R >>\n`
+    + `startxref\n${startxref}\n%%EOF\n`;
+
+  const bytes = new Uint8Array(file.length);
+  for (let index = 0; index < file.length; index += 1) bytes[index] = file.charCodeAt(index) & 0xff;
+  return bytes;
+}
+
+function pdfName() {
+  const name = (lines[0] && lines[0].text.trim()) || "CV";
+  const bits = [jobCompany(), jobRole(), name, "CV"]
+    .filter(Boolean).map(part => part.replace(/[\\/:*?"<>|]/g, "").trim());
+  return `${bits.join(" - ")}.pdf`;
+}
+
+function downloadPdf() {
+  if (!lines.length) { say("Paste your CV first.", "error"); return; }
+  for (const line of lines) line.proposal = null;
+  render();
+  const blob = new Blob([buildPdf()], {type: "application/pdf"});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = pdfName();
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  say(`Saved ${link.download}.`, "ok");
+}
 
 // ── The provider card ──────────────────────────────────────────────────────
 function currentProvider() { return providerById(store.get(KEY.provider, "gemini")); }
@@ -444,23 +748,21 @@ function renderProvider() {
 }
 
 // ── The job card ───────────────────────────────────────────────────────────
+function jobRole() { return $("roleInput").value.trim(); }
+function jobCompany() { return $("companyInput").value.trim(); }
+
 function renderJob() {
   const facts = $("jobFacts");
   facts.replaceChildren();
-  const named = [posting.role, posting.company].filter(Boolean).join(" · ");
-  const heading = document.createElement("div");
-  heading.style.fontWeight = "600";
-  heading.textContent = named || "No role was named in the link";
-  facts.append(heading);
   if (posting.location) {
     const where = document.createElement("div");
     where.className = "hint";
+    where.style.marginTop = "0";
     where.textContent = posting.location;
     facts.append(where);
   }
   if (posting.tags.length) {
     const tags = document.createElement("div");
-    tags.style.marginTop = "7px";
     for (const tag of posting.tags) {
       const pill = document.createElement("span");
       pill.className = "pill";
@@ -469,14 +771,14 @@ function renderJob() {
     }
     facts.append(tags);
   }
-  $("roleTitle").textContent = posting.role || "Tailor your CV";
+  const named = [jobRole(), jobCompany()].filter(Boolean).join(" · ");
+  $("roleTitle").textContent = jobRole() || "Tailor your CV";
   $("roleMeta").textContent = named
-    ? [posting.company, posting.location].filter(Boolean).join(" · ")
+    ? [jobCompany(), posting.location].filter(Boolean).join(" · ")
       + " — nothing to install, this runs in your browser."
-    : "Nothing to install — this runs in your browser.";
+    : "Name the role on the right, or open this from a role on the dashboard.";
   const link = $("postingLink");
-  if (posting.url) { link.href = posting.url; } else { link.style.display = "none"; }
-  $("advert").value = store.get(KEY.advert, "");
+  if (posting.url) link.href = posting.url; else link.classList.add("hidden");
   advertNote();
 }
 function advertNote() {
@@ -487,9 +789,6 @@ function advertNote() {
 }
 
 // ── Talking to the provider ────────────────────────────────────────────────
-// The same discipline the local helper uses: rewrite only what the CV already
-// supports, never invent an employer, a date or a number, and say why for each
-// line so the reader can reject it on sight.
 const SYSTEM = [
   "You rewrite lines of a CV so they answer a specific job advert.",
   "Absolute rules:",
@@ -510,8 +809,8 @@ function tailoringPrompt() {
     .map(entry => `${entry.index}: ${entry.text}`)
     .join("\n");
   return [
-    `The role: ${posting.role || "(not given)"}`,
-    posting.company ? `The company: ${posting.company}` : "",
+    `The role: ${jobRole() || "(not given)"}`,
+    jobCompany() ? `The company: ${jobCompany()}` : "",
     posting.location ? `Location: ${posting.location}` : "",
     posting.tags.length ? `What it is about: ${posting.tags.join(", ")}` : "",
     advert ? `\nThe advert:\n${advert}` : "\n(The advert text was not available.)",
@@ -525,8 +824,7 @@ function tailoringPrompt() {
 
 // Providers disagree about the shape of an error. Google's OpenAI-compatible
 // endpoint wraps it in an array; others use {error:{message}}, or a bare
-// {message}, or plain text. Reading all of them is the difference between a
-// message someone can act on and "HTTP 400".
+// {message}, or plain text.
 function providerSaid(payload, response) {
   let body = payload;
   if (Array.isArray(body)) body = body.find(item => item && typeof item === "object") || {};
@@ -540,9 +838,7 @@ function providerSaid(payload, response) {
 }
 
 // What kind of failure it is comes from what the provider said, not only from
-// the status it said it with. Google answers a bad key with 400, so a page that
-// reads the status alone tells someone their request was malformed and sends
-// them looking in the wrong place entirely.
+// the status it said it with. Google answers a bad key with 400.
 const AUTH_WORDING = /api[ _-]?key|unauthenticated|unauthorized|permission denied|credential|authoriz|invalid token/i;
 const MODEL_WORDING = /model .*(not found|does not exist|is not supported)|unknown model|no such model/i;
 const FUNDS_WORDING = /billing|insufficient|payment|add credit|out of credit/i;
@@ -577,7 +873,6 @@ async function callProvider(base, key, model, prompt) {
       }),
     });
   } catch (error) {
-    // A browser reports a refused CORS request and a dead network identically.
     throw new Error(
       `Your browser could not reach ${new URL(endpoint).hostname}. Either you are offline, `
       + "or this provider does not allow requests from a web page — Google AI Studio does, "
@@ -599,9 +894,7 @@ function parseRewrites(content) {
   if (fenced) text = fenced[1].trim();
   const opened = text.indexOf("{");
   const closed = text.lastIndexOf("}");
-  if (opened > 0 || closed < text.length - 1) {
-    if (opened >= 0 && closed > opened) text = text.slice(opened, closed + 1);
-  }
+  if (opened >= 0 && closed > opened) text = text.slice(opened, closed + 1);
   let payload;
   try { payload = JSON.parse(text); }
   catch (error) { throw new Error("The model did not answer with the JSON it was asked for."); }
@@ -653,7 +946,6 @@ async function rewrite() {
       ? `${offered} suggested ${offered === 1 ? "edit" : "edits"}. Accept the ones you agree with.`
       : "The model found nothing worth changing for this role. That is a real answer, not a failure.",
       offered ? "ok" : "");
-    if (offered) $("doc").scrollIntoView({behavior: "smooth", block: "start"});
   } catch (error) {
     status("");
     say(error.message, "error");
@@ -665,14 +957,9 @@ async function rewrite() {
 }
 
 // ── Is the better editor available? ────────────────────────────────────────
-// Same two probes as open.html: an image on a route only newer builds serve,
-// and a no-cors fetch that resolves for any answer at all. Either one is proof.
-// This only ever adds an offer — a wrong answer here must never take anything
-// away from a page that already works.
 function offerHelper() {
   if (!posting.url) return;
   if (helperState === "stale") {
-    // Honest, and short: it is running, it is behind, and this page works now.
     $("helperTitle").textContent = "Your machine’s helper is running an older build.";
     $("helperNote").textContent =
       "It cannot open this posting — that was fixed later — so you were sent here, "
@@ -682,35 +969,36 @@ function offerHelper() {
     $("helperBanner").classList.remove("hidden");
     return;
   }
-  let shown = false;
-  const show = () => {
-    if (shown) return;
-    shown = true;
+  // Only a helper that can actually open this posting is worth offering.
+  const able = new Image();
+  able.onload = () => {
     const carried = ["company", "role", "location"]
       .map(field => (posting[field] ? `&${field}=${encodeURIComponent(posting[field])}` : ""))
       .join("");
     $("helperLink").href = `${BRIDGE}/editor?url=${encodeURIComponent(posting.url)}${carried}`;
     $("helperBanner").classList.remove("hidden");
   };
-  // Only a helper that can actually open this posting is worth offering.
-  const able = new Image();
-  able.onload = show;
   able.src = `${BRIDGE}/can/adopt-any-posting.png?t=${Date.now()}`;
 }
 
 // ── Wiring ─────────────────────────────────────────────────────────────────
+function showPaste(show) {
+  $("pasteCard").classList.toggle("hidden", !show);
+  $("cancelPaste").classList.toggle("hidden", !lines.length);
+}
 $("useCv").onclick = () => {
   const text = $("cvPaste").value;
   if (!text.trim()) { say("Paste the text of your CV first.", "error"); return; }
   store.set(KEY.cv, text);
   store.drop(KEY.draft);
   setCv(text);
-  $("pasteCard").style.display = "none";
+  showPaste(false);
   say("Saved in this browser. It will be here next time — for every role.", "ok");
 };
+$("cancelPaste").onclick = () => showPaste(false);
 $("editRaw").onclick = () => {
-  $("pasteCard").style.display = "";
-  $("cvPaste").value = store.get(KEY.cv, "");
+  showPaste(true);
+  $("cvPaste").value = rawText();
   $("cvPaste").focus();
 };
 $("acceptAll").onclick = () => {
@@ -729,11 +1017,7 @@ $("rejectAll").onclick = () => {
   for (const line of lines) line.proposal = null;
   render();
 };
-$("print").onclick = () => {
-  for (const line of lines) line.proposal = null;
-  render();
-  window.print();
-};
+$("download").onclick = downloadPdf;
 $("rewrite").onclick = rewrite;
 $("provider").onchange = event => {
   store.set(KEY.provider, event.target.value);
@@ -746,23 +1030,32 @@ $("key").onchange = event => {
   renderProvider();
 };
 $("advert").oninput = () => { store.set(KEY.advert, $("advert").value); advertNote(); };
+$("roleInput").oninput = () => { store.set(KEY.role, jobRole()); renderJob(); };
+$("companyInput").oninput = () => { store.set(KEY.company, jobCompany()); renderJob(); };
 $("forget").onclick = () => {
   if (!confirm("Delete your CV, your drafts and your API keys from this browser?")) return;
   for (const key of store.keys()) if (key.startsWith("studio.")) store.drop(key);
   lines = [];
   $("cvPaste").value = "";
-  $("pasteCard").style.display = "";
+  $("advert").value = "";
+  $("roleInput").value = "";
+  $("companyInput").value = "";
   renderProvider();
+  renderJob();
   render();
+  showPaste(true);
   say("Everything this page had stored on this device is gone.", "ok");
 };
 
 // ── Start ──────────────────────────────────────────────────────────────────
+$("roleInput").value = store.get(KEY.role, posting.role);
+$("companyInput").value = store.get(KEY.company, posting.company);
+$("advert").value = store.get(KEY.advert, "");
 renderJob();
 renderProvider();
 const saved = store.get(KEY.cv, "");
-if (saved) { setCv(saved); $("pasteCard").style.display = "none"; }
-else { $("cvPaste").focus(); }
+if (saved) { setCv(saved); showPaste(false); }
+else { render(); showPaste(true); $("cvPaste").focus(); }
 offerHelper();
 </script>
 </body>
