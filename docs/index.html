@@ -189,13 +189,17 @@ footer a{color:var(--green)}
   <div class="stat"><strong id="ventureStat">0</strong><span>venture programmes</span></div>
 </section>
 <section class="helper">
-  <div><strong>⚡ Local AI CV Studio</strong><p>Every role opens your complete CV with reviewable AI suggestions. Accept, reject, directly edit, then export — nothing is silently removed.</p>
-  <!-- This button is a link to the reader's own machine. When the helper is not
-       running it can only fail, and a browser error page explains nothing — so
-       the fix lives here, on a page that is readable without the helper. -->
-  <details class="helper-help"><summary>The button does nothing?</summary>
-  <p>It opens the CV helper on your own machine, so it only works while that helper is running. Open the project folder and double-click <code>install-login-service.command</code>. It installs the helper as a background service: it starts at login, restarts itself if it stops, and needs no window kept open. <code>start-autoapply.command</code> starts it once in a window if you prefer.</p></details></div>
-  <a class="btn primary" href="./open.html" target="_blank" title="Checks the local CV helper, pairs this browser with it, and reports which build, provider and model it is set up to use">Connect this browser</a>
+  <div><strong>⚡ AI CV Studio</strong><p>Every role opens your complete CV with reviewable AI suggestions. Accept, reject, directly edit, then export — nothing is silently removed.</p>
+  <!-- Two ways in, and the buttons never lead anywhere dead. "Edit CV for this
+       job" prefers the helper on the reader's own machine, which is the better
+       editor, and falls back to studio.html in the browser when there is no
+       helper — so someone who has installed nothing still gets their CV
+       tailored. -->
+  <details class="helper-help"><summary>Do I have to install anything?</summary>
+  <p>No. <a href="./studio.html">CV Studio in the browser</a> tailors your CV here — your CV, your key and your edits stay in this browser, and the rewrite goes straight from this page to the model provider you choose.</p>
+  <p>The version that runs on your own machine is better where it counts: it reads the advert for you, checks every claim against your fact bank, keeps a library of tailored CVs, and exports a real PDF. Double-click <code>install-login-service.command</code> in the project folder once and it starts at every login, keeps itself up to date, and needs no window kept open.</p></details></div>
+  <a class="btn primary" href="./studio.html" title="Tailor your CV here, with nothing installed">Tailor a CV now</a>
+  <a class="btn secondary" href="./open.html" target="_blank" title="Checks the CV helper on this machine, pairs this browser with it, and reports which build, provider and model it is set up to use">Connect this browser</a>
 </section>
 <nav class="modes-bar" id="opportunityModes" aria-label="Kind of opportunity">
   <button class="mode on" data-view="roles" type="button">Roles<i id="rolesCount"></i></button>
@@ -392,10 +396,15 @@ function card(j){
   const focus=j.focus?`<p class="focus">${esc(j.focus.replaceAll(",",", "))}</p>`:"";
   // Not a direct link to 127.0.0.1: when the helper is not running that answers
   // with a browser error page that explains nothing. open.html tries the helper
-  // and, if nothing is listening, says so and says what to do.
+  // and, when nothing is listening, hands over to studio.html, which does the
+  // same job in the browser with nothing installed. Everything known about the
+  // posting travels along, because neither destination can look it up: the
+  // helper may never have imported it, and a web page cannot read another
+  // site's advert at all.
   const localUrl=`./open.html?url=${encodeURIComponent(j.url)}`+
     `&company=${encodeURIComponent(j.company||"")}&role=${encodeURIComponent(j.role||"")}`+
-    (j.location?`&location=${encodeURIComponent(j.location)}`:"");
+    (j.location?`&location=${encodeURIComponent(j.location)}`:"")+
+    (j.focus?`&tags=${encodeURIComponent(j.focus)}`:"");
   const f=fitOf(j);
   return `<article class="card${f&&f.status==="mismatch"?" dim":""}">
     <div class="cardhead"><div class="logo">${esc(initials(j.company))}</div><div>

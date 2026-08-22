@@ -62,8 +62,12 @@ def main():
         print("\n[1] nothing listening at all")
         page = b.new_page()
         page.goto(f"http://127.0.0.1:{port}/open.html?url={POSTING}", wait_until="domcontentloaded")
-        page.wait_for_selector("#down:not(.hidden)", timeout=12000)
-        check("says the helper is not running", "isn’t running" in page.inner_text("#down"))
+        # No helper is not a dead end any more: the browser studio does the job
+        # with nothing installed, so deciding "not running" has to land there.
+        page.wait_for_url("**studio.html**", timeout=12000)
+        page.wait_for_selector("#cvPaste")
+        check("hands the posting to the browser studio", "studio.html" in page.url, page.url)
+        check("which is usable immediately", page.is_visible("#cvPaste"))
 
         print("\n[2] an older helper that does not serve /favicon.ico")
         old = Reusable(("127.0.0.1", 8765), OldBridge)

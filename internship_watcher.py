@@ -2148,10 +2148,23 @@ def build_dashboard(rows_out, new_ids, current):
         "\n[Open the filterable Role Radar dashboard]"
         "(https://abyyworld.github.io/internship-tracker/) for search, category, "
         "position type, region, term, degree, company-type, and CV-support filters.\n",
-        "\nThe CV editor runs from a clone of this repository. See "
-        "[SETUP.md](SETUP.md) for first-time configuration, then:\n",
-        "\n```bash\n./start-autoapply.command   # macOS\n"
-        "python3 -m autoapply bridge  # any platform\n```\n",
+        "\nThe CV editor comes in two forms and the dashboard picks between "
+        "them for you. [CV Studio in the browser]"
+        "(https://abyyworld.github.io/internship-tracker/studio.html) needs "
+        "nothing installed: your CV, your API key and your edits stay in that "
+        "browser, and the rewrite request goes straight from the page to the "
+        "model provider you choose. Every **Edit CV for this job** button lands "
+        "there by itself when no local helper is running, so it never leads to "
+        "a dead end.\n",
+        "\nThe helper that runs on your own machine stays the better editor: it "
+        "reads the advert for you, checks every claim against your fact bank, "
+        "keeps a library of tailored CVs, and exports a real PDF. It installs "
+        "itself as a background service, keeps its own code up to date, and "
+        "needs no window kept open. See [SETUP.md](SETUP.md), then:\n",
+        "\n```bash\n./start-autoapply.command     # macOS\n"
+        "./start-autoapply.sh           # Linux\n"
+        "start-autoapply.bat            # Windows\n"
+        "python3 -m autoapply bridge    # run it in this window instead\n```\n",
         "\nEvery dashboard card has a native **\u2726 Edit CV for this job** "
         "button; Tampermonkey is not required for the dashboard. It opens a "
         "private localhost editor containing the complete master CV and tailors "

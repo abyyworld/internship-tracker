@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CV Studio — tailor your CV for this role</title>
+<meta name="description" content="Tailor your CV for a specific posting in the browser. Your CV and your API key stay in this browser; nothing is installed.">
+<link rel="icon" href="./favicon.svg">
+<!--
+  The CV editor has always run as a helper on the reader's own machine, which is
+  how their CV, their fact bank and their API key stay off the internet. It is
+  the better editor and it stays the default. But it has to be installed once,
+  and until it is, every "Edit CV for this job" button led to a page explaining
+  which file to double-click — which is not an answer for someone who just wants
+  their CV tailored.
+
+  This page is that answer. It runs entirely in the browser: the CV is stored
+  here, the key is stored here, the rewrite request goes straight from this page
+  to the provider the reader chose, and the PDF comes out of the browser's own
+  print dialog. Nothing is installed and nothing is uploaded — not to GitHub,
+  not anywhere but the model endpoint the reader picked.
+
+  Where it is honestly worse than the local helper: it cannot read the advert
+  (job boards refuse cross-origin requests, so the text has to be pasted), it
+  has no fact bank to check claims against, and it keeps no library of saved
+  CVs. When the helper is running this page says so and offers to hand over.
+-->
+<style>
+:root{color-scheme:dark;--bg:#07110f;--panel:#10211c;--line:#315346;--text:#f1f8f5;
+--muted:#a6b9b2;--green:#70efad;--green2:#25b875;--red:#ff8b82;--amber:#ffd479}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#174b3766,transparent 40rem),var(--bg);
+color:var(--text);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:var(--green)}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 18px 60px}
+header{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.eyebrow{color:var(--green);font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+h1{margin:6px 0 4px;font-size:26px;line-height:1.15;letter-spacing:-.03em}
+h2{font-size:15px;margin:0 0 6px}
+.sub{color:var(--muted);font-size:13.5px;margin:0}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+@media (max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}}
+.card{background:linear-gradient(150deg,#13271f,#0c1714);border:1px solid var(--line);
+border-radius:16px;padding:16px;margin-bottom:14px}
+.hint{color:var(--muted);font-size:12.5px;margin:6px 0 0}
+label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+input,select,textarea{width:100%;background:#0b1f18;border:1px solid #2c5c47;border-radius:10px;
+color:var(--text);padding:9px 10px;font:inherit;font-size:13.5px}
+textarea{min-height:120px;resize:vertical;line-height:1.5}
+button{font:inherit;font-weight:700;font-size:13.5px;border-radius:11px;padding:10px 14px;
+cursor:pointer;border:1px solid transparent;white-space:nowrap}
+button:disabled{opacity:.55;cursor:default}
+.primary{background:var(--green2);color:#04150d}
+.secondary{background:#12241d;border-color:var(--line);color:var(--text)}
+.tiny{padding:5px 9px;font-size:12px;border-radius:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>button{flex:1}
+a.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border-radius:11px;
+text-decoration:none;font-weight:700;font-size:13px;border:1px solid var(--line);
+background:#12241d;color:var(--text)}
+.banner{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+border:1px solid var(--line);background:#0e1f19;border-radius:14px;padding:11px 14px;margin-bottom:14px}
+.banner.hidden{display:none}
+.notice{border-radius:11px;padding:10px 12px;font-size:13px;margin:0 0 12px;border:1px solid var(--line);background:#0e1f19}
+.notice.error{border-color:#6f3430;color:var(--red)}
+.notice.ok{border-color:#2c5c47;color:var(--green)}
+.notice.hidden{display:none}
+/* ── The CV itself ───────────────────────────────────────────────────────── */
+#doc{background:#f7fbf9;color:#10201a;border-radius:12px;padding:26px 30px;min-height:320px;
+font:14.5px/1.6 "Iowan Old Style",Georgia,"Times New Roman",serif}
+#doc .line{position:relative;padding:3px 6px;border-radius:6px;margin:1px -6px;outline:none;white-space:pre-wrap}
+#doc .line:focus{background:#e7f4ee}
+#doc .line.blank{min-height:10px}
+#doc .line.head{font-weight:700;font-size:16px;letter-spacing:-.01em;margin-top:14px}
+#doc .line.changed{background:#e3f6ea}
+.proposal{background:#eef8f2;border:1px solid #bfe3cd;border-left:3px solid var(--green2);
+border-radius:8px;padding:8px 10px;margin:4px -6px 8px}
+.proposal .was{color:#5c7a6c;font-size:12.5px;text-decoration:line-through;margin-bottom:4px}
+.proposal .now{color:#10201a}
+.proposal .why{color:#4d6d5e;font-size:12px;margin-top:5px;font-style:italic}
+.proposal .acts{display:flex;gap:6px;margin-top:8px}
+.proposal button{padding:4px 9px;font-size:12px;border-radius:7px}
+.proposal .yes{background:var(--green2);color:#04150d}
+.proposal .no{background:#e6efe9;color:#2c4438;border:1px solid #c6d9cd}
+.empty{color:var(--muted);text-align:center;padding:48px 20px;border:1px dashed var(--line);border-radius:12px}
+.count{color:var(--muted);font-size:12.5px}
+.pill{display:inline-block;background:#0f2a20;border:1px solid #2c5c47;color:var(--green);
+border-radius:99px;padding:2px 9px;font-size:11.5px;margin:0 5px 5px 0}
+/* ── Print: the CV only, on paper ────────────────────────────────────────── */
+@media print{
+  body{background:#fff}
+  .wrap{max-width:none;padding:0}
+  header,.cols>aside,.banner,.notice,#docTools,#pasteCard,footer{display:none!important}
+  .cols{display:block}
+  .card{border:0;background:none;padding:0;margin:0}
+  #doc{background:#fff;color:#000;padding:0;font-size:11.2pt;line-height:1.45}
+  #doc .line{margin:0;padding:0}
+  #doc .line.changed{background:none}
+  .proposal{display:none}
+  @page{margin:14mm}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <div class="eyebrow">CV Studio</div>
+    <h1 id="roleTitle">Tailor your CV</h1>
+    <p class="sub" id="roleMeta">Nothing to install — this runs in your browser.</p>
+  </div>
+  <div class="row" style="flex:0 0 auto">
+    <a class="btn" id="postingLink" href="#" target="_blank" rel="noopener">Open the posting</a>
+    <a class="btn" href="./">Dashboard</a>
+  </div>
+</header>
+
+<div class="banner hidden" id="helperBanner">
+  <div>
+    <strong>Your machine’s CV helper is running.</strong>
+    <div class="hint" style="margin-top:2px">It has your private CV files, your saved CVs and
+      proper PDF export. This page is the version that needs no install.</div>
+  </div>
+  <a class="btn" id="helperLink" href="#">Open the full editor</a>
+</div>
+
+<div class="notice hidden" id="notice"></div>
+
+<div class="cols">
+
+  <main>
+    <div class="card" id="pasteCard">
+      <h2>Your CV</h2>
+      <p class="hint">Paste it as plain text — straight out of your PDF, Word or Google Doc.
+      It is stored in this browser only: not uploaded, not sent to GitHub, and not visible
+      to anyone else on this machine’s network.</p>
+      <textarea id="cvPaste" spellcheck="false" placeholder="Ada Lovelace
+London · ada@example.com
+
+EXPERIENCE
+Robotics Intern — Robot Co, Summer 2025
+Built the vision pipeline for a pick-and-place arm in Python and ROS.
+Cut cycle time by 20 percent by rewriting the grasp planner.
+
+EDUCATION
+BSc Computer Science, University of London, 2027"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="primary" id="useCv">Use this CV</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div id="docTools" style="display:flex;justify-content:space-between;align-items:center;
+        gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <div class="count" id="docCount">Click any line to edit it — this is exactly how it prints.</div>
+        <div class="row" style="flex:0 0 auto">
+          <button class="secondary tiny" id="acceptAll">Accept all</button>
+          <button class="secondary tiny" id="rejectAll">Reject all</button>
+          <button class="secondary tiny" id="editRaw">Edit raw text</button>
+          <button class="primary tiny" id="print">Save as PDF</button>
+        </div>
+      </div>
+      <div id="doc"><div class="empty">Paste your CV above to begin.</div></div>
+    </div>
+  </main>
+
+  <aside>
+    <div class="card">
+      <h2>This job</h2>
+      <div id="jobFacts"></div>
+      <label for="advert">The advert</label>
+      <p class="hint" style="margin:0 0 5px">A web page cannot read another site’s posting —
+      job boards refuse it. Paste the description here and every rewrite is written against
+      what the role actually asks for. Without it, only the title and company are known.</p>
+      <textarea id="advert" spellcheck="false" placeholder="Paste the job description…"></textarea>
+      <p class="hint" id="advertNote"></p>
+    </div>
+
+    <div class="card">
+      <h2>Model</h2>
+      <label for="provider">Provider</label>
+      <select id="provider"></select>
+      <p class="hint" id="providerNote"></p>
+      <div id="customWrap" style="display:none">
+        <label for="customBase">Endpoint</label>
+        <input id="customBase" spellcheck="false" placeholder="https://…/v1">
+      </div>
+      <label for="model">Model</label>
+      <input id="model" spellcheck="false" autocomplete="off">
+      <label for="key">API key</label>
+      <input id="key" type="password" autocomplete="off" placeholder="Paste your key">
+      <p class="hint" id="keyNote"></p>
+      <div class="row" style="margin-top:10px">
+        <button class="primary" id="rewrite">Rewrite for this job</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="secondary tiny" id="forget" style="flex:1">Forget everything on this device</button>
+      </div>
+      <p class="hint" id="status"></p>
+    </div>
+
+    <div class="card">
+      <h2>Where things go</h2>
+      <p class="hint">Your CV, the advert and your key are kept in this browser’s own storage,
+      on this device. When you press <strong>Rewrite</strong>, this page sends the CV text and
+      the advert directly to the provider above using your key — the same call the local helper
+      would make. It never passes through GitHub or any server of this project.</p>
+      <p class="hint"><strong>Google AI Studio</strong> is the free tier and is known to accept
+      requests from a web page. Some providers refuse browser requests on purpose; if yours does,
+      the message below will say exactly that, and the local helper is the way round it.</p>
+    </div>
+  </aside>
+
+</div>
+
+<footer class="hint" style="margin-top:20px;text-align:center">
+  Better on this machine: the local helper reads the advert for you, checks every claim against
+  your fact bank, keeps a library of tailored CVs and exports a real PDF.
+  <a href="https://github.com/abyyworld/internship-tracker#readme" target="_blank" rel="noopener">How to install it</a>.
+</footer>
+
+</div>
+
+<script>
+"use strict";
+// ── What the page was opened with ──────────────────────────────────────────
+const params = new URLSearchParams(location.search);
+const posting = {
+  url: params.get("url") || "",
+  role: params.get("role") || "",
+  company: params.get("company") || "",
+  location: params.get("location") || "",
+  tags: (params.get("tags") || "").split(",").map(t => t.trim()).filter(Boolean),
+};
+const BRIDGE = "http://127.0.0.1:8765";
+const $ = id => document.getElementById(id);
+
+// ── Storage. Every read is guarded: a browser with storage disabled must give
+// a working page that forgets, not a broken one. ───────────────────────────
+const store = {
+  get(key, fallback = "") {
+    try { const value = localStorage.getItem(key); return value === null ? fallback : value; }
+    catch (error) { return fallback; }
+  },
+  set(key, value) { try { localStorage.setItem(key, value); } catch (error) { /* private mode */ } },
+  drop(key) { try { localStorage.removeItem(key); } catch (error) { /* private mode */ } },
+  keys() { try { return Object.keys(localStorage); } catch (error) { return []; } },
+};
+const jobKey = posting.url || "no-url";
+const KEY = {
+  cv: "studio.cv",
+  advert: `studio.advert.${jobKey}`,
+  draft: `studio.draft.${jobKey}`,
+  provider: "studio.provider",
+  base: "studio.base",
+  key: id => `studio.key.${id}`,
+  model: id => `studio.model.${id}`,
+};
+
+// ── Providers. The same set the local helper speaks to, minus the ones that
+// only make sense on a machine (a model running on localhost cannot be reached
+// from a page served over https). ─────────────────────────────────────────
+const PROVIDERS = [
+  {id: "gemini", label: "Google AI Studio (free tier)",
+   base: "https://generativelanguage.googleapis.com/v1beta/openai",
+   models: ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.5-pro"],
+   keys: "https://aistudio.google.com/apikey", hint: "AIza…",
+   note: "Free tier, and it accepts requests from a web page."},
+  {id: "openrouter", label: "OpenRouter",
+   base: "https://openrouter.ai/api/v1",
+   models: ["google/gemini-2.5-flash", "meta-llama/llama-3.3-70b-instruct", "openai/gpt-4o-mini"],
+   keys: "https://openrouter.ai/keys", hint: "sk-or-…",
+   note: "One key, many models. Free models are listed with a :free suffix."},
+  {id: "groq", label: "Groq",
+   base: "https://api.groq.com/openai/v1",
+   models: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"],
+   keys: "https://console.groq.com/keys", hint: "gsk_…",
+   note: "Very fast, generous free tier."},
+  {id: "openai", label: "OpenAI",
+   base: "https://api.openai.com/v1",
+   models: ["gpt-4o-mini", "gpt-4o"],
+   keys: "https://platform.openai.com/api-keys", hint: "sk-…",
+   note: "Paid. Needs credit on the account, not just a key."},
+  {id: "custom", label: "My own endpoint",
+   base: "", models: [], keys: "", hint: "",
+   note: "Any OpenAI-compatible base URL that allows browser requests."},
+];
+const providerById = id => PROVIDERS.find(p => p.id === id) || PROVIDERS[0];
+
+// ── State ──────────────────────────────────────────────────────────────────
+// lines: the CV, one entry per line of the pasted text. Each carries the
+// original, whatever the reader has typed, and any proposal not yet answered.
+let lines = [];
+let busy = false;
+
+function loadDraft() {
+  try { return JSON.parse(store.get(KEY.draft, "{}")) || {}; }
+  catch (error) { return {}; }
+}
+function saveDraft() {
+  const kept = {};
+  lines.forEach((line, index) => {
+    if (line.text !== line.original) kept[index] = line.text;
+  });
+  store.set(KEY.draft, JSON.stringify(kept));
+}
+
+function setCv(text) {
+  const draft = loadDraft();
+  lines = text.replace(/\r/g, "").split("\n").map((original, index) => ({
+    original,
+    text: draft[index] === undefined ? original : draft[index],
+    proposal: null,
+  }));
+  render();
+}
+
+// A heading is a short line with no sentence punctuation — "EXPERIENCE",
+// "Education", "Projects". Only used to make the page look like the CV it is;
+// nothing is inferred from it.
+const looksLikeHeading = text =>
+  text.trim().length > 0 && text.trim().length <= 34 && !/[.;:]$/.test(text.trim())
+  && (text === text.toUpperCase() || /^[A-Z][a-z]+(\s[A-Za-z&]+){0,2}$/.test(text.trim()));
+
+function render() {
+  const doc = $("doc");
+  doc.replaceChildren();
+  if (!lines.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "Paste your CV above to begin.";
+    doc.append(empty);
+    $("docCount").textContent = "";
+    return;
+  }
+  lines.forEach((line, index) => {
+    if (line.proposal) doc.append(proposalCard(line, index));
+    const row = document.createElement("div");
+    row.className = "line"
+      + (line.text.trim() ? "" : " blank")
+      + (looksLikeHeading(line.text) ? " head" : "")
+      + (line.text !== line.original ? " changed" : "");
+    row.contentEditable = "true";
+    row.spellcheck = false;
+    row.textContent = line.text;
+    row.addEventListener("input", () => {
+      line.text = row.textContent;
+      row.classList.toggle("changed", line.text !== line.original);
+      saveDraft();
+    });
+    doc.append(row);
+  });
+  const changed = lines.filter(line => line.text !== line.original).length;
+  const open = lines.filter(line => line.proposal).length;
+  $("docCount").textContent = open
+    ? `${open} suggested ${open === 1 ? "edit" : "edits"} waiting — accept or reject each one.`
+    : (changed
+      ? `${changed} ${changed === 1 ? "line differs" : "lines differ"} from your original.`
+      : "Click any line to edit it — this is exactly how it prints.");
+}
+
+function proposalCard(line, index) {
+  const card = document.createElement("div");
+  card.className = "proposal";
+  const was = document.createElement("div");
+  was.className = "was";
+  was.textContent = line.text;
+  const now = document.createElement("div");
+  now.className = "now";
+  now.textContent = line.proposal.text;
+  card.append(was, now);
+  if (line.proposal.why) {
+    const why = document.createElement("div");
+    why.className = "why";
+    why.textContent = line.proposal.why;
+    card.append(why);
+  }
+  const acts = document.createElement("div");
+  acts.className = "acts";
+  const yes = document.createElement("button");
+  yes.className = "yes";
+  yes.textContent = "Use this";
+  yes.onclick = () => { line.text = line.proposal.text; line.proposal = null; saveDraft(); render(); };
+  const no = document.createElement("button");
+  no.className = "no";
+  no.textContent = "Keep mine";
+  no.onclick = () => { line.proposal = null; render(); };
+  acts.append(yes, no);
+  card.append(acts);
+  return card;
+}
+
+function say(message, kind = "") {
+  const box = $("notice");
+  box.className = "notice " + kind + (message ? "" : " hidden");
+  box.textContent = message || "";
+}
+function status(message) { $("status").textContent = message || ""; }
+
+// ── The provider card ──────────────────────────────────────────────────────
+function currentProvider() { return providerById(store.get(KEY.provider, "gemini")); }
+function currentBase() {
+  const provider = currentProvider();
+  return provider.id === "custom" ? store.get(KEY.base, "") : provider.base;
+}
+function renderProvider() {
+  const provider = currentProvider();
+  const select = $("provider");
+  select.replaceChildren();
+  for (const option of PROVIDERS) {
+    const node = document.createElement("option");
+    node.value = option.id;
+    node.textContent = option.label;
+    node.selected = option.id === provider.id;
+    select.append(node);
+  }
+  const note = $("providerNote");
+  note.replaceChildren(document.createTextNode(provider.note + " "));
+  if (provider.keys) {
+    const link = document.createElement("a");
+    link.href = provider.keys;
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.textContent = "Get a key";
+    note.append(link);
+  }
+  $("customWrap").style.display = provider.id === "custom" ? "" : "none";
+  $("customBase").value = store.get(KEY.base, "");
+  $("model").value = store.get(KEY.model(provider.id), provider.models[0] || "");
+  $("model").placeholder = provider.models[0] || "model name";
+  const key = store.get(KEY.key(provider.id), "");
+  $("key").value = key;
+  $("key").placeholder = provider.hint ? `Paste your key (${provider.hint})` : "Paste your key";
+  $("keyNote").textContent = key
+    ? "Saved in this browser only. Each provider keeps its own key."
+    : "Kept in this browser only — never uploaded, never in GitHub.";
+}
+
+// ── The job card ───────────────────────────────────────────────────────────
+function renderJob() {
+  const facts = $("jobFacts");
+  facts.replaceChildren();
+  const named = [posting.role, posting.company].filter(Boolean).join(" · ");
+  const heading = document.createElement("div");
+  heading.style.fontWeight = "600";
+  heading.textContent = named || "No role was named in the link";
+  facts.append(heading);
+  if (posting.location) {
+    const where = document.createElement("div");
+    where.className = "hint";
+    where.textContent = posting.location;
+    facts.append(where);
+  }
+  if (posting.tags.length) {
+    const tags = document.createElement("div");
+    tags.style.marginTop = "7px";
+    for (const tag of posting.tags) {
+      const pill = document.createElement("span");
+      pill.className = "pill";
+      pill.textContent = tag;
+      tags.append(pill);
+    }
+    facts.append(tags);
+  }
+  $("roleTitle").textContent = posting.role || "Tailor your CV";
+  $("roleMeta").textContent = named
+    ? [posting.company, posting.location].filter(Boolean).join(" · ")
+      + " — nothing to install, this runs in your browser."
+    : "Nothing to install — this runs in your browser.";
+  const link = $("postingLink");
+  if (posting.url) { link.href = posting.url; } else { link.style.display = "none"; }
+  $("advert").value = store.get(KEY.advert, "");
+  advertNote();
+}
+function advertNote() {
+  const words = $("advert").value.trim().split(/\s+/).filter(Boolean).length;
+  $("advertNote").textContent = words
+    ? `${words} words — rewrites will be written against this.`
+    : "Without the advert, rewrites work from the role title alone.";
+}
+
+// ── Talking to the provider ────────────────────────────────────────────────
+// The same discipline the local helper uses: rewrite only what the CV already
+// supports, never invent an employer, a date or a number, and say why for each
+// line so the reader can reject it on sight.
+const SYSTEM = [
+  "You rewrite lines of a CV so they answer a specific job advert.",
+  "Absolute rules:",
+  "1. Never invent an employer, job title, date, degree, tool or number. Every fact in your",
+  "   rewrite must already appear in the line you are rewriting or elsewhere in the CV.",
+  "2. Rewrite only lines where the CV genuinely has something the advert asks for. Leaving a",
+  "   line alone is always allowed and is better than padding it.",
+  "3. Keep the reader's voice, tense and register. British or American spelling as given.",
+  "4. One line in, one line out. No bullet characters, no markdown, no quotes around the text.",
+  "5. Never rewrite headings, contact details, dates or the person's name.",
+].join("\n");
+
+function tailoringPrompt() {
+  const advert = $("advert").value.trim();
+  const numbered = lines
+    .map((line, index) => ({index, text: line.text}))
+    .filter(entry => entry.text.trim().length > 12)
+    .map(entry => `${entry.index}: ${entry.text}`)
+    .join("\n");
+  return [
+    `The role: ${posting.role || "(not given)"}`,
+    posting.company ? `The company: ${posting.company}` : "",
+    posting.location ? `Location: ${posting.location}` : "",
+    posting.tags.length ? `What it is about: ${posting.tags.join(", ")}` : "",
+    advert ? `\nThe advert:\n${advert}` : "\n(The advert text was not available.)",
+    "\nThe CV, one numbered line each:",
+    numbered,
+    "\nReturn JSON only, in this exact shape:",
+    '{"rewrites":[{"line":12,"text":"the rewritten line","why":"what in the advert it answers"}]}',
+    "Include only lines you are genuinely improving for this advert. An empty list is a valid answer.",
+  ].filter(Boolean).join("\n");
+}
+
+// Providers disagree about the shape of an error. Google's OpenAI-compatible
+// endpoint wraps it in an array; others use {error:{message}}, or a bare
+// {message}, or plain text. Reading all of them is the difference between a
+// message someone can act on and "HTTP 400".
+function providerSaid(payload, response) {
+  let body = payload;
+  if (Array.isArray(body)) body = body.find(item => item && typeof item === "object") || {};
+  if (body && typeof body === "object") {
+    const error = body.error || body;
+    const message = error.message || error.detail || error.msg || "";
+    if (message) return String(message);
+  }
+  if (typeof body === "string" && body.trim()) return body.trim().slice(0, 300);
+  return `${response.status} ${response.statusText || ""}`.trim();
+}
+
+// What kind of failure it is comes from what the provider said, not only from
+// the status it said it with. Google answers a bad key with 400, so a page that
+// reads the status alone tells someone their request was malformed and sends
+// them looking in the wrong place entirely.
+const AUTH_WORDING = /api[ _-]?key|unauthenticated|unauthorized|permission denied|credential|authoriz|invalid token/i;
+const MODEL_WORDING = /model .*(not found|does not exist|is not supported)|unknown model|no such model/i;
+const FUNDS_WORDING = /billing|insufficient|payment|add credit|out of credit/i;
+
+function whyItFailed(response, said) {
+  if (response.status === 429 || /rate.?limit|too many requests/i.test(said)) {
+    return `Rate limited — free tiers cap how many requests a minute: ${said}`;
+  }
+  if (response.status === 401 || response.status === 403 || AUTH_WORDING.test(said)) {
+    return `That key was refused by the provider: ${said}`;
+  }
+  if (response.status === 404 || MODEL_WORDING.test(said)) {
+    return `That model was not found on this endpoint: ${said}`;
+  }
+  if (response.status === 402 || FUNDS_WORDING.test(said)) {
+    return `The account needs credit: ${said}`;
+  }
+  return said;
+}
+
+async function callProvider(base, key, model, prompt) {
+  const endpoint = base.replace(/\/+$/, "") + "/chat/completions";
+  let response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {"Content-Type": "application/json", "Authorization": `Bearer ${key}`},
+      body: JSON.stringify({
+        model,
+        messages: [{role: "system", content: SYSTEM}, {role: "user", content: prompt}],
+        temperature: 0.3,
+      }),
+    });
+  } catch (error) {
+    // A browser reports a refused CORS request and a dead network identically.
+    throw new Error(
+      `Your browser could not reach ${new URL(endpoint).hostname}. Either you are offline, `
+      + "or this provider does not allow requests from a web page — Google AI Studio does, "
+      + "and the local helper can reach any of them.");
+  }
+  let payload = null;
+  const text = await response.text();
+  try { payload = JSON.parse(text); } catch (error) { payload = text; }
+  if (!response.ok) throw new Error(whyItFailed(response, providerSaid(payload, response)));
+  const content = payload && payload.choices && payload.choices[0]
+    && payload.choices[0].message && payload.choices[0].message.content;
+  if (!content) throw new Error("The provider answered without any text in it.");
+  return content;
+}
+
+function parseRewrites(content) {
+  let text = String(content).trim();
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenced) text = fenced[1].trim();
+  const opened = text.indexOf("{");
+  const closed = text.lastIndexOf("}");
+  if (opened > 0 || closed < text.length - 1) {
+    if (opened >= 0 && closed > opened) text = text.slice(opened, closed + 1);
+  }
+  let payload;
+  try { payload = JSON.parse(text); }
+  catch (error) { throw new Error("The model did not answer with the JSON it was asked for."); }
+  const rewrites = Array.isArray(payload) ? payload : (payload.rewrites || []);
+  return rewrites
+    .map(item => ({
+      line: Number(item.line),
+      text: String(item.text || "").trim(),
+      why: String(item.why || "").trim(),
+    }))
+    .filter(item => Number.isInteger(item.line) && item.line >= 0
+      && item.line < lines.length && item.text);
+}
+
+async function rewrite() {
+  if (busy) return;
+  if (!lines.length) { say("Paste your CV first.", "error"); return; }
+  const provider = currentProvider();
+  const base = currentBase();
+  const key = $("key").value.trim();
+  const model = $("model").value.trim() || provider.models[0] || "";
+  if (!base) { say("Enter the endpoint for your own provider.", "error"); return; }
+  if (!key) { say("Paste your API key — it stays in this browser.", "error"); return; }
+  if (!model) { say("Name the model to use.", "error"); return; }
+  store.set(KEY.key(provider.id), key);
+  store.set(KEY.model(provider.id), model);
+  store.set(KEY.advert, $("advert").value);
+
+  busy = true;
+  $("rewrite").disabled = true;
+  const wasLabel = $("rewrite").textContent;
+  $("rewrite").textContent = "Rewriting…";
+  say("");
+  status(`Asking ${provider.label} — this usually takes a few seconds.`);
+  try {
+    const content = await callProvider(base, key, model, tailoringPrompt());
+    const rewrites = parseRewrites(content);
+    for (const line of lines) line.proposal = null;
+    let offered = 0;
+    for (const item of rewrites) {
+      const line = lines[item.line];
+      if (!line || item.text === line.text) continue;
+      line.proposal = {text: item.text, why: item.why};
+      offered += 1;
+    }
+    render();
+    status("");
+    say(offered
+      ? `${offered} suggested ${offered === 1 ? "edit" : "edits"}. Accept the ones you agree with.`
+      : "The model found nothing worth changing for this role. That is a real answer, not a failure.",
+      offered ? "ok" : "");
+    if (offered) $("doc").scrollIntoView({behavior: "smooth", block: "start"});
+  } catch (error) {
+    status("");
+    say(error.message, "error");
+  } finally {
+    busy = false;
+    $("rewrite").disabled = false;
+    $("rewrite").textContent = wasLabel;
+  }
+}
+
+// ── Is the better editor available? ────────────────────────────────────────
+// Same two probes as open.html: an image on a route only newer builds serve,
+// and a no-cors fetch that resolves for any answer at all. Either one is proof.
+// This only ever adds an offer — a wrong answer here must never take anything
+// away from a page that already works.
+function offerHelper() {
+  if (!posting.url) return;
+  let shown = false;
+  const show = () => {
+    if (shown) return;
+    shown = true;
+    const carried = ["company", "role", "location"]
+      .map(field => (posting[field] ? `&${field}=${encodeURIComponent(posting[field])}` : ""))
+      .join("");
+    $("helperLink").href = `${BRIDGE}/editor?url=${encodeURIComponent(posting.url)}${carried}`;
+    $("helperBanner").classList.remove("hidden");
+  };
+  const probe = new Image();
+  probe.onload = show;
+  probe.src = `${BRIDGE}/favicon.ico?t=${Date.now()}`;
+  fetch(`${BRIDGE}/health?probe=${Date.now()}`, {mode: "no-cors", cache: "no-store"})
+    .then(show).catch(() => {});
+}
+
+// ── Wiring ─────────────────────────────────────────────────────────────────
+$("useCv").onclick = () => {
+  const text = $("cvPaste").value;
+  if (!text.trim()) { say("Paste the text of your CV first.", "error"); return; }
+  store.set(KEY.cv, text);
+  store.drop(KEY.draft);
+  setCv(text);
+  $("pasteCard").style.display = "none";
+  say("Saved in this browser. It will be here next time — for every role.", "ok");
+};
+$("editRaw").onclick = () => {
+  $("pasteCard").style.display = "";
+  $("cvPaste").value = store.get(KEY.cv, "");
+  $("cvPaste").focus();
+};
+$("acceptAll").onclick = () => {
+  let taken = 0;
+  for (const line of lines) {
+    if (!line.proposal) continue;
+    line.text = line.proposal.text;
+    line.proposal = null;
+    taken += 1;
+  }
+  saveDraft();
+  render();
+  if (taken) say(`Took ${taken} ${taken === 1 ? "edit" : "edits"}.`, "ok");
+};
+$("rejectAll").onclick = () => {
+  for (const line of lines) line.proposal = null;
+  render();
+};
+$("print").onclick = () => {
+  for (const line of lines) line.proposal = null;
+  render();
+  window.print();
+};
+$("rewrite").onclick = rewrite;
+$("provider").onchange = event => {
+  store.set(KEY.provider, event.target.value);
+  renderProvider();
+};
+$("customBase").oninput = event => store.set(KEY.base, event.target.value.trim());
+$("model").oninput = event => store.set(KEY.model(currentProvider().id), event.target.value.trim());
+$("key").onchange = event => {
+  store.set(KEY.key(currentProvider().id), event.target.value.trim());
+  renderProvider();
+};
+$("advert").oninput = () => { store.set(KEY.advert, $("advert").value); advertNote(); };
+$("forget").onclick = () => {
+  if (!confirm("Delete your CV, your drafts and your API keys from this browser?")) return;
+  for (const key of store.keys()) if (key.startsWith("studio.")) store.drop(key);
+  lines = [];
+  $("cvPaste").value = "";
+  $("pasteCard").style.display = "";
+  renderProvider();
+  render();
+  say("Everything this page had stored on this device is gone.", "ok");
+};
+
+// ── Start ──────────────────────────────────────────────────────────────────
+renderJob();
+renderProvider();
+const saved = store.get(KEY.cv, "");
+if (saved) { setCv(saved); $("pasteCard").style.display = "none"; }
+else { $("cvPaste").focus(); }
+offerHelper();
+</script>
+</body>
+</html>

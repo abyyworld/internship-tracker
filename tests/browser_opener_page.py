@@ -1,9 +1,12 @@
-"""docs/open.html: helper down must explain itself, helper up must get out of the way.
+"""docs/open.html: helper up goes local, helper down goes to the browser studio.
 
-Every "Edit CV for this job" button goes through that page, so its two states are
-the two states of the whole product for anyone who has not started the helper
-yet. Driven in a real browser because the detection is a cross-origin image
-probe, which no unit test can stand in for.
+Every "Edit CV for this job" button goes through that page, so what it does when
+no helper answers is what the whole product does for anyone who has not
+installed one. It used to explain which file to double-click. It now hands over
+to studio.html, which tailors the CV in the browser with nothing installed — the
+explain-page is left only for the two destinations that have no browser
+equivalent, pairing and the local tracker. Driven in a real browser because the
+detection is a cross-origin probe, which no unit test can stand in for.
 
 Not named test_*, so `unittest discover` leaves it alone: it needs a browser.
 
@@ -41,15 +44,33 @@ def main():
                    else play.chromium.launch())
         page = browser.new_page()
 
-        print("\n[helper NOT running]")
-        page.goto(f"http://127.0.0.1:{port}/open.html?url={POSTING}", wait_until="networkidle")
+        print("\n[helper NOT running, a posting to tailor for]")
+        page.goto(f"http://127.0.0.1:{port}/open.html?url={POSTING}"
+                  "&role=Robotics%20Intern&company=Amazon&location=Seattle",
+                  wait_until="domcontentloaded")
+        try:
+            page.wait_for_url("**studio.html**", timeout=12000)
+            check("hands over to the browser studio", True)
+        except Exception:
+            check("hands over to the browser studio", False, page.url)
+        page.wait_for_selector("#roleTitle")
+        check("the posting travelled with it",
+              "Robotics Intern" in page.inner_text("#roleTitle"), page.inner_text("#roleTitle"))
+        check("and so did the company",
+              "Amazon" in page.inner_text("#jobFacts"), page.inner_text("#jobFacts"))
+        check("the posting itself is still one click away",
+              page.get_attribute("#postingLink", "href") == POSTING)
+        check("it is usable with nothing installed", page.is_visible("#cvPaste"))
+
+        print("\n[helper NOT running, and nothing a browser can do instead]")
+        page.goto(f"http://127.0.0.1:{port}/open.html?to=dashboard", wait_until="networkidle")
         page.wait_for_selector("#down:not(.hidden)", timeout=12000)
         text = page.inner_text("#down")
         check("explains the helper is not running", "isn’t running" in text or "isn't running" in text)
         check("names the port", "127.0.0.1:8765" in text)
         check("names the installer", "install-login-service.command" in text)
         check("offers a retry", page.is_visible("#retry"))
-        check("links the posting", page.get_attribute("#postingLink", "href") == POSTING)
+        check("offers the browser studio too", page.is_visible("#studioLink"))
         check("did not leave the page", "open.html" in page.url)
 
         print("\n[helper running]")
