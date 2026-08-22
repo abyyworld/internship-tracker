@@ -135,20 +135,17 @@ The helper is started once and left running for weeks. The checkout moves on, a
 macOS login service quietly respawns the old process, and the editor keeps being
 answered by code that is no longer on disk — so a fix that is pushed, pulled and
 tested still does not reach the browser. A helper from before automatic updates
-existed cannot repair itself; double-clicking `install-login-service.command`
-pulls, reinstalls and restarts it, after which it keeps itself current.
-`update-autoapply.command` does the same from a terminal and says which build
-ends up serving:
+existed cannot repair itself. Double-clicking `install-login-service.command`
+pulls, reinstalls and restarts it, after which it keeps itself current — it
+parks local changes with `git stash` (never discards them), follows the remote
+if the branch has drifted, and checks which commit is answering afterwards.
 
-```bash
-./update-autoapply.command                 # update the current branch
-./update-autoapply.command some-branch     # switch to that branch first
-```
+Meanwhile nothing is blocked: the published dashboard asks each helper what it
+can do before sending a posting to it, so a reader whose helper is behind is
+routed to [CV Studio in the browser](https://abyyworld.github.io/internship-tracker/studio.html)
+instead of into an editor that will refuse them.
 
-It reports the build answering right now, parks local changes with `git stash`
-(never discards them), fast-forwards, stops the bridge *including a login
-service that would otherwise restart the old copy*, and starts the helper from
-this folder. To check which code is serving without changing anything:
+To check which code is serving without changing anything:
 
 ```bash
 curl -s -H "X-Autoapply-Token: $(cat private/bridge.token)" \
@@ -479,23 +476,6 @@ A company being private does not guarantee that an intern will receive equity,
 that the equity will have value, or that the role fits your visa status. Verify
 compensation, vesting, strike price, dilution, tax treatment, and work
 authorisation before accepting any offer.
-
-## Legacy basic userscript
-
-`autofill.user.js` is a generic legacy template for basic contact and education text
-fields. It contains no personal data and intentionally does not fill dropdowns,
-radio buttons, checkboxes, work-authorisation, sponsorship, citizenship, legal, or
-EEO answers.
-
-To use it:
-
-```bash
-cp autofill.user.js autofill.local.user.js
-```
-
-Edit only the private `autofill.local.user.js`, install that copy in Tampermonkey,
-and review every populated field. It cannot attach a CV or submit an application.
-The local guarded assistant is preferred for supported ATS sites.
 
 ## Free daily watcher on GitHub
 
