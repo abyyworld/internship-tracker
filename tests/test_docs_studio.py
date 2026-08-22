@@ -65,11 +65,24 @@ class StudioIsSelfContainedTests(unittest.TestCase):
 
 
 class NoDeadEndsTests(unittest.TestCase):
-    def test_a_posting_with_no_helper_lands_in_the_studio(self):
+    def test_a_posting_goes_to_the_studio_unless_the_helper_can_do_the_job(self):
         opener = OPENER.read_text(encoding="utf-8")
         self.assertIn("./studio.html", opener)
-        # Not merely mentioned: it is where the "no helper" decision goes.
-        self.assertRegex(opener, r'destination === "editor"\) location\.replace\(studioUrl\)')
+        # The decision is made on what the helper can do, not on whether
+        # something is listening — an old build answers a liveness probe just
+        # as happily and then refuses the posting.
+        self.assertIn("/can/adopt-any-posting.png", opener)
+        self.assertRegex(opener, r"location\.replace\(studioUrl")
+        self.assertRegex(opener, r"capable === true.*location\.replace\(editorUrl\)")
+
+    def test_the_studio_is_told_which_of_the_two_it_is(self):
+        opener = OPENER.read_text(encoding="utf-8")
+        self.assertRegex(opener, r'"stale"\s*:\s*"absent"')
+        studio = STUDIO.read_text(encoding="utf-8")
+        # A stale helper must not be offered as a place to go: that is the
+        # editor the reader was just refused by.
+        self.assertIn('helperState === "stale"', studio)
+        self.assertRegex(studio, r'helperState === "stale"[\s\S]{0,600}helperLink"\)\.classList\.add\("hidden"\)')
 
     def test_the_dashboard_offers_it_without_a_role(self):
         index = DOCS / "index.html"

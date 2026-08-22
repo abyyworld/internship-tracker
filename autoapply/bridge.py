@@ -85,6 +85,23 @@ ALIVE_PIXEL = base64.b64decode(
     b"R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
 )
 
+# What this build can do, answered as an image so a page on another origin can
+# ask. A static page cannot read anything from this server — no CORS, no token —
+# so "is a helper running" was the only question it could ever get an answer to,
+# and it is the wrong question: a helper from before a fix answers it just as
+# cheerfully as one that has the fix, and the reader lands back in the bug.
+#
+# Older builds 404 an unknown path, which is exactly the answer needed: the
+# probe fails and the page knows this helper is behind, without reading a byte
+# of it.
+CAPABILITIES = frozenset({
+    # Opens a posting the local database has never imported (PR #7). Without
+    # this, every link from the published dashboard can be refused.
+    "adopt-any-posting",
+    # Pulls its own updates and can be updated from the editor (PR #8).
+    "self-update",
+})
+
 MAX_REQUEST_BYTES = 262144
 DOWNLOAD_TTL = timedelta(minutes=5)
 
@@ -550,6 +567,23 @@ class BridgeHandler(BaseHTTPRequestHandler):
         # browser error page that explains nothing. It says only that something
         # is listening; every route that carries data still needs the token.
         if parsed_request.path == "/favicon.ico":
+            self.send_response(200)
+            self._cors()
+            self.send_header("Content-Type", "image/gif")
+            self.send_header("Content-Length", str(len(ALIVE_PIXEL)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(ALIVE_PIXEL)
+            return
+        # /can/<capability>.png — the pixel for something this build does, 404
+        # for anything it does not. No token: it reveals only which fixes are
+        # present, which is the one thing another origin has to know before
+        # sending someone here instead of to a page that works.
+        if parsed_request.path.startswith("/can/"):
+            wanted = parsed_request.path[len("/can/"):].rsplit(".", 1)[0]
+            if wanted not in CAPABILITIES:
+                self._json(404, {"error": "This build does not do that"})
+                return
             self.send_response(200)
             self._cors()
             self.send_header("Content-Type", "image/gif")

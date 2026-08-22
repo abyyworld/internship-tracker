@@ -305,6 +305,58 @@ class BridgeTests(unittest.TestCase):
                 server.server_close()
                 thread.join(timeout=2)
 
+    def test_it_says_what_it_can_do_to_a_page_that_cannot_read_it(self):
+        """A published page gets no CORS and no token, so all it could ever ask
+        was "is something listening" — and a helper from before a fix answers
+        that as happily as one with the fix, then refuses the posting. It can
+        now ask what this build actually does: the pixel for a capability it
+        has, a 404 for one it does not."""
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            tracker = home / "tracker.csv"
+            tracker.write_text("", encoding="utf-8")
+            server = BridgeServer(
+                ("127.0.0.1", 0),
+                home=home,
+                tracker=tracker,
+                token="private-test-token-with-more-than-32-characters",
+            )
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            connection = http.client.HTTPConnection("127.0.0.1", server.server_address[1])
+            try:
+                # No token: the answer is which fixes are here, nothing else.
+                connection.request(
+                    "GET", "/can/adopt-any-posting.png",
+                    headers={"Origin": "https://abyyworld.github.io"},
+                )
+                answer = connection.getresponse()
+                body = answer.read()
+                self.assertEqual(answer.status, 200)
+                self.assertEqual(answer.headers["Content-Type"], "image/gif")
+                self.assertTrue(body.startswith(b"GIF"))
+                # An <img> needs no CORS, but the published dashboard's origin
+                # is granted it anyway so the same probe can be made by fetch.
+                self.assertEqual(answer.headers["Access-Control-Allow-Origin"],
+                                 "https://abyyworld.github.io")
+
+                # Anything this build does not do is simply not there.
+                connection.request("GET", "/can/read-my-email.png")
+                missing = connection.getresponse()
+                missing.read()
+                self.assertEqual(missing.status, 404)
+
+                # The extension is optional; the name is what matters.
+                connection.request("GET", "/can/self-update")
+                fine = connection.getresponse()
+                fine.read()
+                self.assertEqual(fine.status, 200)
+                connection.close()
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=2)
+
     def test_the_helper_repairs_itself_without_being_asked(self):
         """A background service is installed once and never opened again.
 

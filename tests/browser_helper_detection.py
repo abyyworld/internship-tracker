@@ -9,7 +9,7 @@ Not named test_*, so `unittest discover` leaves it alone: it needs a browser.
 
     python3 tests/browser_helper_detection.py
 """
-import http.server, socketserver, os, sys, threading, functools
+import base64, http.server, socketserver, os, sys, threading, functools
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from playwright.sync_api import sync_playwright
@@ -34,16 +34,33 @@ class Reusable(http.server.HTTPServer):
 
 
 class OldBridge(http.server.BaseHTTPRequestHandler):
-    """An Aug-15 bridge: serves /connect and /editor, 404s /favicon.ico."""
+    """An Aug-15 bridge: serves /connect and /editor, 404s everything newer."""
     def log_message(self, *a): pass
     def do_GET(self):
-        if self.path.startswith("/favicon.ico"):
+        if self.path.startswith("/favicon.ico") or self.path.startswith("/can/"):
             self.send_error(404); return
         body = b"<!doctype html><title>editor</title>old build editor"
         self.send_response(200)
         self.send_header("Content-Type", "text/html")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers(); self.wfile.write(body)
+
+
+class MiddleBridge(OldBridge):
+    """A helper new enough to answer a liveness probe and too old to open a
+    posting it never imported — the state that put someone back in the bug."""
+    def do_GET(self):
+        if self.path.startswith("/can/"):
+            self.send_error(404); return
+        if self.path.startswith("/favicon.ico"):
+            pixel = base64.b64decode(
+                b"R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7")
+            self.send_response(200)
+            self.send_header("Content-Type", "image/gif")
+            self.send_header("Content-Length", str(len(pixel)))
+            self.end_headers(); self.wfile.write(pixel)
+            return
+        super().do_GET()
 
 def main():
     docs = http.server.HTTPServer(("127.0.0.1", 0), Docs)
@@ -69,16 +86,23 @@ def main():
         check("hands the posting to the browser studio", "studio.html" in page.url, page.url)
         check("which is usable immediately", page.is_visible("#cvPaste"))
 
-        print("\n[2] an older helper that does not serve /favicon.ico")
-        old = Reusable(("127.0.0.1", 8765), OldBridge)
+        print("\n[2] a helper that is running but too old to open this posting")
+        # The state that produced the screenshot: it answers, so it was handed
+        # the posting, and then refused it. Being alive is not the question.
+        old = Reusable(("127.0.0.1", 8765), MiddleBridge)
         threading.Thread(target=old.serve_forever, daemon=True).start()
         page2 = b.new_page()
         page2.goto(f"http://127.0.0.1:{port}/open.html?url={POSTING}", wait_until="domcontentloaded")
         try:
-            page2.wait_for_url("**127.0.0.1:8765/editor**", timeout=12000)
-            check("opens the editor anyway", True)
+            page2.wait_for_url("**studio.html**", timeout=12000)
+            check("is not handed the posting", True)
         except Exception:
-            check("opens the editor anyway", False, page2.url + " | " + page2.inner_text("h1"))
+            check("is not handed the posting", False, page2.url)
+        page2.wait_for_selector("#helperBanner:not(.hidden)", timeout=8000)
+        check("and the studio says why", "older build" in page2.inner_text("#helperBanner"),
+              page2.inner_text("#helperBanner"))
+        check("without offering to send them back to it",
+              not page2.is_visible("#helperLink"))
         old.shutdown(); old.server_close()
         import time; time.sleep(1)   # let the port clear before the next server
 

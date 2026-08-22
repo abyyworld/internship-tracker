@@ -61,6 +61,8 @@ background:#12241d;color:var(--text)}
 .banner{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;
 border:1px solid var(--line);background:#0e1f19;border-radius:14px;padding:11px 14px;margin-bottom:14px}
 .banner.hidden{display:none}
+/* Beats a.btn's own display, which is more specific than a bare class. */
+.hidden{display:none!important}
 .notice{border-radius:11px;padding:10px 12px;font-size:13px;margin:0 0 12px;border:1px solid var(--line);background:#0e1f19}
 .notice.error{border-color:#6f3430;color:var(--red)}
 .notice.ok{border-color:#2c5c47;color:var(--green)}
@@ -118,9 +120,9 @@ border-radius:99px;padding:2px 9px;font-size:11.5px;margin:0 5px 5px 0}
 
 <div class="banner hidden" id="helperBanner">
   <div>
-    <strong>Your machine’s CV helper is running.</strong>
-    <div class="hint" style="margin-top:2px">It has your private CV files, your saved CVs and
-      proper PDF export. This page is the version that needs no install.</div>
+    <strong id="helperTitle">Your machine’s CV helper is running.</strong>
+    <div class="hint" style="margin-top:2px" id="helperNote">It has your private CV files, your
+      saved CVs and proper PDF export. This page is the version that needs no install.</div>
   </div>
   <a class="btn" id="helperLink" href="#">Open the full editor</a>
 </div>
@@ -233,6 +235,10 @@ const posting = {
   location: params.get("location") || "",
   tags: (params.get("tags") || "").split(",").map(t => t.trim()).filter(Boolean),
 };
+// Set by open.html: "stale" means a helper answered but is running a build from
+// before it could open a posting like this one. Sending the reader back to it
+// would be sending them back into the refusal they just escaped.
+const helperState = params.get("helper") || "";
 const BRIDGE = "http://127.0.0.1:8765";
 const $ = id => document.getElementById(id);
 
@@ -665,6 +671,17 @@ async function rewrite() {
 // away from a page that already works.
 function offerHelper() {
   if (!posting.url) return;
+  if (helperState === "stale") {
+    // Honest, and short: it is running, it is behind, and this page works now.
+    $("helperTitle").textContent = "Your machine’s helper is running an older build.";
+    $("helperNote").textContent =
+      "It cannot open this posting — that was fixed later — so you were sent here, "
+      + "which works now. It updates itself within a few hours, after which the "
+      + "full editor takes over again by itself.";
+    $("helperLink").classList.add("hidden");
+    $("helperBanner").classList.remove("hidden");
+    return;
+  }
   let shown = false;
   const show = () => {
     if (shown) return;
@@ -675,11 +692,10 @@ function offerHelper() {
     $("helperLink").href = `${BRIDGE}/editor?url=${encodeURIComponent(posting.url)}${carried}`;
     $("helperBanner").classList.remove("hidden");
   };
-  const probe = new Image();
-  probe.onload = show;
-  probe.src = `${BRIDGE}/favicon.ico?t=${Date.now()}`;
-  fetch(`${BRIDGE}/health?probe=${Date.now()}`, {mode: "no-cors", cache: "no-store"})
-    .then(show).catch(() => {});
+  // Only a helper that can actually open this posting is worth offering.
+  const able = new Image();
+  able.onload = show;
+  able.src = `${BRIDGE}/can/adopt-any-posting.png?t=${Date.now()}`;
 }
 
 // ── Wiring ─────────────────────────────────────────────────────────────────
