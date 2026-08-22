@@ -516,6 +516,30 @@ def main() -> int:
               "refused" in said.lower(), said)
         Provider.mode = "ok"
 
+        print("\n[7b] one request says whether it is the key or the CV")
+        page.click("#test")
+        page.wait_for_function(
+            "document.getElementById('status').textContent.includes('answered')", timeout=20000)
+        check("a test says what came back and what it proves",
+              "The key and the model work" in page.inner_text("#status"),
+              page.inner_text("#status"))
+
+        print("\n[7c] a failure is readable from the button that caused it")
+        # The notice bar is at the top of the page and this button is at the
+        # bottom of a long column: a message three screens away reads as
+        # nothing happening at all.
+        was_key = page.input_value("#key")
+        page.fill("#key", "")
+        page.click("#rewrite")
+        page.wait_for_timeout(400)
+        check("the reason appears under the button, not only at the top",
+              "API key" in page.inner_text("#status"), page.inner_text("#status"))
+        check("and it is marked as a failure",
+              "bad" in (page.get_attribute("#status", "class") or ""),
+              page.get_attribute("#status", "class"))
+        page.fill("#key", was_key)
+        page.wait_for_timeout(700)
+
         print("\n[8] a provider that hangs can be given up on")
         # "its taking too long seems stuck": a page that says Rewriting… and
         # nothing else cannot be told apart from one that has died.
