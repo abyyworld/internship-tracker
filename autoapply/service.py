@@ -373,10 +373,16 @@ def update_checkout(
 
     Deliberately narrow. It never switches branch — that would move someone's
     work out from under them without asking — and it never discards anything:
-    local edits are parked with git stash and the answer says so, so the way
-    back is always `git stash pop`. An unattended caller passes
-    park_local_edits=False and gets a refusal instead, because nobody is there
-    to read where their work went.
+    asked for by hand, local edits are parked with git stash and the answer
+    says so, so the way back is always `git stash pop`.
+
+    An unattended caller passes park_local_edits=False and nothing is parked,
+    because nobody is there to read where their work went. It is not refused
+    either: git will not overwrite a modified file to fast-forward — it stops
+    and names the file — so the working tree is safe without help, and edits
+    to files the update does not touch survive the pull. Refusing on any dirt
+    at all would freeze updates for good on a checkout where anything local
+    has rewritten a generated file.
     """
     project = Path(project or Path(__file__).resolve().parent.parent).resolve()
     if not (project / ".git").exists():
@@ -395,20 +401,14 @@ def update_checkout(
         branch = _git(project, "rev-parse", "--abbrev-ref", "HEAD", timeout=30).stdout.strip()
 
         stashed = False
-        if _git(project, "status", "--porcelain", timeout=60).stdout.strip():
-            if not park_local_edits:
-                # An unattended check does not touch work in progress. Asked
-                # for by hand it may park it, because a person is there to be
-                # told where it went.
-                return {"updated": False, "was": was, "commit": was,
-                        "branch": branch, "stashed": False,
-                        "reason": "There are local edits to the code here, so "
-                                  "nothing was pulled."}
+        dirty = bool(_git(project, "status", "--porcelain", timeout=60).stdout.strip())
+        if dirty and park_local_edits:
             stashed = _git(
                 project, "stash", "push", "-u", "-m", "autoapply self-update",
             ).returncode == 0
 
-        state = {"was": was, "commit": was, "branch": branch, "stashed": stashed}
+        state = {"was": was, "commit": was, "branch": branch,
+                 "stashed": stashed, "dirty": dirty and not stashed}
         fetched = _git(project, "fetch", "origin", "--quiet")
         if fetched.returncode != 0:
             detail = fetched.stderr.strip().splitlines()

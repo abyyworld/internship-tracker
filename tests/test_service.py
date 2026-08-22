@@ -266,6 +266,38 @@ class UpdateCheckoutTests(unittest.TestCase):
             self.assertEqual((clone / "seed.txt").read_text(),
                              "something I was in the middle of")
 
+    def test_an_unattended_update_keeps_unrelated_local_edits_and_still_pulls(self):
+        """Refusing on any dirt at all freezes updates for good.
+
+        A checkout where anything local has rewritten a generated file would
+        never update again. git protects the working tree by itself during a
+        fast-forward, so edits to files the update does not touch survive it.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            origin, clone = _origin_and_clone(Path(directory))
+            (clone / "seed.txt").write_text("edited here")
+            _commit(origin, "later.txt", "the fix")
+
+            report = service.update_checkout(clone, park_local_edits=False)
+
+            self.assertTrue(report["updated"], report)
+            self.assertFalse(report["stashed"])
+            self.assertEqual((clone / "seed.txt").read_text(), "edited here")
+            self.assertEqual((clone / "later.txt").read_text(), "the fix")
+
+    def test_an_unattended_update_will_not_overwrite_a_modified_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            origin, clone = _origin_and_clone(Path(directory))
+            _commit(origin, "seed.txt", "changed upstream")
+            (clone / "seed.txt").write_text("changed here")
+
+            report = service.update_checkout(clone, park_local_edits=False)
+
+            self.assertFalse(report["updated"])
+            self.assertTrue(report["reason"])
+            # The edit is still there, which is the only part that matters.
+            self.assertEqual((clone / "seed.txt").read_text(), "changed here")
+
     def test_it_stays_on_the_branch_it_found(self):
         with tempfile.TemporaryDirectory() as directory:
             origin, clone = _origin_and_clone(Path(directory))
