@@ -11,6 +11,7 @@ from urllib.parse import urlsplit
 
 import scorecard
 from funding import load_schemes
+from ventures import load_programmes
 from source_health import alerts as health_alerts, summary as health_summary
 from universities import _index, annotate, load_universities
 
@@ -193,6 +194,7 @@ def build() -> int:
         TEMPLATE.replace("__JOBS__", json_for_script(jobs))
         .replace("__HEALTH__", json_for_script(health))
         .replace("__FUNDING__", json_for_script(schemes))
+        .replace("__VENTURES__", json_for_script(load_programmes()))
         .replace("__GENERATED__", date.today().isoformat())
     )
     OUTPUT.write_text(page, encoding="utf-8")
@@ -204,8 +206,9 @@ TEMPLATE = r"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Filter internships, research positions, PhD fellowships, and new-grad roles worldwide. Review AI-tailored CV edits locally, then apply.">
-<title>Role Radar · Internships · Research · PhD · New Grad</title>
+<meta name="description" content="Filter internships, research positions, PhD fellowships and new-grad roles worldwide, alongside accelerators, founder fellowships and grants. Review AI-tailored CV edits locally, then apply.">
+<title>Role Radar · Roles · Ventures · Funding</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <style>
 :root{
   color-scheme:dark;
@@ -319,6 +322,28 @@ h2{font-size:17px;line-height:1.25;margin:3px 0 0;letter-spacing:-.018em}
   color:#d9c8ff;text-decoration:none;font-weight:700}
 .suplinks a:hover{border-color:var(--purple);background:#20143a}
 .scfacts{display:block;color:#cbb8f5;font-size:11px;margin:4px 0 0}
+.modes-bar{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+.modes-bar .mode{padding:9px 16px;border-radius:12px;border:1px solid var(--line);
+  background:var(--panel);color:var(--muted);font-weight:750;font-size:13.5px;cursor:pointer}
+.modes-bar .mode i{font-style:normal;opacity:.65;margin-left:7px;font-variant-numeric:tabular-nums}
+.modes-bar .mode:hover{color:var(--text)}
+.modes-bar .mode.on{background:#12312a;border-color:#3d7c62;color:var(--green)}
+.oppgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.opp{border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:16px;
+  display:flex;flex-direction:column;gap:9px}
+.opp h3{margin:0;font-size:17px;letter-spacing:-.02em}
+.opp .org{color:var(--muted);font-size:12.5px;margin:-4px 0 0}
+.opp .tags{display:flex;flex-wrap:wrap;gap:6px}
+.opp .tag{font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;
+  padding:3px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.opp .tag.kind{border-color:#3d7c62;color:var(--green)}
+.opp .tag.free{border-color:#6f5aa8;color:var(--purple)}
+.opp dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:13px}
+.opp dt{color:var(--muted);font-weight:700}
+.opp dd{margin:0;color:var(--text)}
+.opp .cyc{color:var(--amber);font-size:12.5px}
+.opp .go{margin-top:auto;color:var(--green);font-weight:750;font-size:13px;text-decoration:none}
+.opp .go:hover{text-decoration:underline}
 .funding{margin:26px 0 8px;border:1px solid var(--line);border-radius:18px;
   background:linear-gradient(155deg,#141f2e 0,#0c1418 78%);padding:20px 22px}
 .funding h3{margin:0;font-size:19px;letter-spacing:-.02em}
@@ -356,15 +381,15 @@ footer a{color:var(--green)}
 <header>
   <div class="eyebrow"><i class="pulse"></i>verified role intelligence · updated __GENERATED__</div>
   <div class="hero">
-    <h1>Find the role.<br><span>Tailor. Apply.</span></h1>
-    <p class="intro">Internships, research assistantships, PhD fellowships, postdocs, and new-grad roles — worldwide, across every CS and STEM domain. AI-tailored CV editing built in.</p>
+    <h1>Find the opportunity.<br><span>Tailor. Apply.</span></h1>
+    <p class="intro">Roles, venture programmes and funding — internships, research posts, PhD fellowships and new-grad jobs, alongside the accelerators, grants and fellowships that back people who would rather build the thing. AI-tailored CV editing built in.</p>
   </div>
 </header>
 <section class="statusbar" aria-label="Tracker totals">
   <div class="stat"><strong id="totalStat">0</strong><span>verified-open roles</span></div>
   <div class="stat"><strong id="researchStat">0</strong><span>research / PhD / postdoc</span></div>
   <div class="stat"><strong id="newStat">0</strong><span>new since last run</span></div>
-  <div class="stat"><strong id="tailorStat">0</strong><span>AI CV editor ready</span></div>
+  <div class="stat"><strong id="ventureStat">0</strong><span>venture programmes</span></div>
 </section>
 <section class="helper">
   <div><strong>⚡ Local AI CV Studio</strong><p>Every role opens your complete CV with reviewable AI suggestions. Accept, reject, directly edit, then export — nothing is silently removed.</p>
@@ -375,6 +400,12 @@ footer a{color:var(--green)}
   <p>It opens the CV helper on your own machine, so it only works while that helper is running. Open the project folder and double-click <code>install-login-service.command</code>. It installs the helper as a background service: it starts at login, restarts itself if it stops, and needs no window kept open. <code>start-autoapply.command</code> starts it once in a window if you prefer.</p></details></div>
   <a class="btn primary" href="./open.html" target="_blank" title="Checks the local CV helper, pairs this browser with it, and reports which build, provider and model it is set up to use">Connect this browser</a>
 </section>
+<nav class="modes-bar" id="opportunityModes" aria-label="Kind of opportunity">
+  <button class="mode on" data-view="roles" type="button">Roles<i id="rolesCount"></i></button>
+  <button class="mode" data-view="ventures" type="button">Ventures<i id="venturesCount"></i></button>
+  <button class="mode" data-view="funding" type="button">Funding<i id="fundingCount"></i></button>
+</nav>
+<div id="rolesView">
 <section class="filters" aria-label="Job filters">
   <div class="searchrow">
     <input id="search" class="control search" type="search" placeholder="Search role, company, location or focus…" autocomplete="off">
@@ -427,6 +458,41 @@ footer a{color:var(--green)}
   </select>
 </div>
 <main class="cards" id="cards"></main>
+<button class="load" id="loadMore" hidden>Show more roles</button>
+</div>
+<section class="opps" id="venturesView" hidden aria-label="Venture programmes">
+  <div class="filters" style="margin-bottom:14px">
+    <div class="searchrow" style="grid-template-columns:minmax(240px,1.8fr) repeat(3,minmax(140px,.7fr))">
+      <input id="vSearch" class="control search" type="search" placeholder="Search programme, organisation or who it is for…" autocomplete="off">
+      <select id="vKind" class="control"><option value="">Every kind</option></select>
+      <select id="vAudience" class="control">
+        <option value="">Anyone</option>
+        <option value="students">Open to students</option>
+        <option value="phd">Open to PhD researchers</option>
+        <option value="researchers">Open to researchers</option>
+      </select>
+      <select id="vRegion" class="control"><option value="">Everywhere</option></select>
+    </div>
+    <div class="quick" style="margin-top:11px">
+      <span class="quick-label">Stage</span>
+      <div id="vStageChips" style="display:contents"></div>
+      <span class="quick-divider"></span>
+      <label class="check"><input type="checkbox" id="vNoEquity"><span>Takes no equity</span></label>
+      <label class="check"><input type="checkbox" id="vRemote"><span>Can be done remotely</span></label>
+      <span class="spacer"></span>
+      <button class="ghost" id="vClear">Clear filters</button>
+    </div>
+  </div>
+  <p class="muted" style="font-size:13px;margin:0 0 14px;max-width:78ch">
+    Accelerators, talent investors, founder fellowships, grants and studios — the
+    programmes that fund a person or a company rather than employ one. Cheque sizes
+    and equity are shown only where the programme publishes them, and cohort dates
+    are deliberately absent: they move every year, so each card links to the page
+    that governs it.
+  </p>
+  <div class="resultbar"><b id="vCount"></b></div>
+  <div class="oppgrid" id="ventureGrid"></div>
+</section>
 <section class="funding" id="funding" hidden>
   <h3>Funding for study and research</h3>
   <p>Scholarships, studentships and fellowships that fund a degree or a research post,
@@ -435,13 +501,13 @@ footer a{color:var(--green)}
   to you now.</p>
   <div class="fundgrid" id="fundgrid"></div>
 </section>
-<button class="load" id="loadMore" hidden>Show more roles</button>
 <footer>Public job metadata only. Eligibility remains review-required unless personally verified. CV editing happens through the private localhost helper and never submits an application. <a href="https://github.com/abyyworld/internship-tracker">View source on GitHub</a>.</footer>
 </div>
 <script>
 const JOBS=__JOBS__;
 const HEALTH=__HEALTH__;
 const FUNDING=__FUNDING__;
+const VENTURES=__VENTURES__;
 const PAGE=48;
 const CATEGORY_ORDER=["All","AI / ML","Software Engineering","Quant / Finance","Robotics & Embodied AI","Security","Data","Systems & Infra","Hardware / EE","HCI / XR","Computational Science"];
 const TYPE_ORDER=["All types","intern","research-assistant","new-grad","phd-fellowship","postdoc","co-op","placement","fellowship","masters-research"];
@@ -641,9 +707,109 @@ function renderHealth(){
 }
 const LEVEL_NAMES={undergraduate:"Undergrad",masters:"Masters",phd:"PhD",
   postdoc:"Postdoc",research:"Research"};
+// ── Ventures ────────────────────────────────────────────────────────────────
+// Every card answers the four things that decide whether it is worth an evening:
+// what it gives, what it takes, who may apply, and when it runs.
+const STAGE_LABELS={research:"From research",  "pre-team":"Before a team",
+  idea:"Idea", "pre-seed":"Pre-seed", seed:"Seed", "series-a":"Series A"};
+const AUDIENCE_LABELS={students:"Students",phd:"PhD",researchers:"Researchers",anyone:"Anyone"};
+let vStage="";
+
+function takesNoEquity(v){return String(v.equity||"").toLowerCase().startsWith("none")}
+
+function ventureMatches(v){
+  const q=$("vSearch").value.trim().toLowerCase();
+  if(q){
+    const hay=[v.name,v.organisation,v.kind,v.eligibility,v.gives,(v.locations||[]).join(" "),
+      (v.audience||[]).join(" ")].join(" ").toLowerCase();
+    if(!hay.includes(q))return false;
+  }
+  const kind=$("vKind").value;
+  if(kind&&v.kind!==kind)return false;
+  const audience=$("vAudience").value;
+  // "anyone" in the data means no restriction, so it answers every audience.
+  if(audience&&!(v.audience||[]).includes(audience)&&!(v.audience||[]).includes("anyone"))return false;
+  const region=$("vRegion").value;
+  if(region&&!(v.regions||[]).includes(region)&&!(v.regions||[]).includes("global"))return false;
+  if(vStage&&!(v.stage||[]).includes(vStage))return false;
+  if($("vNoEquity").checked&&!takesNoEquity(v))return false;
+  if($("vRemote").checked&&!v.remote)return false;
+  return true;
+}
+
+function renderVentures(){
+  const shown=VENTURES.filter(ventureMatches);
+  $("vCount").textContent=shown.length===VENTURES.length
+    ?`${VENTURES.length} programmes`
+    :`${shown.length} of ${VENTURES.length} programmes`;
+  $("ventureGrid").innerHTML=shown.map(v=>`<article class="opp">
+    <h3>${esc(v.name)}</h3>
+    <p class="org">${esc(v.organisation||"")}</p>
+    <div class="tags">
+      <span class="tag kind">${esc(v.kind)}</span>
+      ${takesNoEquity(v)?`<span class="tag free">no equity</span>`:""}
+      ${(v.stage||[]).map(x=>`<span class="tag">${esc(STAGE_LABELS[x]||x)}</span>`).join("")}
+      ${v.remote?`<span class="tag">remote ok</span>`:""}
+    </div>
+    <dl>
+      <dt>Gives</dt><dd>${esc(v.gives||"—")}</dd>
+      <dt>Takes</dt><dd>${esc(v.equity||"—")}</dd>
+      <dt>Who</dt><dd>${esc(v.eligibility||"—")}</dd>
+      ${v.duration?`<dt>Length</dt><dd>${esc(v.duration)}</dd>`:""}
+      ${(v.locations||[]).length?`<dt>Where</dt><dd>${esc((v.locations||[]).join(", "))}</dd>`:""}
+    </dl>
+    <div class="cyc">${esc(v.cycle||"")}</div>
+    <a class="go" href="${esc(v.url)}" target="_blank" rel="noopener">Eligibility &amp; how to apply ↗</a>
+  </article>`).join("")||`<p class="muted">No programme matches those filters.</p>`;
+}
+
+function setupVentures(){
+  if(!VENTURES.length)return;
+  const kinds=[...new Set(VENTURES.map(v=>v.kind))].sort();
+  $("vKind").innerHTML=`<option value="">Every kind</option>`+
+    kinds.map(k=>`<option value="${esc(k)}">${esc(k[0].toUpperCase()+k.slice(1))}</option>`).join("");
+  const regions=[...new Set(VENTURES.flatMap(v=>v.regions||[]))].filter(r=>r!=="global").sort();
+  const REGION_NAMES={GB:"United Kingdom",EU:"Europe",US:"United States"};
+  $("vRegion").innerHTML=`<option value="">Everywhere</option>`+
+    regions.map(r=>`<option value="${esc(r)}">${esc(REGION_NAMES[r]||r)}</option>`).join("");
+  const stages=Object.keys(STAGE_LABELS).filter(x=>VENTURES.some(v=>(v.stage||[]).includes(x)));
+  $("vStageChips").innerHTML=stages.map(x=>
+    `<button class="chip" data-stage="${esc(x)}">${esc(STAGE_LABELS[x])}</button>`).join("");
+  $("vStageChips").onclick=e=>{
+    const stage=e.target.dataset.stage;
+    if(!stage)return;
+    vStage=vStage===stage?"":stage;
+    [...$("vStageChips").children].forEach(b=>b.classList.toggle("on",b.dataset.stage===vStage));
+    renderVentures();
+  };
+  for(const id of ["vSearch","vKind","vAudience","vRegion","vNoEquity","vRemote"]){
+    $(id).addEventListener("input",renderVentures);
+  }
+  $("vClear").onclick=()=>{
+    for(const id of ["vSearch","vKind","vAudience","vRegion"])$(id).value="";
+    $("vNoEquity").checked=$("vRemote").checked=false;
+    vStage="";[...$("vStageChips").children].forEach(b=>b.classList.remove("on"));
+    renderVentures();
+  };
+  renderVentures();
+}
+
+// One page, several kinds of opportunity. They are alternatives to each other,
+// so they are tabs rather than sections stacked down the page — and the set of
+// them is going to grow.
+function showView(view){
+  const views={roles:"rolesView",ventures:"venturesView",funding:"funding"};
+  for(const [name,id] of Object.entries(views)){
+    const node=$(id);
+    if(node)node.hidden=(name!==view);
+  }
+  [...$("opportunityModes").children].forEach(b=>b.classList.toggle("on",b.dataset.view===view));
+  try{localStorage.setItem("roleradar_view",view)}catch(e){}
+  if(view==="ventures")renderVentures();
+}
+
 function renderFunding(){
   if(!FUNDING.length)return;
-  $("funding").hidden=false;
   $("fundgrid").innerHTML=FUNDING.map(f=>`<article class="fund">
     <b>${esc(f.name)}</b>
     <span class="who">${esc(f.funder)}</span>
@@ -653,11 +819,19 @@ function renderFunding(){
   </article>`).join("");
 }
 renderFunding();
+setupVentures();
+$("opportunityModes").onclick=e=>{if(e.target.dataset.view)showView(e.target.dataset.view)};
+$("rolesCount").textContent=JOBS.length;
+$("venturesCount").textContent=VENTURES.length;
+$("fundingCount").textContent=FUNDING.length;
+let startView="roles";
+try{startView=localStorage.getItem("roleradar_view")||"roles"}catch(e){}
+showView(["roles","ventures","funding"].includes(startView)?startView:"roles");
 renderHealth();
 $("totalStat").textContent=JOBS.length;
 $("researchStat").textContent=JOBS.filter(isResearch).length;
 $("newStat").textContent=JOBS.filter(j=>j.new).length;
-$("tailorStat").textContent=JOBS.filter(j=>j.tailor).length;
+$("ventureStat").textContent=VENTURES.length;
 optionize("region","region","Not stated",prettyRegion);
 optionize("term","term","Not stated",prettyTerm);
 optionize("level","level","Not stated",prettyLevel);
