@@ -120,45 +120,20 @@ for _ in 1 2 3 4 5 6 7 8 9 10; do
 done
 
 # ── The service itself ───────────────────────────────────────────────────────
-mkdir -p "$AGENTS" "private"
-# & < > are legal in a folder name and would otherwise break the XML.
-xml_escape() {
-  printf '%s' "$1" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g'
+# Written by autoapply's own installer, which knows how to do this on macOS,
+# Linux and Windows. Keeping a second copy of the plist here is how the two
+# drift apart.
+mkdir -p "private"
+INSTALLED_JSON="$(".venv/bin/python" -m autoapply install-service 2>&1)" || {
+  line ""
+  line "The service could not be installed:"
+  printf '%s\n' "$INSTALLED_JSON"
+  line ""
+  line "Press Return to close this window."
+  read -t 300 -r _ 2>/dev/null || true
+  exit 1
 }
-SAFE_DIR="$(xml_escape "$PROJECT_DIR")"
-cat > "$PLIST" <<PLISTEOF
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>Label</key>
-	<string>$LABEL</string>
-	<key>ProgramArguments</key>
-	<array>
-		<string>$SAFE_DIR/.venv/bin/python</string>
-		<string>-m</string>
-		<string>autoapply</string>
-		<string>bridge</string>
-	</array>
-	<key>WorkingDirectory</key>
-	<string>$SAFE_DIR</string>
-	<key>RunAtLoad</key>
-	<true/>
-	<key>KeepAlive</key>
-	<true/>
-	<key>ProcessType</key>
-	<string>Background</string>
-	<key>StandardOutPath</key>
-	<string>$SAFE_DIR/private/bridge.log</string>
-	<key>StandardErrorPath</key>
-	<string>$SAFE_DIR/private/bridge.log</string>
-</dict>
-</plist>
-PLISTEOF
-
-launchctl bootout "$DOMAIN/$LABEL" 2>/dev/null || true
-launchctl bootstrap "$DOMAIN" "$PLIST" 2>/dev/null || launchctl load -w "$PLIST"
-line "Installed: $PLIST"
+line "Installed: $(printf '%s' "$INSTALLED_JSON" | sed -n 's/.*"file": *"\([^"]*\)".*/\1/p')"
 
 # ── Prove it is answering, and pair the browser ──────────────────────────────
 BUILD=""

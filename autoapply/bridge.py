@@ -402,12 +402,20 @@ class BridgeHandler(BaseHTTPRequestHandler):
             raise ValueError("Only absolute HTTPS job URLs are accepted")
         return url
 
-    def _find_job(self, url: str):
-        """Look up a job, re-importing the tracker once if it is not known yet.
+    def _find_job(self, url: str, hint: dict[str, Any] | None = None):
+        """The posting behind a link, whether or not this machine has seen it.
 
         A posting discovered by a watcher run after this process started is not
-        in the database, so the first lookup misses. Re-import and retry before
-        telling the user the link is not tracked.
+        in the database, so the first lookup misses; re-importing the tracker
+        catches that. What it cannot catch is a link from somewhere newer than
+        this checkout — the published dashboard is rebuilt daily, so a role
+        listed there is routinely absent from a local tracker, and refusing it
+        with "not one of the currently imported open postings" is a dead end for
+        a posting that plainly exists.
+
+        So an unknown HTTPS posting is adopted rather than refused. What the
+        link carries about it — company, role, location — is used, and the
+        description is fetched when a rewrite is actually asked for.
         """
         with Store(database_path(self.server.home)) as store:
             try:
@@ -416,7 +424,11 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 pass
         self.server.refresh_jobs_if_tracker_changed()
         with Store(database_path(self.server.home)) as store:
-            return store.find_job_by_url(url)
+            try:
+                return store.find_job_by_url(url)
+            except (KeyError, ValueError):
+                pass
+        return adopt_posting(self.server.home, {"url": url, **(hint or {})})
 
     def _models(self) -> list[str]:
         """What this endpoint can actually run, so the picker is never a guess."""
@@ -550,7 +562,11 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 query = parse_qs(parsed_request.query)
                 url = self._job_url(query.get("url", [""])[0])
                 cv_id = safe_cv_id(query.get("cv", [""])[0]) or MASTER_CV_ID
-                job = self._find_job(url)
+                job = self._find_job(url, {
+                    field: query.get(field, [""])[0]
+                    for field in ("company", "role", "location")
+                    if query.get(field, [""])[0]
+                })
                 document, _profile = self._document(cv_id)
                 draft = load_draft(self.server.home, job.id, cv_id)
                 base = load_base_url(self.server.home)
