@@ -88,6 +88,21 @@ class StudioIsSelfContainedTests(unittest.TestCase):
         for operator in ('case "cm"', 'case "Tm"', 'case "TJ"', 'case "T*"'):
             self.assertIn(operator, self.source, f"the PDF reader ignores {operator}")
 
+    def test_a_rebuilt_cv_keeps_the_shape_of_the_one_that_went_in(self):
+        # The faults a side-by-side comparison found, each pinned:
+        #   job titles were being set as section heads, in accent blue over a
+        #   rule, because they were short and capitalised;
+        #   "May 2026 – Present" was split at the dash, putting half the range
+        #   in the margin;
+        #   the wide gaps that are the only evidence of a column — the date at
+        #   the right, the label beside its skills — were collapsed away before
+        #   anything could read them.
+        self.assertIn("SECTION_WORDS", self.source)
+        self.assertIn("DATE_RANGE", self.source)
+        self.assertRegex(self.source, r"tail\.length > best\.when\.length")
+        self.assertRegex(self.source, r'replace\(/\[ \\t\]\{2,\}/g, "  "\)')
+        self.assertIn("function pairOf", self.source)
+
     def test_it_says_where_the_reader_data_goes(self):
         # The trade is: nothing to install, but the CV and the advert go
         # straight to a third party. Saying so is not optional.
