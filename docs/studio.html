@@ -54,6 +54,7 @@ button:disabled{opacity:.55;cursor:default}
 .tiny{padding:5px 9px;font-size:12px;border-radius:8px}
 .row{display:flex;gap:8px;flex-wrap:wrap}
 .row>button{flex:1}
+#modes button.on{background:var(--green2);color:#04150d;border-color:transparent}
 a.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border-radius:11px;
 text-decoration:none;font-weight:700;font-size:13px;border:1px solid var(--line);
 background:#12241d;color:var(--text)}
@@ -225,10 +226,23 @@ BSc Computer Science, University of London, 2027"></textarea>
         <input id="customBase" spellcheck="false" placeholder="https://…/v1">
       </div>
       <label for="model">Model</label>
-      <input id="model" spellcheck="false" autocomplete="off">
+      <select id="model"></select>
+      <input id="modelOther" spellcheck="false" autocomplete="off"
+             placeholder="Type a model name" style="display:none;margin-top:6px">
+      <p class="hint" id="modelNote"></p>
       <label for="key">API key</label>
       <input id="key" type="password" autocomplete="off" placeholder="Paste your key">
       <p class="hint" id="keyNote"></p>
+      <label>How hard to go</label>
+      <div class="row" id="modes">
+        <button class="secondary tiny" data-mode="touch">Touch up</button>
+        <button class="secondary tiny" data-mode="full">Full rewrite</button>
+        <button class="secondary tiny" data-mode="hard">Go hard</button>
+      </div>
+      <p class="hint" id="modeNote"></p>
+      <label for="instruction">Anything specific?</label>
+      <input id="instruction" spellcheck="false"
+             placeholder="e.g. lead with the robot-learning work">
       <div class="row" style="margin-top:10px">
         <button class="primary" id="rewrite">Rewrite for this job</button>
       </div>
@@ -295,6 +309,9 @@ const KEY = {
   company: `studio.company.${jobKey}`,
   provider: "studio.provider",
   base: "studio.base",
+  mode: "studio.mode",
+  instruction: `studio.instruction.${jobKey}`,
+  models: id => `studio.models.${id}`,
   key: id => `studio.key.${id}`,
   model: id => `studio.model.${id}`,
 };
@@ -1317,14 +1334,110 @@ function renderProvider() {
   }
   $("customWrap").style.display = provider.id === "custom" ? "" : "none";
   $("customBase").value = store.get(KEY.base, "");
-  $("model").value = store.get(KEY.model(provider.id), provider.models[0] || "");
-  $("model").placeholder = provider.models[0] || "model name";
+  renderModels();
   const key = store.get(KEY.key(provider.id), "");
   $("key").value = key;
   $("key").placeholder = provider.hint ? `Paste your key (${provider.hint})` : "Paste your key";
   $("keyNote").textContent = key
     ? "Saved in this browser only. Each provider keeps its own key."
     : "Kept in this browser only — never uploaded, never in GitHub.";
+}
+
+// ── Which model ────────────────────────────────────────────────────────────
+// The three names in PROVIDERS are seeds: they were current when this was
+// written, and a model list goes stale in months. Asking the endpoint what the
+// reader's own key can reach is the only version of this that keeps working,
+// and anything it does not list can still be typed in by hand.
+const OTHER = "\u0000other";
+const asked = new Set();          // providers already asked, once per visit
+// A chat endpoint lists everything the key can reach, most of which cannot
+// hold a conversation.
+const NOT_CHAT = /embed|whisper|tts|audio|imagen|veo|dall-e|moderation|rerank|aqa|guard|-vision$/i;
+// Models that think before answering are worth naming, because thinking is
+// what the reader feels as "stuck".
+const SLOW_MODEL = /(^|[^a-z])(pro|thinking|reasoner|o[134])([^a-z]|$)/i;
+
+function knownModels(provider) {
+  const cached = store.get(KEY.models(provider.id), "");
+  const chosen = store.get(KEY.model(provider.id), "");
+  const names = [...(provider.models || []), ...cached.split("\n"), chosen];
+  return [...new Set(names.map(name => name.trim()).filter(Boolean))];
+}
+
+function renderModels() {
+  const provider = currentProvider();
+  const select = $("model");
+  const names = knownModels(provider);
+  const chosen = store.get(KEY.model(provider.id), names[0] || "");
+  const listed = names.includes(chosen);
+  select.replaceChildren();
+  for (const name of names) {
+    const node = document.createElement("option");
+    node.value = name;
+    node.textContent = name;
+    node.selected = name === chosen;
+    select.append(node);
+  }
+  const other = document.createElement("option");
+  other.value = OTHER;
+  other.textContent = "Type a model name…";
+  other.selected = !listed;
+  select.append(other);
+  $("modelOther").style.display = listed ? "none" : "";
+  $("modelOther").value = listed ? "" : chosen;
+  modelNote();
+}
+
+function modelNote() {
+  const provider = currentProvider();
+  const cached = store.get(KEY.models(provider.id), "").split("\n").filter(Boolean);
+  const parts = [];
+  if (cached.length) parts.push(`${cached.length} models this key can reach.`);
+  else if (provider.id !== "custom") parts.push("The usual ones. Add your key and this list "
+    + "fills in with everything your key can actually reach.");
+  if (SLOW_MODEL.test(chosenModel())) {
+    parts.push("This one thinks before it answers — that is the wait. A flash or lite model "
+      + "rewrites a full CV in a few seconds.");
+  }
+  $("modelNote").textContent = parts.join(" ");
+}
+
+function chosenModel() {
+  const select = $("model");
+  return (select.value === OTHER ? $("modelOther").value : select.value).trim();
+}
+
+// The list is a convenience: nothing here reports a failure, because a
+// provider that will not list its models will still answer a rewrite.
+async function loadModels(force = false) {
+  const provider = currentProvider();
+  const base = currentBase();
+  const key = $("key").value.trim();
+  if (!base || !key) return;
+  if (asked.has(provider.id) && !force) return;
+  asked.add(provider.id);
+  try {
+    const endpoint = base.replace(/\/+$/, "") + "/models";
+    const response = await fetch(endpoint, {headers: {"Authorization": `Bearer ${key}`}});
+    if (!response.ok) return;
+    const payload = await response.json();
+    const data = Array.isArray(payload) ? payload : (payload && payload.data) || [];
+    const listed = [...new Set(data
+      // Google returns "models/gemini-2.5-flash"; the chat endpoint wants the tail.
+      .map(item => String((item && (item.id || item.name)) || "").replace(/^models\//, "").trim())
+      .filter(name => name && !NOT_CHAT.test(name)))].sort();
+    if (!listed.length) return;
+    store.set(KEY.models(provider.id), listed.join("\n"));
+    renderModels();
+  } catch (error) { /* offline, or an endpoint with no model list */ }
+}
+
+// ── How hard to go ─────────────────────────────────────────────────────────
+function renderMode() {
+  for (const button of $("modes").querySelectorAll("button[data-mode]")) {
+    button.classList.toggle("on", button.dataset.mode === mode);
+  }
+  $("modeNote").textContent = MODES[mode].note;
 }
 
 // ── The job card ───────────────────────────────────────────────────────────
@@ -1370,36 +1483,119 @@ function advertNote() {
 
 // ── Talking to the provider ────────────────────────────────────────────────
 const SYSTEM = [
-  "You rewrite lines of a CV so they answer a specific job advert.",
-  "Absolute rules:",
-  "1. Never invent an employer, job title, date, degree, tool or number. Every fact in your",
-  "   rewrite must already appear in the line you are rewriting or elsewhere in the CV.",
-  "2. Rewrite only lines where the CV genuinely has something the advert asks for. Leaving a",
-  "   line alone is always allowed and is better than padding it.",
-  "3. Keep the reader's voice, tense and register. British or American spelling as given.",
-  "4. One line in, one line out. No bullet characters, no markdown, no quotes around the text.",
-  "5. Never rewrite headings, contact details, dates or the person's name.",
+  "You rewrite lines of a CV so they answer a specific job advert. You are writing for a",
+  "hiring manager who reads for six seconds before deciding, so every line you touch has to",
+  "earn its place in those six seconds.",
+  "",
+  "What a good rewrite does:",
+  "· leads with the thing this advert asks for, not with the chronology",
+  "· puts the measured result in the first half of the line, not the last",
+  "· uses the advert's own words for the same thing the CV already describes differently",
+  "  (\"policy evaluation\" for \"testing the model\"), never for something it does not describe",
+  "· cuts hedging, throat-clearing and any phrase that would be true of anyone",
+  "· keeps the reader's voice, tense and spelling",
+  "",
+  "Absolute rules, in order of precedence:",
+  "1. Never invent an employer, job title, date, degree, tool, framework or number. Every fact",
+  "   in your rewrite must already be in the CV — in the line you are rewriting or elsewhere",
+  "   in it. Moving a fact from one line to a better place is allowed; making one up is not.",
+  "2. Do not return a line you have barely changed. If your version differs only in word",
+  "   order or by a synonym or two, leave that line out of your answer entirely. A short list",
+  "   of real improvements is worth far more than a long list of paraphrases.",
+  "3. Never rewrite headings, contact details, dates or the person's name.",
+  "4. One line in, one line out: no bullet characters, no markdown, no quotes around the text.",
 ].join("\n");
+
+const MODES = {
+  touch: {
+    label: "Touch up",
+    note: "Only the lines that clearly answer this advert, and only where the wording can be "
+      + "sharpened. The fewest changes worth making.",
+    order: "Rewrite at most 8 lines: the ones where a sharper phrasing would visibly help "
+      + "against this advert. Leave everything else alone.",
+  },
+  full: {
+    label: "Full rewrite",
+    note: "Every line with something to say about this posting is rewritten to say it first "
+      + "and say it plainly.",
+    order: "Rewrite every line that has something to do with this advert — aim for 12 to 25 "
+      + "lines. Lead each one with what the advert cares about.",
+  },
+  hard: {
+    label: "Go hard",
+    note: "Rewrites aggressively for this posting: leads with the evidence the advert asks "
+      + "for, cuts everything that reads like filler.",
+    order: "Rewrite aggressively: up to 30 lines. Restructure each one so the evidence this "
+      + "advert asks for comes first, cut every clause that would be true of any candidate, "
+      + "and make the numbers impossible to miss.",
+  },
+};
+const savedMode = store.get(KEY.mode, "full");
+let mode = MODES[savedMode] ? savedMode : "full";
 
 function tailoringPrompt() {
   const advert = $("advert").value.trim();
+  const instruction = $("instruction").value.trim();
   const numbered = lines
-    .map((line, index) => ({index, text: line.text}))
-    .filter(entry => entry.text.trim().length > 12)
+    .map((line, index) => ({index, text: line.text, kind: kindOf(line.text, index)}))
+    .filter(entry => entry.text.trim().length > 12
+      && ["body", "bullet", "sub", "pair"].includes(entry.kind))
     .map(entry => `${entry.index}: ${entry.text}`)
     .join("\n");
   return [
+    instruction ? `What the applicant asked for, above everything else: ${instruction}\n` : "",
     `The role: ${jobRole() || "(not given)"}`,
     jobCompany() ? `The company: ${jobCompany()}` : "",
     posting.location ? `Location: ${posting.location}` : "",
     posting.tags.length ? `What it is about: ${posting.tags.join(", ")}` : "",
-    advert ? `\nThe advert:\n${advert}` : "\n(The advert text was not available.)",
-    "\nThe CV, one numbered line each:",
+    advert ? `\nThe advert:\n${advert}`
+           : "\n(The advert text was not available, so work from the role title and what the"
+             + " CV itself says the work was.)",
+    "\nThe CV. Only these lines may be rewritten — headings, dates and contact details are",
+    "not listed, because they are not yours to change:",
     numbered,
-    "\nReturn JSON only, in this exact shape:",
-    '{"rewrites":[{"line":12,"text":"the rewritten line","why":"what in the advert it answers"}]}',
-    "Include only lines you are genuinely improving for this advert. An empty list is a valid answer.",
+    "",
+    MODES[mode].order,
+    "Return JSON only, in this exact shape, and nothing else:",
+    '{"rewrites":[{"line":12,"text":"the rewritten line","why":"the requirement it answers"}]}',
+    "Leave out any line you have not genuinely improved. An empty list is a valid answer.",
   ].filter(Boolean).join("\n");
+}
+
+// The complaint this exists for: "the changes are almost identical to the
+// previous version". A model asked to rewrite will return something for every
+// line it was given, and half of those somethings are the same sentence with
+// two words swapped. Reviewing those costs the reader more than they are
+// worth, so they are dropped before they are ever shown.
+const wordsOf = value => value.toLowerCase()
+  .replace(/[^a-z0-9%+ ]/g, " ").split(/\s+/).filter(Boolean);
+
+// Words as they were written, so an acronym still looks like one.
+const tokensOf = value => value.match(/[A-Za-z0-9+#]+/g) || [];
+// A term is a thing, not a turn of phrase: a version, a number, a language
+// with a symbol in its name, an acronym. Putting one in a line that did not
+// have it is a real edit however little else moved — "and ROS" becoming
+// "and ROS 2" is the advert's own word arriving, not a reshuffle.
+const isTerm = token => /\d/.test(token) || /[+#]/.test(token) || /^[A-Z]{2,}$/.test(token);
+
+function addedTerms(before, after) {
+  const had = new Set(tokensOf(before).map(token => token.toLowerCase()));
+  return tokensOf(after).filter(token => !had.has(token.toLowerCase()) && isTerm(token));
+}
+
+function tooSimilar(before, after) {
+  const a = wordsOf(before);
+  const b = wordsOf(after);
+  if (!a.length || !b.length) return true;
+  if (a.join(" ") === b.join(" ")) return true;
+  if (addedTerms(before, after).length) return false;
+  const bag = new Set(b);
+  const shared = a.filter(word => bag.has(word)).length;
+  const overlap = shared / Math.max(a.length, b.length);
+  const lengths = Math.abs(a.length - b.length) / Math.max(a.length, b.length);
+  // Nearly the same words, in nearly the same quantity: a paraphrase, not an
+  // improvement.
+  return overlap >= 0.88 && lengths <= 0.12;
 }
 
 // Providers disagree about the shape of an error. Google's OpenAI-compatible
@@ -1439,33 +1635,100 @@ function whyItFailed(response, said) {
   return said;
 }
 
+const DEADLINE = 150000;   // after this it is not slow, it is stuck
+let running = null;        // the AbortController of the request in flight
+
+// Wording that means the endpoint refused a parameter rather than the request.
+// Sending fewer settings is worth a second try; a bad key or a missing model is
+// not, and retrying those only wastes the reader's time twice.
+const PARAM_WORDING =
+  /reasoning_effort|max_tokens|max_completion_tokens|temperature|unknown (field|parameter|name)|unsupported|not supported|unrecognized|invalid_?_?(argument|request_error)?.*(field|parameter)/i;
+
 async function callProvider(base, key, model, prompt) {
   const endpoint = base.replace(/\/+$/, "") + "/chat/completions";
-  let response;
-  try {
-    response = await fetch(endpoint, {
-      method: "POST",
-      headers: {"Content-Type": "application/json", "Authorization": `Bearer ${key}`},
-      body: JSON.stringify({
-        model,
-        messages: [{role: "system", content: SYSTEM}, {role: "user", content: prompt}],
-        temperature: 0.3,
-      }),
-    });
-  } catch (error) {
-    throw new Error(
-      `Your browser could not reach ${new URL(endpoint).hostname}. Either you are offline, `
-      + "or this provider does not allow requests from a web page — Google AI Studio does, "
-      + "and the local helper can reach any of them.");
+  const messages = [{role: "system", content: SYSTEM}, {role: "user", content: prompt}];
+  // Gemini's flash models think before they answer unless told not to, and on
+  // a four-page CV that is the difference between a few seconds and a minute
+  // of a page that looks stuck. The parameter is not universal, so an endpoint
+  // that rejects it is asked again with less.
+  const attempts = [
+    {model, messages, temperature: 0.3, reasoning_effort: "none", max_tokens: 8000},
+    {model, messages, temperature: 0.3, max_tokens: 8000},
+    {model, messages},
+  ];
+
+  let lastRefusal = null;
+  for (const [index, body] of attempts.entries()) {
+    running = new AbortController();
+    const deadline = setTimeout(() => running && running.abort("deadline"), DEADLINE);
+    let response;
+    try {
+      response = await fetch(endpoint, {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "Authorization": `Bearer ${key}`},
+        body: JSON.stringify(body),
+        signal: running.signal,
+      });
+    } catch (error) {
+      clearTimeout(deadline);
+      if (running && running.signal.aborted) {
+        throw new Error(running.signal.reason === "deadline"
+          ? `${Math.round(DEADLINE / 1000)} seconds with no answer from `
+            + `${new URL(endpoint).hostname}. A smaller model — gemini-2.5-flash-lite — `
+            + "answers a CV this long in a few seconds, and the local helper has no "
+            + "time limit at all."
+          : "Stopped.");
+      }
+      throw new Error(
+        `Your browser could not reach ${new URL(endpoint).hostname}. Either you are offline, `
+        + "or this provider does not allow requests from a web page — Google AI Studio does, "
+        + "and the local helper can reach any of them.");
+    } finally {
+      clearTimeout(deadline);
+    }
+
+    const text = await response.text();
+    let payload = null;
+    try { payload = JSON.parse(text); } catch (error) { payload = text; }
+    if (response.ok) {
+      const content = payload && payload.choices && payload.choices[0]
+        && payload.choices[0].message && payload.choices[0].message.content;
+      if (!content) throw new Error("The provider answered without any text in it.");
+      return content;
+    }
+    const said = providerSaid(payload, response);
+    lastRefusal = whyItFailed(response, said);
+    // Only a complaint about the settings is worth sending again.
+    if (index === attempts.length - 1 || !PARAM_WORDING.test(said)) throw new Error(lastRefusal);
   }
-  let payload = null;
-  const text = await response.text();
-  try { payload = JSON.parse(text); } catch (error) { payload = text; }
-  if (!response.ok) throw new Error(whyItFailed(response, providerSaid(payload, response)));
-  const content = payload && payload.choices && payload.choices[0]
-    && payload.choices[0].message && payload.choices[0].message.content;
-  if (!content) throw new Error("The provider answered without any text in it.");
-  return content;
+  throw new Error(lastRefusal || "The provider refused the request.");
+}
+
+// An answer cut off at the token limit is a run of complete objects followed
+// by half of one more. The complete ones are real advice and are kept; only
+// the half-written one is lost.
+function salvage(text) {
+  const rewrites = [];
+  const open = [];
+  let quoted = false, escaped = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const ch = text[index];
+    if (quoted) {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === '"') quoted = false;
+      continue;
+    }
+    if (ch === '"') { quoted = true; continue; }
+    if (ch === "{") { open.push(index); continue; }
+    if (ch !== "}" || !open.length) continue;
+    const start = open.pop();
+    try {
+      const item = JSON.parse(text.slice(start, index + 1));
+      if (item && item.line !== undefined && item.text) rewrites.push(item);
+    } catch (error) { /* some other object */ }
+  }
+  return rewrites.length ? {rewrites} : null;
 }
 
 function parseRewrites(content) {
@@ -1477,7 +1740,8 @@ function parseRewrites(content) {
   if (opened >= 0 && closed > opened) text = text.slice(opened, closed + 1);
   let payload;
   try { payload = JSON.parse(text); }
-  catch (error) { throw new Error("The model did not answer with the JSON it was asked for."); }
+  catch (error) { payload = salvage(text); }
+  if (!payload) throw new Error("The model did not answer with the JSON it was asked for.");
   const rewrites = Array.isArray(payload) ? payload : (payload.rewrites || []);
   return rewrites
     .map(item => ({
@@ -1490,49 +1754,79 @@ function parseRewrites(content) {
 }
 
 async function rewrite() {
-  if (busy) return;
+  // While a request is in flight this button is the way out of it. A page that
+  // can only be escaped by reloading loses the CV draft with it.
+  if (busy) {
+    if (running) running.abort("stopped");
+    return;
+  }
   if (!lines.length) { say("Paste your CV first.", "error"); return; }
   const provider = currentProvider();
   const base = currentBase();
   const key = $("key").value.trim();
-  const model = $("model").value.trim() || provider.models[0] || "";
+  const model = chosenModel() || provider.models[0] || "";
   if (!base) { say("Enter the endpoint for your own provider.", "error"); return; }
   if (!key) { say("Paste your API key — it stays in this browser.", "error"); return; }
   if (!model) { say("Name the model to use.", "error"); return; }
   store.set(KEY.key(provider.id), key);
   store.set(KEY.model(provider.id), model);
   store.set(KEY.advert, $("advert").value);
+  store.set(KEY.instruction, $("instruction").value);
 
   busy = true;
-  $("rewrite").disabled = true;
-  const wasLabel = $("rewrite").textContent;
-  $("rewrite").textContent = "Rewriting…";
+  const button = $("rewrite");
+  const wasLabel = button.textContent;
+  button.textContent = "Stop";
+  button.classList.remove("primary");
+  button.classList.add("secondary");
   say("");
-  status(`Asking ${provider.label} — this usually takes a few seconds.`);
+  // "Rewriting…" on its own is indistinguishable from a page that has hung,
+  // which is exactly what it was mistaken for. The seconds say which it is.
+  const started = Date.now();
+  const elapsed = () => Math.max(1, Math.round((Date.now() - started) / 1000));
+  status(`Asking ${provider.label}…`);
+  const ticking = setInterval(
+    () => status(`Asking ${provider.label} — ${elapsed()}s. Press Stop to give up.`), 1000);
   try {
     const content = await callProvider(base, key, model, tailoringPrompt());
     const rewrites = parseRewrites(content);
     for (const line of lines) line.proposal = null;
     let offered = 0;
+    let paraphrased = 0;
     for (const item of rewrites) {
       const line = lines[item.line];
       if (!line || item.text === line.text) continue;
+      // The same sentence with two words swapped is not an edit worth reading.
+      if (tooSimilar(line.text, item.text)) { paraphrased += 1; continue; }
       line.proposal = {text: item.text, why: item.why};
       offered += 1;
     }
+    const took = elapsed();
     render();
     status("");
+    const dropped = paraphrased
+      ? ` ${paraphrased} near-identical ${paraphrased === 1 ? "one was" : "ones were"} dropped.`
+      : "";
+    const harder = mode === "hard" ? "" : " Try “Go hard”, or say what to lead with.";
     say(offered
-      ? `${offered} suggested ${offered === 1 ? "edit" : "edits"}. Accept the ones you agree with.`
-      : "The model found nothing worth changing for this role. That is a real answer, not a failure.",
+      ? `${offered} suggested ${offered === 1 ? "edit" : "edits"} in ${took}s — `
+        + `accept the ones you agree with.${dropped}`
+      : paraphrased
+        ? "Everything it sent back was the same line with a word or two swapped, so none of "
+          + `it was worth your time.${harder}`
+        : "The model found nothing worth changing for this role. That is a real answer, not "
+          + `a failure.${harder}`,
       offered ? "ok" : "");
   } catch (error) {
     status("");
     say(error.message, "error");
   } finally {
+    clearInterval(ticking);
+    running = null;
     busy = false;
-    $("rewrite").disabled = false;
-    $("rewrite").textContent = wasLabel;
+    button.textContent = wasLabel;
+    button.classList.remove("secondary");
+    button.classList.add("primary");
   }
 }
 
@@ -1623,12 +1917,48 @@ $("rewrite").onclick = rewrite;
 $("provider").onchange = event => {
   store.set(KEY.provider, event.target.value);
   renderProvider();
+  loadModels();
 };
-$("customBase").oninput = event => store.set(KEY.base, event.target.value.trim());
-$("model").oninput = event => store.set(KEY.model(currentProvider().id), event.target.value.trim());
+$("customBase").oninput = event => {
+  store.set(KEY.base, event.target.value.trim());
+  asked.delete("custom");
+};
+$("customBase").onchange = () => loadModels(true);
+$("model").onchange = event => {
+  const typing = event.target.value === OTHER;
+  $("modelOther").style.display = typing ? "" : "none";
+  if (typing) $("modelOther").focus();
+  else store.set(KEY.model(currentProvider().id), event.target.value);
+  modelNote();
+};
+$("modelOther").oninput = event => {
+  const name = event.target.value.trim();
+  if (name) store.set(KEY.model(currentProvider().id), name);
+  modelNote();
+};
+$("modes").onclick = event => {
+  const button = event.target.closest("button[data-mode]");
+  if (!button || !MODES[button.dataset.mode]) return;
+  mode = button.dataset.mode;
+  store.set(KEY.mode, mode);
+  renderMode();
+};
+$("instruction").oninput = () => store.set(KEY.instruction, $("instruction").value);
+// A key is pasted, and then the reader goes straight for the button — the
+// blur that fires "change" may never happen. Asking on input, once, is what
+// makes the model list appear on the first visit rather than the second.
+let keyTyping = null;
+$("key").oninput = event => {
+  const key = event.target.value.trim();
+  store.set(KEY.key(currentProvider().id), key);
+  clearTimeout(keyTyping);
+  if (key.length >= 8) keyTyping = setTimeout(() => loadModels(true), 500);
+};
 $("key").onchange = event => {
   store.set(KEY.key(currentProvider().id), event.target.value.trim());
   renderProvider();
+  // A key that was just pasted is the first chance to ask what it can reach.
+  loadModels(true);
 };
 $("advert").oninput = () => { store.set(KEY.advert, $("advert").value); advertNote(); };
 $("roleInput").oninput = () => { store.set(KEY.role, jobRole()); renderJob(); };
@@ -1641,6 +1971,8 @@ $("forget").onclick = () => {
   $("advert").value = "";
   $("roleInput").value = "";
   $("companyInput").value = "";
+  $("instruction").value = "";
+  asked.clear();
   renderProvider();
   renderJob();
   render();
@@ -1652,8 +1984,11 @@ $("forget").onclick = () => {
 $("roleInput").value = store.get(KEY.role, posting.role);
 $("companyInput").value = store.get(KEY.company, posting.company);
 $("advert").value = store.get(KEY.advert, "");
+$("instruction").value = store.get(KEY.instruction, "");
 renderJob();
 renderProvider();
+renderMode();
+loadModels();
 const saved = store.get(KEY.cv, "");
 if (saved) { setCv(saved); showPaste(false); }
 else { render(); showPaste(true); $("cvPaste").focus(); }

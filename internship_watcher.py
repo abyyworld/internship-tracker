@@ -2030,6 +2030,32 @@ def _cell(s):
     return value
 
 
+SITE = "https://abyyworld.github.io/internship-tracker/"
+
+
+def _badge_word(value):
+    """Escape a word for a shields.io path segment.
+
+    Their separator is the hyphen, so a literal one has to be doubled, and an
+    underscore likewise. Without this a label with a dash in it silently
+    becomes two fields and the badge comes out wrong.
+    """
+    return (str(value).replace("_", "__").replace("-", "--")
+            .replace(" ", "%20").replace("·", "%C2%B7"))
+
+
+def _button(href, label, message, colour):
+    """A link that reads as a button on the GitHub front page.
+
+    A markdown link in a wall of prose is missable, and the thing most people
+    open this repository for is the site itself. GitHub allows no styling, so
+    the button is an image — the one form of emphasis a README really has.
+    """
+    badge = (f"https://img.shields.io/badge/{_badge_word(label)}-"
+             f"{_badge_word(message)}-{colour}?style=for-the-badge&labelColor=0d1117")
+    return f'  <a href="{href}"><img alt="{label} — {message}" src="{badge}"></a>\n'
+
+
 def _role_row(r, cols=("company", "role", "region", "term")):
     url = safe_url(r.get("url", ""))
     company = _cell(r.get("company", ""))
@@ -2138,6 +2164,16 @@ def build_dashboard(rows_out, new_ids, current):
 
     lines = [
         "# 🎯 Universal Academic & Career Tracker — Internships · Research · PhD · New Grad\n",
+        # The site first, before a word of explanation: this is what the
+        # repository is for, and it needs nothing installed to use.
+        '\n<p align="center">\n',
+        _button(SITE, "Open the tracker",
+                f"{len(live)} open postings", "1f6feb"),
+        _button(SITE + "studio.html", "Tailor my CV", "in the browser", "2ea043"),
+        "</p>\n",
+        f'\n<p align="center"><b><a href="{SITE}">{SITE}</a></b><br>\n'
+        "Search and filter every posting, then tailor your CV for one — in the "
+        "browser, on a phone, with nothing to install.</p>\n",
         f"\n> Last verified run: **{TODAY}** · **{len(live)} verified-open postings** · "
         f"**{len(research_live)} research / PhD / postdoc positions**\n",
         "\nThis tracker watches community internship boards and official Greenhouse, "

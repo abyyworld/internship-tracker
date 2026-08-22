@@ -444,6 +444,23 @@ class GeneratedOutputTests(unittest.TestCase):
             finally:
                 os.chdir(original)
 
+    def test_the_site_is_the_first_thing_on_the_front_page(self):
+        """A link in a paragraph of prose is missable.
+
+        What almost everyone opening this repository wants is the site, and it
+        needs nothing installed to use. So it is a button row above the first
+        sentence, not a mention four paragraphs down.
+        """
+        readme = self._readme([dict(self.ROW)])
+        head = readme.split("This tracker watches")[0]
+        self.assertIn("https://abyyworld.github.io/internship-tracker/", head)
+        self.assertIn("studio.html", head)
+        self.assertIn("img.shields.io/badge/", head)
+        self.assertIn('<p align="center">', head)
+        # A dash inside a badge label is shields.io's own field separator.
+        self.assertIn("Open%20the%20tracker", head)
+        self.assertIn("nothing to install", head)
+
     def test_the_readme_documents_a_command_that_exists(self):
         readme = self._readme([dict(self.ROW)])
         self.assertIn("python3 -m autoapply bridge", readme)

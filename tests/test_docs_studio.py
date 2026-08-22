@@ -103,6 +103,54 @@ class StudioIsSelfContainedTests(unittest.TestCase):
         self.assertRegex(self.source, r'replace\(/\[ \\t\]\{2,\}/g, "  "\)')
         self.assertIn("function pairOf", self.source)
 
+    def test_the_model_list_comes_from_the_endpoint_not_from_here(self):
+        # Three model names written into a page are current for about a month.
+        # What the reader's own key can reach is asked for, and anything the
+        # endpoint does not list can still be typed in by hand.
+        self.assertIn('"/models"', self.source)
+        self.assertIn("KEY.models(provider.id)", self.source)
+        # Google lists "models/gemini-2.5-flash"; the chat endpoint wants the tail.
+        self.assertIn(r'replace(/^models\//, "")', self.source)
+        self.assertIn("NOT_CHAT", self.source)      # an embedder cannot rewrite a CV
+        self.assertIn("Type a model name", self.source)
+
+    def test_a_request_cannot_run_forever_and_can_be_given_up_on(self):
+        # "its taking too long seems stuck": a page that says Rewriting… and
+        # nothing else is indistinguishable from one that has died. There is a
+        # deadline, the seconds are shown, and the button becomes the way out.
+        self.assertIn("const DEADLINE", self.source)
+        self.assertIn("AbortController", self.source)
+        self.assertRegex(self.source, r'button\.textContent = "Stop"')
+        self.assertRegex(self.source, r"running\.abort\(")
+        self.assertRegex(self.source, r"setInterval\(")
+        # Gemini's flash models think before answering unless told not to, and
+        # that thinking is the wait.
+        self.assertIn('reasoning_effort: "none"', self.source)
+
+    def test_a_rewrite_that_only_reworded_is_not_offered(self):
+        # "the changes are almost identical to the previous version". A model
+        # asked to rewrite returns something for every line, and half of those
+        # are the same sentence with two words swapped.
+        self.assertIn("function tooSimilar", self.source)
+        self.assertRegex(self.source, r"tooSimilar\(line\.text, item\.text\)")
+        # But a line that gains the advert's own term — ROS 2, C++, a number —
+        # has genuinely changed, however little else moved.
+        self.assertIn("function addedTerms", self.source)
+        self.assertRegex(self.source, r"addedTerms\(before, after\)\.length\) return false")
+
+    def test_how_hard_to_go_is_the_reader_choice(self):
+        for name in ("touch:", "full:", "hard:"):
+            self.assertIn(name, self.source, f"no {name} mode")
+        self.assertIn("MODES[mode].order", self.source)
+        self.assertIn('mode: "studio.mode"', self.source)   # remembered next time
+        self.assertIn("What the applicant asked for", self.source)
+
+    def test_an_answer_that_ran_out_of_room_is_not_thrown_away(self):
+        # A model that hits the token limit leaves complete suggestions and one
+        # half-written one. The complete ones are still advice.
+        self.assertIn("function salvage", self.source)
+        self.assertRegex(self.source, r"catch \(error\) \{ payload = salvage\(text\); \}")
+
     def test_it_says_where_the_reader_data_goes(self):
         # The trade is: nothing to install, but the CV and the advert go
         # straight to a third party. Saying so is not optional.
