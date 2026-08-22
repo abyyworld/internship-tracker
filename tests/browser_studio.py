@@ -214,6 +214,15 @@ def a_real_cv_pdf(target: Path) -> Path:
         takes them literally hands back A D A   L O V E L A C E."""
         return ("&nbsp;" * 4).join(" ".join(word) for word in value.split(" "))
 
+    # What this project's own CV generator writes under the name, and the
+    # bulleted list it writes under a project: ReportLab draws that bullet as
+    # byte 127, which WinAnsi leaves undefined and therefore renders as a
+    # bullet. Read as Latin-1 it is an invisible control character.
+    tagline = ParagraphStyle("tagline", fontName="Times-Italic", fontSize=11.5,
+                             leading=14, alignment=1, spaceBefore=6)
+    bullet = ParagraphStyle("bullet", parent=body, leftIndent=9, bulletIndent=0,
+                            spaceBefore=1.8, bulletFontName="Times-Roman",
+                            bulletFontSize=10)
     right = ParagraphStyle("right", fontName="Helvetica-Bold", fontSize=8.4,
                            leading=13, alignment=TA_RIGHT)
     label = ParagraphStyle("label", fontName="Helvetica-Bold", fontSize=8.4, leading=12)
@@ -233,6 +242,8 @@ def a_real_cv_pdf(target: Path) -> Path:
 
     document.build([
         Paragraph(track("ADA LOVELACE"), name),
+        Paragraph("Robot Learning &amp; Embodied AI &nbsp;&#183;&nbsp; "
+                  "Simulation, Perception &amp; Evaluation", tagline),
         Paragraph("London &#183; ada@example.test", body),
         Spacer(1, 8),
         Paragraph(track("EXPERIENCE AND ML WORK"), head),
@@ -243,6 +254,11 @@ def a_real_cv_pdf(target: Path) -> Path:
         Paragraph("Robotics Intern &#8212; Robot Co, Summer 2025", body),
         Paragraph("Built a vision pipeline for a pick-and-place arm in Python and ROS.", body),
         Paragraph("Rewrote the grasp planner and cut cycle time by 20 percent.", body),
+        Paragraph("Trained the policy in simulation and shipped it to the cell, "
+                  "measuring every rollout.", bullet, bulletText="\u2022"),
+        Paragraph("Wrote the evaluation harness the team now runs before every "
+                  "release, in Python,", bullet, bulletText="\u2022"),
+        Paragraph("NumPy and PyTorch.", body),
         Paragraph(track("EDUCATION"), head),
         Paragraph("BSc Computer Science, University of London, 2027", body),
         Paragraph(track("SKILLS"), head),
@@ -335,6 +351,19 @@ def main() -> int:
               "AI / ML" in pairs and "ROBOTICS" in pairs, str(list(pairs)))
         check("including the values that wrapped onto the next line",
               pairs.get("AI / ML", "").endswith("Calibration"), pairs.get("AI / ML", ""))
+        check("the headline under the name is set as one, not as a subtitle",
+              page.locator("#sheet .tagline").count() == 1,
+              str(page.locator("#sheet .tagline").count()))
+        check("a bulleted list comes back bulleted",
+              page.locator("#sheet .bullet").count() == 2,
+              str(page.locator("#sheet .bullet").count()))
+        # ReportLab draws the bullet as byte 127. Read as Latin-1 that is an
+        # invisible control character, which then exported as "?".
+        check("and the bullet is a bullet, not a control character",
+              "\u007f" not in imported and "\u2022" in imported,
+              repr(imported[:200]))
+        check("a bullet broken across two lines is one bullet again",
+              "in Python, NumPy and PyTorch." in imported, imported[-300:])
         check("it says the file stayed here",
               "this browser only" in page.inner_text("#notice"), page.inner_text("#notice"))
         check("a scanned or unreadable file is refused honestly",

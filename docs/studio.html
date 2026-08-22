@@ -94,6 +94,8 @@ border-bottom:1.1px solid var(--rule);padding-bottom:3pt}
 #sheet .entry .when{font:700 8.4pt/13pt Helvetica,Arial,sans-serif;color:var(--date);white-space:nowrap}
 #sheet .title{font:700 10.8pt/13pt "Times New Roman",Times,serif;margin-top:7pt}
 #sheet .sub{font:italic 9.8pt/13.5pt "Times New Roman",Times,serif;color:#3D4A56}
+#sheet .tagline{font:italic 11.5pt/14pt "Times New Roman",Times,serif;text-align:center;
+color:var(--accent);margin-top:6pt}
 #sheet .body{font:9.7pt/12.1pt "Times New Roman",Times,serif;margin-top:2pt;text-align:justify}
 #sheet .bullet{font:9.7pt/12.1pt "Times New Roman",Times,serif;margin-top:2pt;
 padding-left:11pt;text-indent:-11pt}
@@ -387,6 +389,15 @@ function kindOf(text, index) {
       && /[·|,]/.test(value)) {
     return "contact";
   }
+  // The line under the name is what this person is, in one phrase. A CV sets
+  // it centred under the name, not left-aligned as though it were the subtitle
+  // of something above it.
+  if ((index === 1 || index === 2) && value.length <= 120 && value.length > 8
+      && !/[.!?]$/.test(value) && !pairOf(value) && !splitDate(value)
+      && value !== value.toUpperCase() && !SECTION_WORDS.test(value)
+      && !DATE_RANGE.test(value)) {
+    return "tagline";
+  }
   if (/^[•\-*–]\s+/.test(value)) return "bullet";
   // Shouted, or one of the words a CV calls its sections. Not merely short and
   // capitalised: "Student Researcher" is a job, not a section.
@@ -410,9 +421,14 @@ const isTitle = value => value.length > 3 && value.length <= 95
 // The line under a title that says where it happened. Usually it carries a
 // middot — "University of Birmingham · Internship" — but often it is just the
 // institution, so a short line with no sentence in it counts too.
-const isSubtitle = value => value.length <= 200 && !/[.!?]$/.test(value)
-  && (/ · /.test(value) || (value.length <= 90 && /^[A-Z(]/.test(value)
-                            && value.split(/\s+/).length <= 12));
+// A line carrying middots is a subtitle even when it ends in a question mark —
+// "Independent project · does the new model actually beat the old one, or did it
+// get lucky?" is a strapline, not a sentence of the body. Without that, the
+// project above it stopped being read as a title.
+const isSubtitle = value => value.length <= 200
+  && (( / · /.test(value) && !/[.!]$/.test(value))
+      || (!/[.!?]$/.test(value) && value.length <= 90 && /^[A-Z(]/.test(value)
+          && value.split(/\s+/).length <= 12));
 
 // A wide gap in the middle of a line means two columns, which is how a skills
 // table and a right-aligned date both arrive.
@@ -627,6 +643,7 @@ const FONTS = {
   section: {font: "F4", size: 10, lead: 12, css: 'bold 10px Helvetica, Arial', track: 1.6},
   title: {font: "F2", size: 10.8, lead: 13, css: 'bold 10.8px "Times New Roman"'},
   sub: {font: "F5", size: 9.8, lead: 13.5, css: 'italic 9.8px "Times New Roman"'},
+  tagline: {font: "F5", size: 11.5, lead: 14, css: 'italic 11.5px "Times New Roman"'},
   pairLabel: {font: "F4", size: 8.4, lead: 12, css: 'bold 8.4px Helvetica, Arial', track: 0.3},
   pairValue: {font: "F1", size: 9.6, lead: 12, css: '9.6px "Times New Roman"'},
   when: {font: "F4", size: 8.4, lead: 13, css: 'bold 8.4px Helvetica, Arial'},
@@ -714,6 +731,12 @@ function buildPdf() {
     if (kind === "name") {
       room(FONTS.name.lead); y -= FONTS.name.lead;
       put(value, FONTS.name, PAGE.left + (CONTENT_W - widthOf(value, FONTS.name)) / 2);
+      return;
+    }
+    if (kind === "tagline") {
+      room(FONTS.tagline.lead + 6); y -= FONTS.tagline.lead + 6;
+      put(value, FONTS.tagline,
+          PAGE.left + (CONTENT_W - widthOf(value, FONTS.tagline)) / 2, ACCENT);
       return;
     }
     if (kind === "contact") {
@@ -1179,12 +1202,22 @@ function pairColumns(rows) {
 function joinWrapped(rows) {
   const out = [];
   for (const row of rows) {
-    const previous = out.length ? out[out.length - 1] : "";
-    const continues = previous.trim().length > 45 && row.trim()
-      && !/[.!?:;]$/.test(previous.trim())
-      && !/^[•\-*\u2013]/.test(row.trim())
-      && /^[a-z(]/.test(row.trim());
-    if (continues) out[out.length - 1] = `${previous.trim()} ${row.trim()}`;
+    const previous = (out.length ? out[out.length - 1] : "").trim();
+    const value = row.trim();
+    const long = previous.length > 45;
+    // A line that ends mid-list continues whatever its next word looks like:
+    // "…the study design. Unity/C#," / "Node.js, WebSocket/UDP." is one line
+    // broken by the old measure, and the capital N is not evidence otherwise.
+    const dangling = /[,;/&\u2013-]$/.test(previous);
+    // A link dropped onto its own row by the old wrap — "GitHub" under a
+    // finished sentence — is that sentence's tail, not a paragraph.
+    const tail = /^[A-Za-z][A-Za-z.+-]{0,14}$/.test(value)
+      && value !== value.toUpperCase() && !SECTION_WORDS.test(value);
+    const continues = long && value
+      && !/^[•\-*\u2013]/.test(value)
+      && ((!/[.!?]$/.test(previous) && /^[a-z(]/.test(value))
+          || (!/[.!?:;]$/.test(previous) && dangling) || tail);
+    if (continues) out[out.length - 1] = `${previous} ${value}`;
     else out.push(row);
   }
   return out;
@@ -1220,7 +1253,14 @@ function unletterspace(line) {
 // is WinAnsi, which is Latin-1 plus a handful of typographic slots.
 const FROM_WINANSI = {0x91: "\u2018", 0x92: "\u2019", 0x93: "\u201C", 0x94: "\u201D",
                       0x95: "\u2022", 0x96: "\u2013", 0x97: "\u2014", 0x85: "\u2026",
-                      0x80: "\u20AC", 0x99: "\u2122"};
+                      0x80: "\u20AC", 0x99: "\u2122",
+                      // Every code WinAnsi leaves undefined draws a bullet — that is
+                      // the encoding's own rule, and it is how ReportLab writes the
+                      // bullet in front of a list item: byte 127, in Times-Roman.
+                      // Read as Latin-1 it is a control character, so a bulleted CV
+                      // came back with an invisible marker that exported as "?".
+                      0x7F: "\u2022", 0x81: "\u2022", 0x8D: "\u2022", 0x8F: "\u2022",
+                      0x90: "\u2022", 0x9D: "\u2022"};
 function decodeLatin(text) {
   let out = "";
   for (const character of text) {
