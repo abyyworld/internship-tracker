@@ -8,6 +8,7 @@ console window nobody asked for, a service that dies at logout.
 
 import os
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -175,3 +176,209 @@ class LauncherTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CheckoutCommitTests(unittest.TestCase):
+    """Which code is on disk, answered without running git.
+
+    /health is polled — by the opener page, by the editor, by the installer —
+    so this is read out of .git directly, and that parsing has to survive the
+    two shapes a ref can take.
+    """
+
+    def test_it_matches_what_git_says(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repo = _repo(Path(directory) / "repo")
+            expected = _git(repo, "rev-parse", "--short", "HEAD").stdout.strip()
+            self.assertEqual(service.checkout_commit(repo), expected)
+
+    def test_a_packed_ref_is_still_found(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repo = _repo(Path(directory) / "repo")
+            expected = _git(repo, "rev-parse", "--short", "HEAD").stdout.strip()
+            _git(repo, "pack-refs", "--all")
+            self.assertEqual(service.checkout_commit(repo), expected)
+
+    def test_somewhere_that_is_not_a_checkout_says_nothing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.assertEqual(service.checkout_commit(Path(directory)), "")
+
+
+class UpdateCheckoutTests(unittest.TestCase):
+    """Pulling the fix into the copy that is actually running.
+
+    The failure this exists to prevent is a helper installed once and left for
+    weeks, answering with code the repository no longer has. The failures it
+    must not cause are worse: losing someone's local edits, or moving them onto
+    a branch they did not choose.
+    """
+
+    def test_it_fast_forwards_to_the_new_commit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            origin, clone = _origin_and_clone(Path(directory))
+            _commit(origin, "later.txt", "the fix")
+
+            report = service.update_checkout(clone)
+
+            self.assertTrue(report["updated"], report)
+            self.assertNotEqual(report["was"], report["commit"])
+            self.assertEqual((clone / "later.txt").read_text(), "the fix")
+
+    def test_an_unchanged_checkout_says_so_without_claiming_an_update(self):
+        with tempfile.TemporaryDirectory() as directory:
+            _origin, clone = _origin_and_clone(Path(directory))
+
+            report = service.update_checkout(clone)
+
+            self.assertFalse(report["updated"])
+            self.assertEqual(report["was"], report["commit"])
+            self.assertNotIn("reason", report)
+
+    def test_local_edits_are_parked_and_recoverable_never_discarded(self):
+        with tempfile.TemporaryDirectory() as directory:
+            origin, clone = _origin_and_clone(Path(directory))
+            (clone / "seed.txt").write_text("something I was in the middle of")
+            _commit(origin, "later.txt", "the fix")
+
+            report = service.update_checkout(clone)
+
+            self.assertTrue(report["updated"])
+            self.assertTrue(report["stashed"])
+            _git(clone, "stash", "pop")
+            self.assertEqual((clone / "seed.txt").read_text(),
+                             "something I was in the middle of")
+
+    def test_it_stays_on_the_branch_it_found(self):
+        with tempfile.TemporaryDirectory() as directory:
+            origin, clone = _origin_and_clone(Path(directory))
+            _git(clone, "checkout", "-b", "mine")
+            _commit(origin, "later.txt", "the fix")
+
+            report = service.update_checkout(clone)
+
+            self.assertEqual(report["branch"], "mine")
+            self.assertEqual(_git(clone, "rev-parse", "--abbrev-ref", "HEAD")
+                             .stdout.strip(), "mine")
+
+    def test_a_diverged_branch_reports_the_reason_rather_than_success(self):
+        with tempfile.TemporaryDirectory() as directory:
+            origin, clone = _origin_and_clone(Path(directory))
+            _commit(origin, "theirs.txt", "upstream")
+            _commit(clone, "mine.txt", "local")
+
+            report = service.update_checkout(clone)
+
+            self.assertFalse(report["updated"])
+            self.assertIn("reason", report)
+            self.assertTrue(report["reason"])
+
+    def test_being_unable_to_reach_the_remote_is_said_plainly(self):
+        with tempfile.TemporaryDirectory() as directory:
+            _origin, clone = _origin_and_clone(Path(directory))
+            _git(clone, "remote", "set-url", "origin",
+                 str(Path(directory) / "gone.git"))
+
+            report = service.update_checkout(clone)
+
+            self.assertFalse(report["updated"])
+            self.assertIn("Could not reach GitHub", report["reason"])
+
+    def test_a_folder_that_is_not_a_checkout_cannot_update_itself(self):
+        with tempfile.TemporaryDirectory() as directory:
+            report = service.update_checkout(Path(directory))
+
+            self.assertFalse(report["updated"])
+            self.assertIn("not a git checkout", report["reason"])
+
+
+class RestartTests(unittest.TestCase):
+    def test_macos_asks_launchd_to_replace_the_process(self):
+        completed = subprocess.CompletedProcess([], 0, "", "")
+        with patch("autoapply.service.current_platform", return_value="macos"), \
+             patch("autoapply.service.subprocess.run", return_value=completed) as run:
+            self.assertTrue(service.restart()["ok"])
+        self.assertIn("kickstart", run.call_args[0][0])
+
+    def test_linux_asks_systemd(self):
+        completed = subprocess.CompletedProcess([], 0, "", "")
+        with patch("autoapply.service.current_platform", return_value="linux"), \
+             patch("autoapply.service.subprocess.run", return_value=completed) as run:
+            self.assertTrue(service.restart()["ok"])
+        self.assertEqual(run.call_args[0][0][:3], ["systemctl", "--user", "restart"])
+
+    def test_with_no_service_manager_the_process_re_executes_itself(self):
+        failed = subprocess.CompletedProcess([], 1, "", "no such service")
+        with patch("autoapply.service.current_platform", return_value="linux"), \
+             patch("autoapply.service.subprocess.run", return_value=failed), \
+             patch("autoapply.service.os.execv") as execv:
+            service.restart()
+        self.assertTrue(execv.called)
+
+    def test_the_module_form_is_reconstructed_not_replayed(self):
+        # python -m autoapply leaves argv[0] pointing at __main__.py, and
+        # running that file directly breaks its relative imports.
+        with patch("autoapply.service.sys.argv",
+                   [str(Path(service.__file__).parent / "__main__.py"), "bridge"]):
+            command = service._self_command()
+        self.assertEqual(command[1:], ["-m", "autoapply", "bridge"])
+
+    def test_a_plain_script_is_started_the_way_it_was(self):
+        with patch("autoapply.service.sys.argv", ["/usr/local/bin/autoapply", "bridge"]):
+            command = service._self_command()
+        self.assertEqual(command[1:], ["/usr/local/bin/autoapply", "bridge"])
+
+
+class RunningUnderServiceTests(unittest.TestCase):
+    def test_systemd_calling_the_unit_active_counts(self):
+        active = subprocess.CompletedProcess([], 0, "active\n", "")
+        with patch("autoapply.service.current_platform", return_value="linux"), \
+             patch("autoapply.service.subprocess.run", return_value=active):
+            self.assertTrue(service.running_under_service())
+
+    def test_an_inactive_unit_does_not(self):
+        inactive = subprocess.CompletedProcess([], 3, "inactive\n", "")
+        with patch("autoapply.service.current_platform", return_value="linux"), \
+             patch("autoapply.service.subprocess.run", return_value=inactive):
+            self.assertFalse(service.running_under_service())
+
+    def test_a_service_manager_that_is_not_there_is_not_an_error(self):
+        with patch("autoapply.service.current_platform", return_value="macos"), \
+             patch("autoapply.service.subprocess.run",
+                   side_effect=FileNotFoundError("launchctl")):
+            self.assertFalse(service.running_under_service())
+
+
+# ── Building throwaway repositories to update ────────────────────────────────
+
+def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        ["git", "-C", str(repo), *args],
+        capture_output=True, text=True,
+        env={**os.environ,
+             "GIT_AUTHOR_NAME": "test", "GIT_AUTHOR_EMAIL": "test@example.com",
+             "GIT_COMMITTER_NAME": "test", "GIT_COMMITTER_EMAIL": "test@example.com",
+             "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_SYSTEM": os.devnull},
+    )
+
+
+def _commit(repo: Path, name: str, text: str) -> None:
+    (repo / name).write_text(text)
+    _git(repo, "add", name)
+    _git(repo, "commit", "-m", f"add {name}")
+
+
+def _repo(path: Path) -> Path:
+    path.mkdir(parents=True)
+    _git(path, "init", "-b", "main")
+    _commit(path, "seed.txt", "seed")
+    return path
+
+
+def _origin_and_clone(root: Path) -> tuple[Path, Path]:
+    origin = _repo(root / "origin")
+    clone = root / "clone"
+    subprocess.run(["git", "clone", "--quiet", str(origin), str(clone)],
+                   capture_output=True, text=True)
+    _git(clone, "config", "user.email", "test@example.com")
+    _git(clone, "config", "user.name", "test")
+    return origin, clone

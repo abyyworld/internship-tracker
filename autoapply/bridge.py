@@ -10,6 +10,8 @@ import os
 from pathlib import Path
 import re
 import secrets
+import threading
+import time
 from typing import Any
 from urllib.parse import parse_qs, quote, urlparse
 
@@ -41,6 +43,8 @@ from .cv_library import (
     save_cv,
 )
 from .editor_ui import EDITOR_PAGE
+from . import service as service_module
+from .service import checkout_commit
 from .fit import assess_all, read_postings
 from .jobs import jobs_from_tracker
 from .models import Job, digest
@@ -264,6 +268,12 @@ class BridgeServer(ThreadingHTTPServer):
         self.token = token
         self.downloads: dict[str, Download] = {}
         self._tracker_mtime = self._current_tracker_mtime()
+        # When this server last did anything. The updater will not swap the
+        # process out from under a rewrite that is still running.
+        self.last_activity = time.monotonic()
+        # Set when the server is shutting down, so background threads stop
+        # waiting instead of holding the process open.
+        self.stopping = threading.Event()
 
     def _current_tracker_mtime(self) -> float:
         try:
@@ -468,6 +478,9 @@ class BridgeHandler(BaseHTTPRequestHandler):
             # many commits behind the checkout, and every symptom then belongs
             # to code that is no longer on disk.
             "build": BUILD,
+            "commit": checkout_commit(),
+            # Whether this helper repairs itself, said where the build is said.
+            "auto_update": service_module.auto_update_enabled(self.server.home),
             # Said out loud rather than silently falling back to OpenAI.
             "problem": endpoint_problem(self.server.home),
         }
@@ -504,6 +517,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
         return master_document(profile, facts, academic), profile
 
     def do_GET(self) -> None:
+        self.server.last_activity = time.monotonic()
         parsed_request = urlparse(self.path)
         if parsed_request.path == "/health":
             if not self._authorized():
@@ -518,6 +532,11 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 "ok": True,
                 "service": "autoapply-cv-bridge",
                 "build": BUILD,
+                # The commit, so a page that has just asked for an update can
+                # tell the restarted helper from the one it replaced. BUILD is
+                # a file timestamp and an update need not have touched that
+                # file.
+                "commit": checkout_commit(),
                 "provider": endpoint_name(base),
                 "endpoint": base,
                 "model": load_model(self.server.home, base),
@@ -708,6 +727,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
         self._json(404, {"error": "Not found"})
 
     def do_POST(self) -> None:
+        self.server.last_activity = time.monotonic()
         parsed_request = urlparse(self.path)
         if parsed_request.path not in {
             "/prepare",
@@ -717,6 +737,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
             "/api/settings/test",
             "/api/settings/endpoint",
             "/api/adopt",
+            "/api/update",
             "/api/suggest",
             "/api/answers",
             "/api/draft",
@@ -788,6 +809,34 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 })
             except (OSError, RuntimeError, ValueError) as exc:
                 self._json(422, {"error": str(exc)})
+            return
+
+        # Updating from inside the editor, because the alternative is a terminal
+        # and the whole point of the helper is that it does not need one. A fix
+        # that requires a command line to arrive does not arrive.
+        if parsed_request.path == "/api/update":
+            from . import service
+
+            project = Path(__file__).resolve().parent.parent
+            commit_before = service.checkout_commit(project)
+            result = service.update_checkout(project)
+            result["build_before"] = BUILD
+            result["commit_before"] = commit_before
+            result["managed"] = service.running_under_service()
+            if result.get("updated"):
+                # The new code is on disk; this process is still the old one.
+                # Answer first — the page must not be waiting on a socket that
+                # is about to close — then hand the process over.
+                self._json(200, {"ok": True, "report": result, "restarting": True})
+                try:
+                    self.wfile.flush()
+                except Exception:
+                    pass
+                threading.Timer(0.4, service.restart).start()
+                return
+            self._json(200, {
+                "ok": True, "report": result, "restarting": False,
+            })
             return
 
         # One cheap round trip, reported exactly as it came back. This is the
@@ -1087,6 +1136,72 @@ class BridgeHandler(BaseHTTPRequestHandler):
             self._json(422, {"error": str(exc)})
 
 
+def keep_code_current(
+    server: BridgeServer,
+    *,
+    project: Path | None = None,
+    interval: float | None = None,
+    first_check: float | None = None,
+    idle_before_restart: float | None = None,
+    rounds: int | None = None,
+) -> None:
+    """Pull fixes into the code this helper runs, without anyone asking.
+
+    This exists because of a specific, repeated failure: the helper is a
+    background service, so it is installed once and then never thought about
+    again, and a bug fixed weeks ago goes on happening on the machine that
+    reported it. Nothing about that is visible from the editor — the page looks
+    the same whichever build is answering.
+
+    So it checks, quietly, on a timer. Rules it keeps to: work in progress is
+    never touched (a checkout with local edits is left alone), the branch is
+    never changed, and the process is only handed over when it has been idle
+    for minutes and a service manager exists to bring it back. Everything it
+    does goes to the log the service already keeps.
+    """
+    from . import service
+
+    project = Path(project or Path(__file__).resolve().parent.parent)
+    interval = service.AUTO_UPDATE_INTERVAL if interval is None else interval
+    first_check = service.AUTO_UPDATE_FIRST_CHECK if first_check is None else first_check
+    idle_before_restart = (service.IDLE_BEFORE_RESTART if idle_before_restart is None
+                           else idle_before_restart)
+    started_from = service.checkout_commit(project)
+    delay = first_check
+    round_number = 0
+
+    while rounds is None or round_number < rounds:
+        round_number += 1
+        if server.stopping.wait(delay):
+            return
+        delay = interval
+        if not service.auto_update_enabled(server.home):
+            continue
+        report = service.update_checkout(project, park_local_edits=False)
+        if report.get("updated"):
+            print(f"[update] pulled {report['was']} → {report['commit']}", flush=True)
+        elif report.get("reason") and report.get("updated") is False:
+            # Said once per check rather than swallowed: "it never updates" is
+            # unanswerable without knowing what stopped it.
+            print(f"[update] not pulled: {report['reason']}", flush=True)
+        # A pull that happened on an earlier round still needs a restart, so
+        # what decides is the commit on disk against the one this process
+        # booted from — not whether this round changed anything.
+        if not started_from or service.checkout_commit(project) == started_from:
+            continue
+        if not service.running_under_service():
+            print("[update] new code is on disk; restart the helper to run it",
+                  flush=True)
+            continue
+        if time.monotonic() - server.last_activity < idle_before_restart:
+            print("[update] new code is on disk; waiting for the editor to go idle",
+                  flush=True)
+            continue
+        print("[update] restarting into the new code", flush=True)
+        service.restart()
+        return
+
+
 def run_bridge(home: Path, tracker: Path, port: int) -> None:
     if not 1024 <= port <= 65535:
         raise ValueError("Bridge port must be between 1024 and 65535")
@@ -1113,7 +1228,13 @@ def run_bridge(home: Path, tracker: Path, port: int) -> None:
     print(f"  provider: {endpoint_name(base)}  {base}")
     print(f"  model   : {load_model(home, base)}")
     print(f"  key     : {key_source(home, base)}")
-    print(f"  build   : {BUILD}")
+    print(f"  build   : {BUILD}  ({checkout_commit() or 'not a git checkout'})")
+    # Said out loud because it changes the code on this machine. Turning it off
+    # needs no terminal: create private/no-auto-update, or set the variable.
+    print("  updates : " + (
+        "checked every few hours, applied when idle "
+        "(AUTOAPPLY_NO_UPDATE=1 stops it)"
+        if service_module.auto_update_enabled(home) else "off"))
     print(f"  jobs    : {imported}")
     print(f"  token   : {token}")
     problem = endpoint_problem(home)
@@ -1129,11 +1250,16 @@ def run_bridge(home: Path, tracker: Path, port: int) -> None:
     print("Paste the token once into the GitHub CV + Apply userscript.")
     print("Keep this terminal open. Press Ctrl-C to stop.")
     print("")
+    updater = threading.Thread(
+        target=keep_code_current, args=(server,), daemon=True, name="autoapply-update",
+    )
+    updater.start()
     try:
         server.serve_forever(poll_interval=0.25)
     except KeyboardInterrupt:
         pass
     finally:
+        server.stopping.set()
         server.server_close()
 
 

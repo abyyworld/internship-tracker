@@ -73,13 +73,37 @@ identical until something asks. The same check runs from the terminal with
 `python3 -m autoapply doctor --probe`, which also prints the endpoint, model and
 where the key is being read from.
 
-### When a fix does not seem to arrive
+### Updates arrive by themselves
+
+The helper keeps its own code current. Every few hours it asks GitHub whether
+there is anything new, fast-forwards the branch it is already on, and restarts
+into the new code once nothing has been in flight for five minutes. Nothing has
+to be opened, and no terminal is involved.
+
+It will not touch work in progress: a checkout with uncommitted edits is left
+exactly as it is and the log says why. It never changes branch. And it only
+restarts where a login service exists to bring it back — otherwise it says the
+new code is on disk and keeps serving until something restarts it.
+
+The editor's right-hand column carries the same thing as a button. **This
+helper** shows the build and commit answering the page, and **Check for an
+update** pulls, restarts, waits for the new code to answer, and reloads. That is
+the whole procedure for receiving a fix.
+
+To stop it updating itself, set `AUTOAPPLY_NO_UPDATE=1` in the environment the
+service runs in, or create an empty file at `private/no-auto-update`. The build
+line in the editor then says automatic updates are off.
+
+### When a fix still does not seem to arrive
 
 The helper is started once and left running for weeks. The checkout moves on, a
 macOS login service quietly respawns the old process, and the editor keeps being
 answered by code that is no longer on disk — so a fix that is pushed, pulled and
-tested still does not reach the browser. `update-autoapply.command` does every
-step of that in one go and says which build ends up serving:
+tested still does not reach the browser. A helper from before automatic updates
+existed cannot repair itself; double-clicking `install-login-service.command`
+pulls, reinstalls and restarts it, after which it keeps itself current.
+`update-autoapply.command` does the same from a terminal and says which build
+ends up serving:
 
 ```bash
 ./update-autoapply.command                 # update the current branch
