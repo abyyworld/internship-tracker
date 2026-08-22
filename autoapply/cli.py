@@ -183,6 +183,19 @@ def build_parser() -> argparse.ArgumentParser:
     status = commands.add_parser("status", allow_abbrev=False)
     status.add_argument("--job-id")
 
+    # Installing the helper is the same idea on every operating system and a
+    # different file on each; the platform-specific part lives in service.py.
+    commands.add_parser(
+        "install-service",
+        help="Start the CV helper at login and keep it running (any OS)",
+        allow_abbrev=False,
+    )
+    commands.add_parser(
+        "uninstall-service",
+        help="Stop the CV helper and remove it from login",
+        allow_abbrev=False,
+    )
+
     bridge = commands.add_parser(
         "bridge",
         help="Serve the private click-to-tailor bridge on localhost",
@@ -375,6 +388,18 @@ def main(argv: list[str] | None = None) -> int:
         result, ok = doctor(home, probe_provider=args.probe)
         _print(result)
         return 0 if ok else 1
+    if args.command in {"install-service", "uninstall-service"}:
+        from . import service
+
+        try:
+            if args.command == "install-service":
+                _print(service.install())
+            else:
+                _print(service.uninstall())
+        except (OSError, RuntimeError, ValueError) as exc:
+            print(f"autoapply: {exc}", file=sys.stderr)
+            return 2
+        return 0
     if args.command == "bridge":
         from .bridge import run_bridge
 

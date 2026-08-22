@@ -95,8 +95,14 @@ const cvId = params.get("cv") || "";
 // browser, and a request for the local tracker. All three fail the same way when
 // the helper is down, so all three come through this page.
 const destination = params.get("to") === "dashboard" ? "dashboard" : (postingUrl ? "editor" : "connect");
+// Everything the dashboard knows about the posting travels with the link, so a
+// helper that has never seen it can still show it by name rather than by host.
+const carried = ["company", "role", "location"]
+  .map(field => (params.get(field) ? `&${field}=${encodeURIComponent(params.get(field))}` : ""))
+  .join("");
 const editorUrl = destination === "editor"
-  ? `${BRIDGE}/editor?url=${encodeURIComponent(postingUrl)}` + (cvId ? `&cv=${encodeURIComponent(cvId)}` : "")
+  ? `${BRIDGE}/editor?url=${encodeURIComponent(postingUrl)}${carried}`
+    + (cvId ? `&cv=${encodeURIComponent(cvId)}` : "")
   : destination === "dashboard" ? `${BRIDGE}/dashboard` : `${BRIDGE}/connect`;
 
 function show(id) {

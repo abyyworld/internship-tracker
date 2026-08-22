@@ -1415,10 +1415,12 @@ async function exportPdf(){
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────
-function showInitError(msg){
+function showInitError(msg,reachable){
   notice(msg,"error");
-  $("jobTitle").textContent="Not connected";
-  $("jobMeta").textContent="Bridge not running";
+  $("jobTitle").textContent=reachable?"Could not open this posting":"Not connected";
+  $("jobMeta").textContent=reachable
+    ?"The helper is running and answered — see the message below"
+    :"Bridge not running";
   $("cvDoc").innerHTML='<div class="empty-state" style="border-color:#6f3430;color:var(--red)">'+
     '<strong>CV not loaded</strong><br><br>'+msg+'<br><br>'+
     'Double-click <code>start-autoapply.command</code> in the project folder, then reload this page.</div>';
@@ -1453,7 +1455,12 @@ async function init(){
   catch(err){
     // A remembered CV may have been renamed or removed since last time.
     if(start!=="master"){try{await loadCv("master");return}catch(e){}}
-    showInitError(err.message);
+    // An answer, even an error one, means the helper is alive: saying it is not
+    // running sends someone to restart a thing that is already working.
+    let reachable=false;
+    try{await fetch("/health",{headers:{"X-Autoapply-Token":token}});reachable=true}
+    catch(e){reachable=false}
+    showInitError(err.message,reachable);
   }
 }
 $("generate").onclick=generate;
