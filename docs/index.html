@@ -393,7 +393,9 @@ function card(j){
   // Not a direct link to 127.0.0.1: when the helper is not running that answers
   // with a browser error page that explains nothing. open.html tries the helper
   // and, if nothing is listening, says so and says what to do.
-  const localUrl=`./open.html?url=${encodeURIComponent(j.url)}`;
+  const localUrl=`./open.html?url=${encodeURIComponent(j.url)}`+
+    `&company=${encodeURIComponent(j.company||"")}&role=${encodeURIComponent(j.role||"")}`+
+    (j.location?`&location=${encodeURIComponent(j.location)}`:"");
   const f=fitOf(j);
   return `<article class="card${f&&f.status==="mismatch"?" dim":""}">
     <div class="cardhead"><div class="logo">${esc(initials(j.company))}</div><div>
