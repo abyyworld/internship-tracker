@@ -164,10 +164,11 @@ def a_real_cv_pdf(target: Path) -> Path:
     Built with the project's own renderer, so what the studio has to read back
     is exactly what the local editor hands people to send to employers.
     """
+    from reportlab.lib.enums import TA_RIGHT
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import ParagraphStyle
     from reportlab.lib.units import mm
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table
 
     document = SimpleDocTemplate(str(target), pagesize=A4,
                                  leftMargin=15 * mm, rightMargin=15 * mm,
@@ -183,16 +184,43 @@ def a_real_cv_pdf(target: Path) -> Path:
         takes them literally hands back A D A   L O V E L A C E."""
         return ("&nbsp;" * 4).join(" ".join(word) for word in value.split(" "))
 
+    right = ParagraphStyle("right", fontName="Helvetica-Bold", fontSize=8.4,
+                           leading=13, alignment=TA_RIGHT)
+    label = ParagraphStyle("label", fontName="Helvetica-Bold", fontSize=8.4, leading=12)
+
+    def row(left_text: str, right_text: str, left_style, right_style, widths):
+        """A two-column row, which is how a CV puts a date at the right margin
+        and a skills label beside its values — and how their baselines end up a
+        fraction apart, which is what broke reading them as one line."""
+        table = Table([[Paragraph(left_text, left_style),
+                        Paragraph(right_text, right_style)]], colWidths=widths)
+        table.setStyle([("VALIGN", (0, 0), (-1, -1), "TOP"),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                        ("TOPPADDING", (0, 0), (-1, -1), 0),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 2)])
+        return table
+
     document.build([
         Paragraph(track("ADA LOVELACE"), name),
         Paragraph("London &#183; ada@example.test", body),
         Spacer(1, 8),
         Paragraph(track("EXPERIENCE AND ML WORK"), head),
+        row("<b>Research Assistant</b>", "May 2026 &#8211; Present",
+            body, right, [330, 150]),
+        Paragraph("University of London &#183; Internship", body),
+        Paragraph("Ran the study end to end and analysed the results.", body),
         Paragraph("Robotics Intern &#8212; Robot Co, Summer 2025", body),
         Paragraph("Built a vision pipeline for a pick-and-place arm in Python and ROS.", body),
         Paragraph("Rewrote the grasp planner and cut cycle time by 20 percent.", body),
         Paragraph(track("EDUCATION"), head),
         Paragraph("BSc Computer Science, University of London, 2027", body),
+        Paragraph(track("SKILLS"), head),
+        row("AI / ML", "Machine Learning, Deep Learning, Computer Vision, NLP, "
+            "Imitation Learning, Model Evaluation &amp; Calibration",
+            label, body, [90, 390]),
+        row("ROBOTICS", "Semantic Mapping, Closed-Loop Policy Evaluation, "
+            "Demonstration Data Pipelines", label, body, [90, 390]),
     ])
     return target
 
@@ -262,6 +290,21 @@ def main() -> int:
               "Rewrote the grasp planner and cut cycle time by 20 percent." in imported,
               imported[:300])
         check("the em dash survived", "—" in imported, imported[:200])
+        # A date at the right margin and a skills label are separate text runs
+        # whose baselines differ by a fraction of a point. Reading them as
+        # their own lines is what turned a job into an entry called "May 2026".
+        entries = {page.locator("#sheet .entry").nth(i).locator(".title").inner_text():
+                   page.locator("#sheet .entry").nth(i).locator(".when").inner_text()
+                   for i in range(page.locator("#sheet .entry").count())}
+        check("a right-aligned date stayed with its job",
+              entries.get("Research Assistant") == "May 2026 – Present", str(entries))
+        pairs = {page.locator("#sheet .pair").nth(i).locator(".label").inner_text():
+                 page.locator("#sheet .pair").nth(i).locator(".values").inner_text()
+                 for i in range(page.locator("#sheet .pair").count())}
+        check("the skills table came back as a table",
+              "AI / ML" in pairs and "ROBOTICS" in pairs, str(list(pairs)))
+        check("including the values that wrapped onto the next line",
+              pairs.get("AI / ML", "").endswith("Calibration"), pairs.get("AI / ML", ""))
         check("it says the file stayed here",
               "this browser only" in page.inner_text("#notice"), page.inner_text("#notice"))
         check("a scanned or unreadable file is refused honestly",

@@ -1077,7 +1077,82 @@ function linesFrom(items) {
     out.push(unletterspace(decodeLatin(text)));
     previous = y;
   }
-  return joinWrapped(out).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  return pairColumns(joinWrapped(out)).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+// Two columns that did not quite share a baseline.
+//
+// A date at the right margin and a skills label are separate text runs, and
+// whether they land on the same row depends on the fraction of a point their
+// baselines differ by — which is not a thing to hang a layout on. So after the
+// rows are built, a line that is *only* a date is given back to the entry it
+// belongs to, and inside a skills section a short line followed by a long one
+// is the label of that long one.
+function pairColumns(rows) {
+  const out = [];
+  let inSkills = false;
+  const isHead = value => value.length <= 46 && !/[.;:]$/.test(value)
+    && (value === value.toUpperCase() || SECTION_WORDS.test(value)) && value.length > 2;
+  const isLabel = value => value.length <= 28 && value.length > 1
+    && !/[.;:,]$/.test(value) && !DATE_RANGE.test(value);
+
+  for (let index = 0; index < rows.length; index += 1) {
+    const value = rows[index].trim();
+    const next = (rows[index + 1] || "").trim();
+
+    if (isHead(value)) {
+      inSkills = /skill|language|tool|technolog|competenc/i.test(value);
+      out.push(rows[index]);
+      continue;
+    }
+
+    // A line that is nothing but a date belongs beside a title, not on a line
+    // of its own where it reads as an entry called "May 2026".
+    if (value && value.length <= 42 && DATE_RANGE.test(value)) {
+      if (next && !DATE_RANGE.test(next) && next.length <= 95 && !/[.!?]$/.test(next)) {
+        out.push(`${next}  ${value}`);
+        index += 1;
+        continue;
+      }
+      const previous = out.length ? out[out.length - 1].trim() : "";
+      if (previous && previous.length <= 95 && !/[.!?]$/.test(previous)
+          && !/\s{2,}/.test(previous)) {
+        out[out.length - 1] = `${previous}  ${value}`;
+        continue;
+      }
+    }
+
+    // "AI / ML" over "Machine Learning, Deep Learning, …" is one row of a
+    // table. Two shapes arrive: the label already beside its values with the
+    // column gap intact, and the label on a row of its own. Either way the
+    // lines that follow with no gap of their own are the rest of the values —
+    // "Calibration", left over from a wrapped list, is not a new heading.
+    if (inSkills && value) {
+      const previous = out.length ? out[out.length - 1] : "";
+      if (/\s{2,}/.test(value)) { out.push(rows[index]); continue; }
+      if (/\s{2,}/.test(previous.trim())) {
+        out[out.length - 1] = `${previous.trimEnd()} ${value}`;
+        continue;
+      }
+      if (isLabel(value) && next.length >= 40) {
+        const values = [];
+        let cursor = index + 1;
+        while (cursor < rows.length) {
+          const line = rows[cursor].trim();
+          if (!line || isHead(line)) break;
+          if (isLabel(line) && (rows[cursor + 1] || "").trim().length >= 40) break;
+          values.push(line);
+          cursor += 1;
+        }
+        out.push(`${value}  ${values.join(" ")}`);
+        index = cursor - 1;
+        continue;
+      }
+    }
+
+    out.push(rows[index]);
+  }
+  return out;
 }
 
 // A PDF has no paragraphs, only lines that happen to sit under each other, so
