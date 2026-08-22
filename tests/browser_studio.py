@@ -118,6 +118,12 @@ class Provider(http.server.BaseHTTPRequestHandler):
                               "text": "Built the vision pipeline for a pick-and-place arm "
                                       "in Python and ROS 2.",
                               "why": "The advert names ROS 2 explicitly."})
+        if Provider.mode == "cut":
+            # The strongest edit a CV can get is often the one that takes a
+            # line out, so the six seconds go to the lines that count.
+            picks = [{"line": int(line.partition(": ")[0]), "text": "",
+                      "why": "Says nothing this advert asks about."}
+                     for line in numbered if "grasp planner" in line]
         if Provider.mode == "paraphrase":
             # What the complaint was: every line comes back as itself with the
             # words moved around. None of it is worth a reader's attention.
@@ -390,6 +396,44 @@ def main() -> int:
               str(page.evaluate("document.getElementById('sheet').offsetWidth")))
         check("the paste box gets out of the way", not page.is_visible("#pasteCard"))
 
+        print("\n[2b] more than one CV, and each posting remembers the one it used")
+        before = page.locator("#cvPick option").count()
+        second = Path(tempfile.mkdtemp()) / "Ada Robotics CV.txt"
+        second.write_text("Ada Lovelace\nLondon · ada@example.test\n\nEXPERIENCE\n"
+                          "Robotics Intern — Robot Co, Summer 2025\n"
+                          "Tuned the grasp planner on the production cell.\n",
+                          encoding="utf-8")
+        page.click("#addCv")
+        page.set_input_files("#file", str(second))
+        page.wait_for_function(
+            f"document.querySelectorAll('#cvPick option').length === {before + 1}", timeout=15000)
+        check("a second CV is kept beside the first, not instead of it",
+              page.locator("#cvPick option").count() == before + 1)
+        check("named after the file it came from",
+              page.input_value("#cvName") == "Ada Robotics CV", page.input_value("#cvName"))
+        check("and the document is the one just added",
+              "Tuned the grasp planner on the production cell." in page.inner_text("#sheet"))
+        page.select_option("#cvPick", index=0)   # "Edit raw text" replaced the imported one
+        page.wait_for_timeout(200)
+        check("switching back brings the other one back, whole",
+              "Built a vision pipeline" in page.inner_text("#sheet"),
+              page.inner_text("#sheet")[:160])
+        page.reload(wait_until="networkidle")
+        page.wait_for_selector("#sheet .b")
+        check("and this posting reopens on the CV it was left on",
+              "Built a vision pipeline" in page.inner_text("#sheet"))
+        # A posting never seen before has no CV of its own to remember, so it
+        # opens on the one used last rather than on an empty page.
+        page.goto(page_url.replace("12345678", "87654321"), wait_until="networkidle")
+        page.wait_for_selector("#sheet .b")
+        check("a posting never opened before starts from the CV used last",
+              "Ada Lovelace" in page.inner_text("#sheet"), page.inner_text("#sheet")[:120])
+        check("and it offers every CV on the device",
+              page.locator("#cvPick option").count() == 2,
+              str(page.locator("#cvPick option").count()))
+        page.goto(page_url, wait_until="networkidle")
+        page.wait_for_selector("#sheet .b")
+
         print("\n[3] the advert is pasted, because a web page cannot fetch it")
         page.fill("#advert", "We need ROS 2 and C++ for a production pick-and-place cell. "
                              "Tell us what you measured.")
@@ -418,7 +462,8 @@ def main() -> int:
 
         page.click('#modes button[data-mode="hard"]')
         check("how hard to go is a choice, and it says what it means",
-              "aggressively" in page.inner_text("#modeNote"), page.inner_text("#modeNote"))
+              "cuts whatever does not earn its place" in page.inner_text("#modeNote"),
+              page.inner_text("#modeNote"))
         page.click('#modes button[data-mode="full"]')
         page.fill("#instruction", "lead with the perception work")
         check("the chosen mode is the marked one",
@@ -508,6 +553,26 @@ def main() -> int:
         check("the complete suggestions survived the truncation",
               page.locator(".proposal").count() >= 1, str(page.locator(".proposal").count()))
         page.click("#rejectAll")
+        Provider.mode = "ok"
+
+        print("\n[10b] a line that earns nothing can be cut, with your say-so")
+        Provider.mode = "cut"
+        page.click("#rewrite")
+        page.wait_for_selector(".proposal", timeout=20000)
+        check("taking a line out is offered as an edit",
+              "Cut this line" in page.inner_text(".proposal"),
+              page.inner_text(".proposal")[:160])
+        check("nothing is removed before it is accepted",
+              "grasp planner" in page.inner_text("#sheet"))
+        page.locator(".proposal .yes").first.click()
+        page.wait_for_timeout(200)
+        check("and the line goes when it is",
+              "grasp planner" not in page.inner_text("#sheet"),
+              page.inner_text("#sheet")[:200])
+        page.reload(wait_until="networkidle")
+        page.wait_for_selector("#sheet .b")
+        check("a cut survives a reload, like every other edit",
+              "grasp planner" not in page.inner_text("#sheet"))
         Provider.mode = "ok"
 
         print("\n[11] the PDF is a real file, written here")
