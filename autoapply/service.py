@@ -253,9 +253,16 @@ INSTALLERS = {
 }
 
 
-def install(project: Path | None = None) -> dict[str, Any]:
-    """Install and start the helper for this machine's operating system."""
+def install(project: Path | None = None, *, update: bool = True) -> dict[str, Any]:
+    """Install and start the helper for this machine's operating system.
+
+    The checkout is brought up to date first. A service pointed at stale code
+    is the failure this whole file exists to end: it comes back at every login,
+    it never asks for attention, and it goes on running the bug someone already
+    fixed. Installing without updating would just re-register that.
+    """
     project = Path(project or Path(__file__).resolve().parent.parent).resolve()
+    freshened = freshen_checkout(project) if update else {"skipped": True}
     interpreter = python_for(project)
     (project / "private").mkdir(parents=True, exist_ok=True)
     system = current_platform()
@@ -265,8 +272,38 @@ def install(project: Path | None = None) -> dict[str, Any]:
         "project": str(project),
         "python": str(interpreter),
         "port": PORT,
+        "update": freshened,
+        "commit": checkout_commit(project),
     })
     return result
+
+
+def describe_install(result: dict[str, Any]) -> list[str]:
+    """What install() did, in lines fit for a window someone is watching.
+
+    Kept here rather than in each launcher: three shell scripts describing the
+    same JSON three ways is how they end up disagreeing about what happened.
+    """
+    update = result.get("update") or {}
+    lines = []
+    if update.get("updated"):
+        lines.append(f"Updated  : {update.get('was')} → {update.get('commit')}")
+    elif update.get("reason"):
+        lines.append(f"Not updated: {update['reason']}")
+    elif not update.get("skipped"):
+        lines.append(f"Code     : already current ({result.get('commit') or '?'})")
+    if update.get("moved_to"):
+        lines.append(f"Followed : GitHub's {update['moved_to']} — "
+                     "this checkout had drifted and could not fast-forward")
+    if update.get("backup_branch"):
+        lines.append(f"Kept     : what was here is on the branch {update['backup_branch']}")
+    if update.get("stashed"):
+        lines.append("Parked   : your own edits are stashed — "
+                     "restore them with  git stash pop")
+    lines.append(f"Installed: {result.get('file') or result.get('kind') or 'the service'}")
+    if result.get("note"):
+        lines.append(f"Note     : {result['note']}")
+    return lines
 
 
 def uninstall(project: Path | None = None) -> dict[str, Any]:
@@ -425,6 +462,103 @@ def update_checkout(
         detail = pulled.stderr.strip().splitlines()
         # The usual cause is a branch that has diverged, which a fast-forward
         # cannot fix and this function must not paper over.
+        result["reason"] = (detail[-1] if detail else
+                            "The branch could not be fast-forwarded.")
+    return result
+
+
+def remote_default_branch(project: Path) -> str:
+    """The branch GitHub serves as default, as this clone understands it."""
+    head = _git(project, "symbolic-ref", "--quiet", "refs/remotes/origin/HEAD", timeout=30)
+    if head.returncode == 0 and head.stdout.strip():
+        return head.stdout.strip().rsplit("/", 1)[-1]
+    for guess in ("main", "master"):
+        if _git(project, "rev-parse", "--verify", "--quiet",
+                f"origin/{guess}", timeout=30).returncode == 0:
+            return guess
+    return ""
+
+
+def freshen_checkout(project: Path | None = None) -> dict[str, Any]:
+    """Bring the checkout up to date for someone who is standing right here.
+
+    update_checkout is the careful one: fast-forward or nothing, because it
+    runs unattended. This is the installer's version and it has a harder job.
+    Someone has gone and double-clicked a file precisely because they are
+    running old code, so leaving them on old code — because the branch had
+    drifted, or HEAD was detached, or the branch was never pushed — fails at
+    the only thing they asked for.
+
+    So it fast-forwards where it can, and where it cannot it moves the checkout
+    onto what GitHub actually serves. Nothing is lost doing that: everything
+    uncommitted is stashed first, and any commit that would be left behind is
+    kept on a backup branch this names in the answer.
+    """
+    project = Path(project or Path(__file__).resolve().parent.parent).resolve()
+    if not (project / ".git").exists():
+        return {"updated": False, "reason": (
+            "This folder is not a git checkout, so it cannot receive updates. "
+            "Clone the repository and run this from the clone.")}
+    if not shutil.which("git"):
+        return {"updated": False,
+                "reason": "git is not installed, so the code cannot be updated."}
+    try:
+        head = _git(project, "rev-parse", "--short", "HEAD", timeout=30)
+        if head.returncode != 0:
+            return {"updated": False,
+                    "reason": (head.stderr or "git could not read this checkout").strip()}
+        was = head.stdout.strip()
+        branch = _git(project, "rev-parse", "--abbrev-ref", "HEAD", timeout=30).stdout.strip()
+
+        stashed = False
+        if _git(project, "status", "--porcelain", timeout=60).stdout.strip():
+            stashed = _git(
+                project, "stash", "push", "-u", "-m", "autoapply install",
+            ).returncode == 0
+
+        fetched = _git(project, "fetch", "origin", "--quiet")
+        if fetched.returncode != 0:
+            detail = fetched.stderr.strip().splitlines()
+            return {"updated": False, "was": was, "commit": was, "branch": branch,
+                    "stashed": stashed,
+                    "reason": "Could not reach GitHub: "
+                              + (detail[-1] if detail else "the fetch failed")}
+
+        detached = branch == "HEAD"
+        pulled = None
+        if not detached:
+            pulled = _git(project, "pull", "--ff-only", "--quiet")
+        now = _git(project, "rev-parse", "--short", "HEAD", timeout=30).stdout.strip() or was
+
+        moved = ""
+        backup = ""
+        if detached or (pulled is not None and pulled.returncode != 0):
+            # The branch will not fast-forward, so follow the remote instead.
+            # Anything about to be left off a branch is given one first.
+            default = remote_default_branch(project)
+            if default:
+                backup = f"autoapply-before-{was}"
+                _git(project, "branch", backup, was, timeout=30)
+                switched = _git(project, "checkout", "-B", default,
+                                f"origin/{default}", timeout=60)
+                if switched.returncode == 0:
+                    moved = default
+                    branch = default
+                    now = (_git(project, "rev-parse", "--short", "HEAD", timeout=30)
+                           .stdout.strip() or now)
+                else:
+                    _git(project, "branch", "-D", backup, timeout=30)
+                    backup = ""
+    except (OSError, subprocess.SubprocessError) as exc:
+        return {"updated": False, "reason": f"git could not be run: {exc}"}
+
+    result = {"was": was, "commit": now, "branch": branch,
+              "stashed": stashed, "updated": now != was}
+    if moved:
+        result["moved_to"] = moved
+        result["backup_branch"] = backup
+    elif pulled is not None and pulled.returncode != 0 and now == was:
+        detail = pulled.stderr.strip().splitlines()
         result["reason"] = (detail[-1] if detail else
                             "The branch could not be fast-forwarded.")
     return result

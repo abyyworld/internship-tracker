@@ -32,10 +32,21 @@ start it differs, and that is handled for you:
 
 All three end in the same place: the helper starts with your session, restarts
 if it stops, and no window has to stay open. `python -m autoapply
-install-service` does it directly on any of them, and `uninstall-service`
-undoes it. Where a service manager exists but cannot start anything — a
-container, or WSL without systemd — the helper is started directly rather than
-leaving a registered service that never runs.
+install-service` does it directly on any of them (`--human` says what happened
+in plain lines, `--no-update` installs the code exactly as it is), and
+`uninstall-service` undoes it. Where a service manager exists but cannot start
+anything — a container, or WSL without systemd — the helper is started directly
+rather than leaving a registered service that never runs.
+
+Installing also brings the checkout up to date first, because installing is
+what people do *because* they are running old code. It fast-forwards where it
+can; where it cannot — the branch has drifted, HEAD is detached, the branch was
+never pushed — it follows what GitHub serves rather than leaving you on the
+version you were trying to escape. Nothing is lost doing that: uncommitted work
+is stashed (`git stash pop` brings it back) and any commit that would be left
+behind is kept on a branch the output names. On macOS it then checks which
+commit is actually answering afterwards, since an older process still holding
+the port would reply just as happily as a new one.
 
 ## 1. Create the local environment
 

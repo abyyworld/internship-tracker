@@ -185,10 +185,21 @@ def build_parser() -> argparse.ArgumentParser:
 
     # Installing the helper is the same idea on every operating system and a
     # different file on each; the platform-specific part lives in service.py.
-    commands.add_parser(
+    installer = commands.add_parser(
         "install-service",
         help="Start the CV helper at login and keep it running (any OS)",
         allow_abbrev=False,
+    )
+    # Installing is also how a stale copy gets current, so the update is the
+    # default and the flag is for turning it off — usually to install exactly
+    # the code in front of you while working on it.
+    installer.add_argument(
+        "--no-update", action="store_true",
+        help="Install the code as it is, without pulling from GitHub first",
+    )
+    installer.add_argument(
+        "--human", action="store_true",
+        help="Say what happened in plain lines instead of JSON",
     )
     commands.add_parser(
         "uninstall-service",
@@ -393,7 +404,12 @@ def main(argv: list[str] | None = None) -> int:
 
         try:
             if args.command == "install-service":
-                _print(service.install())
+                installed = service.install(update=not args.no_update)
+                if args.human:
+                    for line in service.describe_install(installed):
+                        print(line)
+                else:
+                    _print(installed)
             else:
                 _print(service.uninstall())
         except (OSError, RuntimeError, ValueError) as exc:

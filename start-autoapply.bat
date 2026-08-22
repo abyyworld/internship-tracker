@@ -14,7 +14,9 @@ if not exist ".venv\Scripts\python.exe" (
   ".venv\Scripts\python.exe" -m pip install --quiet -r requirements-autoapply.txt
 )
 
-echo Installing the CV helper as a background service...
+REM This also brings the checkout up to date before installing - a service
+REM pointed at stale code is the failure the whole thing exists to end.
+echo Updating the code and installing the CV helper as a background service...
 ".venv\Scripts\python.exe" -m autoapply install-service
 
 REM Give it a moment, then open the pairing page in the default browser.

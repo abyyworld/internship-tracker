@@ -341,6 +341,124 @@ class UpdateCheckoutTests(unittest.TestCase):
             self.assertIn("not a git checkout", report["reason"])
 
 
+class FreshenCheckoutTests(unittest.TestCase):
+    """Installing is what someone does *because* they are on old code.
+
+    update_checkout runs unattended and may only fast-forward. This one runs
+    because a person went and double-clicked a file, and leaving them on old
+    code — because the branch drifted, or HEAD was detached — fails at the one
+    thing they asked for. It may follow the remote, so what these check is that
+    it never loses anything doing so.
+    """
+
+    def test_it_fast_forwards_like_the_unattended_one(self):
+        with tempfile.TemporaryDirectory() as directory:
+            origin, clone = _origin_and_clone(Path(directory))
+            _commit(origin, "later.txt", "the fix")
+
+            report = service.freshen_checkout(clone)
+
+            self.assertTrue(report["updated"], report)
+            self.assertEqual((clone / "later.txt").read_text(), "the fix")
+            self.assertNotIn("moved_to", report)
+
+    def test_a_diverged_branch_follows_the_remote_and_keeps_what_was_here(self):
+        with tempfile.TemporaryDirectory() as directory:
+            origin, clone = _origin_and_clone(Path(directory))
+            _commit(origin, "theirs.txt", "upstream")
+            _commit(clone, "mine.txt", "work of my own")
+            mine = _git(clone, "rev-parse", "--short", "HEAD").stdout.strip()
+
+            report = service.freshen_checkout(clone)
+
+            self.assertTrue(report["updated"], report)
+            self.assertEqual(report["moved_to"], "main")
+            self.assertEqual((clone / "theirs.txt").read_text(), "upstream")
+            # Nothing was thrown away: the commit that was here is on a branch.
+            backup = report["backup_branch"]
+            self.assertEqual(
+                _git(clone, "rev-parse", "--short", backup).stdout.strip(), mine)
+            self.assertEqual(
+                _git(clone, "show", f"{backup}:mine.txt").stdout, "work of my own")
+
+    def test_a_detached_head_is_put_back_on_the_remote_branch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            origin, clone = _origin_and_clone(Path(directory))
+            _commit(origin, "later.txt", "the fix")
+            _git(clone, "checkout", "--detach", "HEAD")
+
+            report = service.freshen_checkout(clone)
+
+            self.assertEqual(report["moved_to"], "main")
+            self.assertEqual(
+                _git(clone, "rev-parse", "--abbrev-ref", "HEAD").stdout.strip(), "main")
+            self.assertEqual((clone / "later.txt").read_text(), "the fix")
+
+    def test_local_edits_are_parked_before_any_of_that_and_are_recoverable(self):
+        with tempfile.TemporaryDirectory() as directory:
+            origin, clone = _origin_and_clone(Path(directory))
+            (clone / "seed.txt").write_text("half-finished")
+            _commit(origin, "seed.txt", "changed upstream")
+
+            report = service.freshen_checkout(clone)
+
+            self.assertTrue(report["stashed"])
+            self.assertTrue(report["updated"])
+            # The update took the upstream version of the same file, and the
+            # half-finished one is sitting in the stash — which is what being
+            # told "git stash pop" has to mean.
+            self.assertEqual((clone / "seed.txt").read_text(), "changed upstream")
+            self.assertTrue(_git(clone, "stash", "list").stdout.strip())
+            self.assertIn("half-finished",
+                          _git(clone, "stash", "show", "-p", "stash@{0}").stdout)
+
+    def test_a_folder_that_is_not_a_checkout_says_so_instead_of_pretending(self):
+        with tempfile.TemporaryDirectory() as directory:
+            report = service.freshen_checkout(Path(directory))
+
+            self.assertFalse(report["updated"])
+            self.assertIn("not a git checkout", report["reason"])
+
+    def test_installing_updates_first_unless_told_not_to(self):
+        with tempfile.TemporaryDirectory() as directory:
+            project = Path(directory)
+            with patch("autoapply.service.freshen_checkout",
+                       return_value={"updated": True, "was": "a", "commit": "b"}) as fresh, \
+                 patch.dict(service.INSTALLERS,
+                            {"linux": lambda *a: {"kind": "systemd", "file": "unit"}}), \
+                 patch("autoapply.service.current_platform", return_value="linux"):
+                installed = service.install(project)
+                self.assertTrue(fresh.called)
+                self.assertTrue(installed["update"]["updated"])
+
+                fresh.reset_mock()
+                installed = service.install(project, update=False)
+                self.assertFalse(fresh.called)
+                self.assertTrue(installed["update"]["skipped"])
+
+    def test_what_it_did_is_said_in_lines_a_person_can_read(self):
+        said = "\n".join(service.describe_install({
+            "file": "/home/a/.config/systemd/user/autoapply-bridge.service",
+            "update": {"updated": True, "was": "aaa1111", "commit": "bbb2222",
+                       "moved_to": "main", "backup_branch": "autoapply-before-aaa1111",
+                       "stashed": True},
+        }))
+        self.assertIn("aaa1111 → bbb2222", said)
+        self.assertIn("main", said)
+        self.assertIn("autoapply-before-aaa1111", said)
+        self.assertIn("git stash pop", said)
+        self.assertIn("autoapply-bridge.service", said)
+
+        current = "\n".join(service.describe_install(
+            {"file": "unit", "commit": "ccc3333", "update": {"updated": False}}))
+        self.assertIn("already current (ccc3333)", current)
+
+        blocked = "\n".join(service.describe_install(
+            {"file": "unit", "update": {"updated": False,
+                                        "reason": "Could not reach GitHub"}}))
+        self.assertIn("Could not reach GitHub", blocked)
+
+
 class RestartTests(unittest.TestCase):
     def test_macos_asks_launchd_to_replace_the_process(self):
         completed = subprocess.CompletedProcess([], 0, "", "")
