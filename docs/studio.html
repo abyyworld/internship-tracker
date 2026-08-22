@@ -42,6 +42,7 @@ h2{font-size:15px;margin:0 0 6px}
 .card{background:linear-gradient(150deg,#13271f,#0c1714);border:1px solid var(--line);
 border-radius:16px;padding:15px;margin-bottom:13px}
 .hint{color:var(--muted);font-size:12.5px;margin:6px 0 0}
+.hint.bad{color:var(--red);font-weight:600}
 label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
 input,select,textarea{width:100%;background:#0b1f18;border:1px solid #2c5c47;border-radius:10px;
 color:var(--text);padding:9px 10px;font:inherit;font-size:13.5px}
@@ -258,6 +259,7 @@ BSc Computer Science, University of London, 2027"></textarea>
              placeholder="e.g. lead with the robot-learning work">
       <div class="row" style="margin-top:10px">
         <button class="primary" id="rewrite">Rewrite for this job</button>
+        <button class="secondary tiny" id="test" style="flex:0 0 auto">Test</button>
       </div>
       <p class="hint" id="status"></p>
     </div>
@@ -745,7 +747,21 @@ function say(message, kind = "") {
   box.className = "notice " + kind + (message ? "" : " hidden");
   box.textContent = message || "";
 }
-function status(message) { $("status").textContent = message || ""; }
+function status(message) {
+  $("status").textContent = message || "";
+  $("status").classList.remove("bad");
+}
+
+// Whatever went wrong has to be readable from the button that caused it. The
+// notice bar is at the top of the page and the Rewrite button is at the bottom
+// of a long column: a message three screens away reads as nothing happening.
+function trouble(message) {
+  say(message, "error");
+  $("status").textContent = message;
+  $("status").classList.add("bad");
+  try { $("notice").scrollIntoView({block: "nearest", behavior: "smooth"}); }
+  catch (error) { /* an older browser scrolls its own way */ }
+}
 
 // ── Writing the PDF ────────────────────────────────────────────────────────
 // By hand, because a CV is text in fourteen fonts every PDF reader already
@@ -974,7 +990,11 @@ function pdfName() {
 }
 
 function downloadPdf() {
-  if (!lines.length) { say("Paste your CV first.", "error"); return; }
+  if (!lines.length) {
+    trouble("There is no CV on this page yet — add one under “Which CV”, or drop the file "
+            + "at the top of this page.");
+    return;
+  }
   for (const line of lines) line.proposal = null;
   render();
   const blob = new Blob([buildPdf()], {type: "application/pdf"});
@@ -1858,7 +1878,13 @@ async function callProvider(base, key, model, prompt) {
     if (response.ok) {
       const content = payload && payload.choices && payload.choices[0]
         && payload.choices[0].message && payload.choices[0].message.content;
-      if (!content) throw new Error("The provider answered without any text in it.");
+      if (!content) {
+        const why = (payload.choices && payload.choices[0] || {}).finish_reason;
+        throw new Error(
+          `${model} answered without any text in it${why ? ` (it stopped: ${why})` : ""}. `
+          + "That usually means the model spent its whole answer thinking, or refused the "
+          + "request. A flash or lite model, or a smaller “How hard to go”, gets past it.");
+      }
       return content;
     }
     const said = providerSaid(payload, response);
@@ -1927,14 +1953,18 @@ async function rewrite() {
     if (running) running.abort("stopped");
     return;
   }
-  if (!lines.length) { say("Paste your CV first.", "error"); return; }
+  if (!lines.length) {
+    trouble("There is no CV on this page yet — add one under “Which CV”, or drop the file "
+            + "at the top of this page.");
+    return;
+  }
   const provider = currentProvider();
   const base = currentBase();
   const key = $("key").value.trim();
   const model = chosenModel() || provider.models[0] || "";
-  if (!base) { say("Enter the endpoint for your own provider.", "error"); return; }
-  if (!key) { say("Paste your API key — it stays in this browser.", "error"); return; }
-  if (!model) { say("Name the model to use.", "error"); return; }
+  if (!base) { trouble("Enter the endpoint for your own provider."); return; }
+  if (!key) { trouble("Paste your API key — it stays in this browser."); return; }
+  if (!model) { trouble("Name the model to use."); return; }
   store.set(KEY.key(provider.id), key);
   store.set(KEY.model(provider.id), model);
   store.set(KEY.advert, $("advert").value);
@@ -1987,8 +2017,7 @@ async function rewrite() {
           + `a failure.${harder}`,
       offered ? "ok" : "");
   } catch (error) {
-    status("");
-    say(error.message, "error");
+    trouble(error.message);
   } finally {
     clearInterval(ticking);
     running = null;
@@ -2128,7 +2157,39 @@ $("dropCv").onclick = () => {
   say(`“${mine.name}” is gone from this device.`, "ok");
 };
 $("download").onclick = downloadPdf;
-$("rewrite").onclick = rewrite;
+// When nothing seems to happen, this says which part is not working: one
+// request, one word back, and whatever the provider said if it refused.
+$("test").onclick = async () => {
+  const provider = currentProvider();
+  const base = currentBase();
+  const key = $("key").value.trim();
+  const model = chosenModel() || provider.models[0] || "";
+  if (!base || !key || !model) {
+    trouble("Choose a provider and a model, and paste your key, before testing it.");
+    return;
+  }
+  status(`Asking ${model} for one word…`);
+  try {
+    const said = await callProvider(base, key, model, "Reply with the single word: ready.");
+    status(`${model} answered “${said.trim().slice(0, 40)}”. The key and the model work — `
+           + "so anything that goes wrong now is in the CV or the advert.");
+  } catch (error) {
+    trouble(error.message);
+  }
+};
+
+$("rewrite").onclick = () => {
+  // Nothing this button does may fail silently, including failing before the
+  // request is even made.
+  try {
+    const pending = rewrite();
+    if (pending && pending.catch) {
+      pending.catch(error => trouble(`This page hit an error: ${error.message}`));
+    }
+  } catch (error) {
+    trouble(`This page hit an error: ${error.message}`);
+  }
+};
 $("provider").onchange = event => {
   store.set(KEY.provider, event.target.value);
   renderProvider();
