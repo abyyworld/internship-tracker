@@ -151,6 +151,31 @@ class StudioIsSelfContainedTests(unittest.TestCase):
         self.assertIn("function salvage", self.source)
         self.assertRegex(self.source, r"catch \(error\) \{ payload = salvage\(text\); \}")
 
+    def test_a_bulleted_cv_comes_back_bulleted(self):
+        # ReportLab — which is what this project's own CV generator uses, and
+        # what wrote the reader's real CV — draws a list bullet as byte 127.
+        # WinAnsi leaves that code undefined, and an undefined code IS a bullet
+        # by the encoding's own rule. Read as Latin-1 it is an invisible
+        # control character, so every bullet in a real CV came back as a
+        # two-column row and exported as "?".
+        self.assertRegex(self.source, r'0x7F: "\\u2022"')
+        self.assertIn('#sheet .bullet', self.source)
+
+    def test_the_headline_under_the_name_is_set_as_one(self):
+        # A CV puts what you are in one centred italic line under the name.
+        # Set as an ordinary subtitle it lands left-aligned and small, which is
+        # the first thing anyone notices is wrong.
+        self.assertIn('return "tagline"', self.source)
+        self.assertIn("#sheet .tagline", self.source)
+        self.assertRegex(self.source, r'kind === "tagline"[\s\S]{0,200}CONTENT_W - widthOf')
+
+    def test_a_sentence_broken_by_the_old_measure_is_put_back(self):
+        # A PDF has no paragraphs, only rows. A row ending in a comma or a
+        # colon is continued by the next one whatever case it starts in, and a
+        # link left alone on a row — "GitHub" — belongs to the line above it.
+        self.assertIn("const dangling", self.source)
+        self.assertIn("const tail", self.source)
+
     def test_it_says_where_the_reader_data_goes(self):
         # The trade is: nothing to install, but the CV and the advert go
         # straight to a third party. Saying so is not optional.
