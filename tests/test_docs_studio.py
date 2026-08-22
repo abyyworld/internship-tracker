@@ -55,6 +55,27 @@ class StudioIsSelfContainedTests(unittest.TestCase):
         # can only do if every key really does share the prefix.
         self.assertIn('key.startsWith("studio.")', self.source)
 
+    def test_the_pdf_is_written_here_not_asked_for_from_the_browser(self):
+        # A print dialog is not an export: it asks the reader to find the right
+        # menu, pick A4, turn off headers and footers, and hope. The page
+        # writes the file itself, in the base-14 fonts every reader has, so
+        # nothing has to be embedded and nothing has to be downloaded.
+        for marker in ("/BaseFont /Times-Roman", "/BaseFont /Helvetica-Bold",
+                       "/MediaBox [0 0 ${PAGE.w} ${PAGE.h}]", "WinAnsiEncoding",
+                       "startxref"):
+            self.assertIn(marker, self.source, f"the PDF writer lost: {marker}")
+        self.assertIn('link.download = pdfName()', self.source)
+        # The same measurements as the local editor's renderer.
+        self.assertRegex(self.source, r"PAGE = \{w: 595\.28, h: 841\.89, left: 42\.52")
+
+    def test_the_document_is_set_the_way_it_prints(self):
+        # Not a list of lines in a box: A4 at true size, with the typography
+        # autoapply/cv_render.py uses, so what is edited is what comes out.
+        self.assertIn("width:595.28pt", self.source)
+        self.assertIn("--accent:#14324F", self.source)
+        for block in (".name", ".contact", ".section", ".entry", ".bullet"):
+            self.assertIn(f"#sheet {block}", self.source, f"no styling for {block}")
+
     def test_it_says_where_the_reader_data_goes(self):
         # The trade is: nothing to install, but the CV and the advert go
         # straight to a third party. Saying so is not optional.
