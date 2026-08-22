@@ -72,13 +72,14 @@ if [[ -d ".git" ]] && command -v git >/dev/null 2>&1; then
   fi
   if git fetch origin --quiet 2>/dev/null; then
     BEFORE="$(git rev-parse --short HEAD 2>/dev/null || true)"
-    git checkout -B main origin/main --quiet 2>/dev/null \
-      || git pull --ff-only --quiet 2>/dev/null || true
+    # Fast-forward what is checked out. Switching branches from a launcher would
+    # move work out from under someone without asking.
+    git pull --ff-only --quiet 2>/dev/null || true
     AFTER="$(git rev-parse --short HEAD 2>/dev/null || true)"
     if [[ "$BEFORE" != "$AFTER" ]]; then
       line "Updated : $BEFORE → $AFTER"
     else
-      line "Code    : already current ($AFTER)"
+      line "Code    : already current ($AFTER on $(git rev-parse --abbrev-ref HEAD 2>/dev/null))"
     fi
   else
     line "Offline : could not reach GitHub, installing the code already here"
