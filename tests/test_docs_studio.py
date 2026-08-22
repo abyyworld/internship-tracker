@@ -200,6 +200,19 @@ class StudioIsSelfContainedTests(unittest.TestCase):
         # index-keyed draft could not do — every index after it shifts.
         self.assertRegex(self.source, r"lines\.map\(line => \[line\.original, line\.text\]\)")
 
+    def test_nothing_this_page_does_can_fail_silently(self):
+        # The notice bar is at the top of the page; the button that starts a
+        # rewrite is at the bottom of a long column. A reason printed three
+        # screens away is indistinguishable from nothing happening at all, so
+        # every failure is also printed under the button, and one request can
+        # be sent on its own to say whether it is the key or the CV.
+        self.assertIn("function trouble", self.source)
+        self.assertRegex(self.source, r'\$\("status"\)\.classList\.add\("bad"\)')
+        self.assertIn(".hint.bad", self.source)
+        self.assertIn('id="test"', self.source)
+        # Even an error thrown before the request is made reaches the reader.
+        self.assertRegex(self.source, r"pending\.catch\(error => trouble")
+
     def test_it_says_where_the_reader_data_goes(self):
         # The trade is: nothing to install, but the CV and the advert go
         # straight to a third party. Saying so is not optional.
