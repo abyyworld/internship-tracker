@@ -96,6 +96,19 @@ open apply_cockpit.html
 
 `apply_cockpit.html` is generated locally and ignored by Git.
 
+Venture programmes are a curated dataset rather than a scrape, in `data/ventures.json`,
+and can be listed from the terminal for a particular person:
+
+```bash
+python3 ventures.py --audience phd --region GB
+python3 ventures.py --audience students --stage idea
+```
+
+The rules for that dataset are the same as for funding: cheque sizes and equity
+only where the programme publishes them, no cohort dates (they move every year),
+and every entry links to the page that governs it. `tests/test_ventures.py`
+enforces those rules, including a check that no cycle string contains a year.
+
 ### Checking the editor itself
 
 The unit suite runs with no browser and no network:
