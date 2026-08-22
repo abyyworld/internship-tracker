@@ -141,9 +141,12 @@ This is the fastest workflow when Simplify is already installed:
    open https://abyyworld.github.io/internship-tracker/
    ```
 
-3. The private bridge is installed as a macOS login service. If it is not
-   running, double-click `start-autoapply.command` in the project folder. It
-   starts from its own location, so no virtual-environment activation is needed.
+3. Double-clicking `start-autoapply.command` installs the helper as a macOS
+   login service and starts it: it then comes back at every login, restarts
+   itself if it stops, and needs no window kept open — closing the window that
+   installed it changes nothing. Double-click it again after moving the project
+   folder, and it re-points at the new location. `--window` runs a one-off
+   helper in a window instead, which dies with the window.
 4. Search or filter jobs on the dashboard and click
    **✦ Edit CV for this job** beside any role.
 
