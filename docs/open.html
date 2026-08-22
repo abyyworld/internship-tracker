@@ -6,13 +6,17 @@
 <title>Opening your local CV editor</title>
 <!--
   Every "Edit CV for this job" button points at a helper running on the reader's
-  own machine. When that helper is not running the browser answers with
-  ERR_CONNECTION_REFUSED, which explains nothing and offers nothing — and it is
-  the single most common state, because the helper has to be started once.
+  own machine, and this page stands in front of it because that helper can be in
+  three states, not two.
 
-  This page stands in front of that. It tries the local editor, and if the helper
-  does not answer it says so and says what to do, on a page that is served from
-  GitHub Pages and therefore always available.
+    running and current   → straight into the local editor, the better one
+    running but older     → the browser studio, because the older build will
+                            refuse a posting it never imported
+    not running at all    → the browser studio, which needs no install
+
+  Only the first is worth sending someone to the local editor for. Asking merely
+  whether a helper is alive is what sent people back into a bug they had already
+  been told was fixed: an old build answers that question perfectly well.
 -->
 <style>
 :root{color-scheme:dark;--bg:#07110f;--panel:#10211c;--line:#315346;--text:#f1f8f5;
@@ -137,9 +141,24 @@ if (destination === "editor" && !/^https:\/\//.test(postingUrl)) {
   attempt();
 }
 
-// Is anything listening on the loopback port? Two probes, because neither is
-// reliable alone and a false "not running" locks someone out of a helper that
-// is working:
+// Which editor should open? Not "is a helper running" — that question sent
+// people straight back into the bug they were trying to escape. A helper from
+// before a fix answers a liveness probe exactly as happily as one that has the
+// fix, and then refuses the posting.
+//
+// So the probe asks what the helper can DO. /can/adopt-any-posting.png is
+// served only by builds that can open a posting the local database never
+// imported; every older build 404s an unknown path, and the image fails. That
+// failure is the answer: the helper is behind, so the reader goes to the
+// browser studio, which works right now, instead of to an editor that will
+// refuse them.
+//
+// Underneath it, the older liveness question is still asked, because "nothing
+// is listening" and "something old is listening" lead to the same place but
+// need to be told apart for what the studio then says.
+//
+// Two probes for liveness, because neither is reliable alone and a false "not
+// running" locks someone out of a helper that is working:
 //
 //   * an <img> on /favicon.ico — conclusive when it loads, but only newer
 //     builds serve that route, and an older one 404s it into an onerror that
@@ -155,28 +174,65 @@ function attempt() {
   show("trying");
   let settled = false;
   let failures = 0;
-  const decide = (alive) => {
+  let capable = null;   // has the fix | too old | not answered yet
+
+  const go = () => {
     if (settled) return;
+    // Pairing this browser and opening the local tracker exist only on the
+    // helper — there is no browser version to fall back to — so for those the
+    // question really is just whether it is alive.
+    if (destination !== "editor") {
+      if (alive === null) return;
+      settled = true;
+      if (alive) location.replace(editorUrl); else show("down");
+      return;
+    }
     settled = true;
-    if (alive) location.replace(editorUrl);
-    else if (destination === "editor") location.replace(studioUrl);
-    else show("down");
-  };
-  const failed = () => {
-    failures += 1;
-    if (failures >= 2) decide(false);
+    if (capable === true) { location.replace(editorUrl); return; }
+    // Not proven able to open this posting. If something is nonetheless
+    // listening, the studio is told so it can explain rather than pretend
+    // there is no helper at all.
+    location.replace(studioUrl + (location.search ? "&" : "?") + "helper="
+                     + (alive === true ? "stale" : "absent"));
   };
 
+  let alive = null;
+  const aliveFailed = () => {
+    failures += 1;
+    if (failures >= 2) { alive = false; go(); }
+  };
+  const aliveWorked = () => {
+    alive = true;
+    // Give the capability probe a moment to answer before deciding; a helper
+    // that has the fix must never be sent to the lesser editor.
+    if (capable !== null) go(); else setTimeout(go, 1200);
+  };
+
+  // Can it do the thing this reader is about to ask for?
+  if (destination === "editor") {
+    const able = new Image();
+    able.onload = () => { capable = true; go(); };
+    able.onerror = () => { capable = false; if (alive !== null) go(); };
+    able.src = `${BRIDGE}/can/adopt-any-posting.png?t=${Date.now()}`;
+  }
+
   const probe = new Image();
-  probe.onload = () => decide(true);
-  probe.onerror = failed;
+  probe.onload = aliveWorked;
+  probe.onerror = aliveFailed;
   probe.src = `${BRIDGE}/favicon.ico?t=${Date.now()}`;
 
   fetch(`${BRIDGE}/health?probe=${Date.now()}`, {mode: "no-cors", cache: "no-store"})
-    .then(() => decide(true))
-    .catch(failed);
+    .then(aliveWorked)
+    .catch(aliveFailed);
 
-  setTimeout(() => decide(true), 2500);
+  // Nothing has answered either way. For pairing that means opening the helper
+  // regardless — a slow machine is not a missing helper. For a posting it means
+  // the studio, which needs nothing and cannot fail.
+  setTimeout(() => {
+    if (settled) return;
+    if (destination !== "editor") { settled = true; location.replace(editorUrl); return; }
+    go();
+  }, 2500);
 }
 
 document.getElementById("retry").addEventListener("click", attempt);
