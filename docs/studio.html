@@ -96,6 +96,10 @@ border-bottom:1.1px solid var(--rule);padding-bottom:3pt}
 #sheet .body{font:9.7pt/12.1pt "Times New Roman",Times,serif;margin-top:2pt;text-align:justify}
 #sheet .bullet{font:9.7pt/12.1pt "Times New Roman",Times,serif;margin-top:2pt;
 padding-left:11pt;text-indent:-11pt}
+#sheet .pair{display:flex;gap:10pt;align-items:baseline;margin-top:3pt}
+#sheet .pair .label{font:700 8.4pt/12pt Helvetica,Arial,sans-serif;color:var(--accent);
+flex:0 0 92pt;letter-spacing:.3pt}
+#sheet .pair .values{font:9.6pt/12pt "Times New Roman",Times,serif;flex:1}
 #sheet .gap{height:6pt}
 #sheet .changed{background:#eaf6ee;border-radius:3px}
 .proposal{background:#eef8f2;border:1px solid #bfe3cd;border-left:3px solid var(--green2);
@@ -330,26 +334,53 @@ const providerById = id => PROVIDERS.find(p => p.id === id) || PROVIDERS[0];
 let lines = [];
 let busy = false;
 
-const MONTHS = "jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec";
-const DATEISH = new RegExp(`(19|20)\\d{2}|present|current|ongoing|summer|spring|autumn|fall|winter|${MONTHS}`, "i");
+const MONTHS = "jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?"
+  + "|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?";
+const SEASONS = "spring|summer|autumn|fall|winter";
+// One end of a date: "May 2026", "Summer 2025", "2027", "Present".
+const MOMENT = `(?:(?:${MONTHS})\\.?\\s+)?(?:(?:${SEASONS})\\s+)?(?:19|20)\\d{2}`
+  + `|present|current|ongoing|to date|(?:${SEASONS})\\s+(?:19|20)\\d{2}`;
+// A whole date, and nothing else. Testing for "contains a year" is what put
+// "Robot Co, Summer 2025" in the right margin and split "May 2026 – Present"
+// down the middle.
+const DATE_RANGE = new RegExp(
+  `^(?:${MOMENT})(?:\\s*(?:[\u2013\u2014-]|to|until)\\s*(?:${MOMENT}))?$`, "i");
+
+// The words a CV uses for its own sections. Everything else that is short and
+// capitalised is a job title or a project name, and setting those as section
+// heads — letterspaced, in accent blue, over a rule — is what made a rebuilt
+// CV look nothing like the one that went in.
+const SECTION_WORDS = new RegExp("^(?:selected\\s+|other\\s+|technical\\s+|additional\\s+)?"
+  + "(?:education|experience|employment|work experience|professional experience|research"
+  + "|publications?|projects?|skills?|skills & languages|languages?|awards?|honou?rs"
+  + "|honou?rs, awards & test scores|certifications?|interests?|activities|volunteering"
+  + "|leadership|summary|profile|about|references|teaching|talks|patents|achievements"
+  + "|test scores|extracurricular[a-z ]*)"
+  + "(?:\\s*(?:&|and)\\s*[a-z ]+)?$", "i");
 
 function kindOf(text, index) {
   const value = text.trim();
   if (!value) return "gap";
   if (index === 0) return "name";
-  if (index <= 2 && value.length < 95 && /[·|@]|\+\d|\d{3}/.test(value)) return "contact";
+  // The contact line sits near the top and is made of the things nothing else
+  // in a CV contains: an address, an email, a phone number, separated by bars
+  // or middots. It is checked before the column rules, or the bars in it read
+  // as a two-column layout.
+  if (index <= 4 && value.length < 140 && /@|\+\d|\d{3}[ -]\d{3}/.test(value)
+      && /[·|,]/.test(value)) {
+    return "contact";
+  }
   if (/^[•\-*–]\s+/.test(value)) return "bullet";
-  // A heading is short, has no sentence punctuation, and is either shouted or
-  // Title Case: EXPERIENCE, Education, Selected Projects.
-  if (value.length <= 34 && !/[.;:,]$/.test(value)
-      && (value === value.toUpperCase() || /^[A-Z][a-z]+(\s[A-Za-z&]+){0,3}$/.test(value))) {
+  // Shouted, or one of the words a CV calls its sections. Not merely short and
+  // capitalised: "Student Researcher" is a job, not a section.
+  if (value.length <= 46 && !/[.;:]$/.test(value)
+      && (value === value.toUpperCase() || SECTION_WORDS.test(value))) {
     return "section";
   }
+  // A label and its values, side by side, the way a skills table reads:
+  // "AI / ML      Machine Learning, Deep Learning, …".
+  if (pairOf(value)) return "pair";
   if (splitDate(value)) return "entry";
-  // A project title and the line under it that says where it happened. This is
-  // how a CV names things — "Correlated Perception Error in Semantic 3D
-  // Mapping" over "Independent research · reproducible benchmark" — and
-  // setting both as body text is what makes an imported CV read like a dump.
   const before = index > 0 ? (lines[index - 1] || {}).text || "" : "";
   const after = (lines[index + 1] || {}).text || "";
   if (isSubtitle(value) && isTitle(before.trim())) return "sub";
@@ -359,26 +390,48 @@ function kindOf(text, index) {
 
 const isTitle = value => value.length > 3 && value.length <= 95
   && !/[.;:,]$/.test(value) && !/ · /.test(value);
-const isSubtitle = value => / · /.test(value) && value.length <= 200 && !/\.$/.test(value);
+// The line under a title that says where it happened. Usually it carries a
+// middot — "University of Birmingham · Internship" — but often it is just the
+// institution, so a short line with no sentence in it counts too.
+const isSubtitle = value => value.length <= 200 && !/[.!?]$/.test(value)
+  && (/ · /.test(value) || (value.length <= 90 && /^[A-Z(]/.test(value)
+                            && value.split(/\s+/).length <= 12));
+
+// A wide gap in the middle of a line means two columns, which is how a skills
+// table and a right-aligned date both arrive.
+function pairOf(value) {
+  const at = value.search(/\s{2,}/);
+  if (at <= 0) return null;
+  const label = value.slice(0, at).trim();
+  const rest = value.slice(at).trim();
+  if (!label || !rest) return null;
+  if (label.length > 28 || rest.length < 12) return null;
+  if (DATE_RANGE.test(rest)) return null;      // that is a date, not a value
+  if (/^[|·•\-–]/.test(rest) || /@/.test(rest)) return null;   // contact details
+  return {label, values: rest};
+}
 
 // "Robotics Intern — Robot Co, Summer 2025" → "Robotics Intern — Robot Co" on
 // the left and "Summer 2025" on the right, which is where a CV puts a date.
-//
-// Every separator in the line is a candidate, and the winner is the SHORTEST
-// tail that still reads like a date: splitting at the em dash would carry the
-// employer over to the right margin with it, and splitting on any dash at all
-// would cut ordinary sentences in half.
+// The tail has to BE a date, whole — a range like "May 2026 – Present"
+// included, since a right-aligned column arrives as a wide gap.
 function splitDate(value) {
   const marks = [" — ", " – ", " -- ", " - ", ", ", " | ", " • "];
   let best = null;
+  const consider = (at, width) => {
+    const tail = value.slice(at + width).trim();
+    const head = value.slice(0, at).trim();
+    if (!head || !DATE_RANGE.test(tail)) return;
+    // The longest tail that is entirely a date wins: "May 2026 – Present" is
+    // the date, and "Present" is only the half of it after the dash.
+    if (!best || tail.length > best.when.length) best = {title: head, when: tail};
+  };
+  const wide = value.search(/\s{2,}/);
+  if (wide > 0) consider(wide, value.slice(wide).length - value.slice(wide).trimStart().length);
   for (const mark of marks) {
     let at = value.indexOf(mark);
     while (at > 0) {
-      const tail = value.slice(at + mark.length).trim();
-      if (tail.length <= 42 && DATEISH.test(tail) && !/[.]$/.test(tail)
-          && (!best || tail.length < best.when.length)) {
-        best = {title: value.slice(0, at).trim(), when: tail};
-      }
+      consider(at, mark.length);
       at = value.indexOf(mark, at + 1);
     }
   }
@@ -455,6 +508,22 @@ function blockFor(line, index) {
     const read = () => `${title.textContent} — ${when.textContent}`;
     editable(title, line, read);
     editable(when, line, read);
+    return row;
+  }
+  if (kind === "pair") {
+    const parts = pairOf(line.text.trim());
+    const row = document.createElement("div");
+    row.className = "pair b" + changed;
+    const label = document.createElement("div");
+    label.className = "label";
+    label.textContent = parts.label;
+    const values = document.createElement("div");
+    values.className = "values";
+    values.textContent = parts.values;
+    row.append(label, values);
+    const read = () => `${label.textContent}\u2003${values.textContent}`;
+    editable(label, line, read);
+    editable(values, line, read);
     return row;
   }
   const node = document.createElement("div");
@@ -541,6 +610,8 @@ const FONTS = {
   section: {font: "F4", size: 10, lead: 12, css: 'bold 10px Helvetica, Arial', track: 1.6},
   title: {font: "F2", size: 10.8, lead: 13, css: 'bold 10.8px "Times New Roman"'},
   sub: {font: "F5", size: 9.8, lead: 13.5, css: 'italic 9.8px "Times New Roman"'},
+  pairLabel: {font: "F4", size: 8.4, lead: 12, css: 'bold 8.4px Helvetica, Arial', track: 0.3},
+  pairValue: {font: "F1", size: 9.6, lead: 12, css: '9.6px "Times New Roman"'},
   when: {font: "F4", size: 8.4, lead: 13, css: 'bold 8.4px Helvetica, Arial'},
   body: {font: "F1", size: 9.7, lead: 12.1, css: '9.7px "Times New Roman"'},
 };
@@ -666,6 +737,18 @@ function buildPdf() {
     }
     if (kind === "sub") {
       paragraph(value, FONTS.sub, [0.239, 0.290, 0.337]);
+      return;
+    }
+    if (kind === "pair") {
+      const parts = pairOf(value) || {label: value, values: ""};
+      const labelWidth = 92;
+      const rows = wrap(parts.values, FONTS.pairValue, CONTENT_W - labelWidth - 10);
+      rows.forEach((row, row_index) => {
+        room(FONTS.pairValue.lead);
+        y -= FONTS.pairValue.lead;
+        if (row_index === 0) put(parts.label, FONTS.pairLabel, PAGE.left, ACCENT);
+        put(row, FONTS.pairValue, PAGE.left + labelWidth + 10);
+      });
       return;
     }
     if (kind === "bullet") {
@@ -944,15 +1027,23 @@ function unescapePdf(value) {
 // Fragments back into lines: same baseline is the same line, left to right.
 function linesFrom(items) {
   if (!items.length) return "";
-  const rows = new Map();
-  for (const item of items) {
-    const key = `${item.page}:${Math.round(item.y * 2) / 2}`;
-    if (!rows.has(key)) rows.set(key, {page: item.page, y: item.y, items: []});
-    rows.get(key).items.push(item);
+  // Items belong to the same line when their baselines are close enough for
+  // the type they are set in — not when they round to the same half-point. A
+  // right-aligned date sits a fraction off its title's baseline, and bucketing
+  // put them on separate lines, which is how "May 2026 – Present" ended up
+  // above "Student Researcher" instead of beside it.
+  const rows = [];
+  for (const item of [...items].sort((a, b) => a.page - b.page || b.y - a.y)) {
+    const row = rows[rows.length - 1];
+    const tolerance = Math.max(2, item.size * 0.4);
+    if (row && row.page === item.page && Math.abs(row.y - item.y) <= tolerance) {
+      row.items.push(item);
+      row.y = Math.max(row.y, item.y);
+    } else {
+      rows.push({page: item.page, y: item.y, items: [item]});
+    }
   }
-  const ordered = [...rows.values()]
-    .sort((a, b) => a.page - b.page || b.y - a.y)
-    .map(row => [row.y, row.items, row.page]);
+  const ordered = rows.map(row => [row.y, row.items, row.page]);
   // What counts as a blank line depends on the document's own leading, so it
   // is measured rather than assumed: a 24pt heading and a 9pt bullet do not
   // agree on what a wide gap is.
@@ -1018,7 +1109,14 @@ function unletterspace(line) {
   // Judged on the whole line, not on each word: "R O B O T  L E A R N I N G  &
   // M L" is one letterspaced heading, and deciding per word would leave the
   // short ones — "&", "M L" — spaced out in the middle of it.
-  if (all.length < 4 || singles / all.length < 0.7) return all.join(" ");
+  //
+  // An ordinary line keeps its wide gaps. They are the only surviving evidence
+  // of a column: the date at the right margin, the label beside its skills.
+  // Collapsing all whitespace here is what glued "Student Researcher" to
+  // "May 2026 – Present" as though it were one sentence.
+  if (all.length < 4 || singles / all.length < 0.7) {
+    return line.replace(/[ \t]{2,}/g, "  ").trim();
+  }
   return line.split(/\s{2,}/)
     .map(part => part.trim().split(/\s+/).filter(Boolean).join(""))
     .filter(Boolean)
