@@ -398,7 +398,12 @@ border-radius:13px;font-size:13px}
       <p class="hint" id="keyHint"></p>
     </div>
 
-    <p class="hint" id="buildNote" style="margin:2px 4px 0"></p>
+    <div class="card" id="helperCard">
+      <div class="eyebrow">This helper</div>
+      <p class="hint" id="buildNote" style="margin-top:4px"></p>
+      <button class="secondary" id="updateHelper" style="width:100%;margin-top:8px">Check for an update</button>
+      <p class="hint" id="updateNote"></p>
+    </div>
 
   </div>
 </aside>
@@ -1342,6 +1347,68 @@ async function testProvider(){
   }catch(err){notice(err.message,"error")}
   finally{button.disabled=false;button.textContent=before}
 }
+// Every fix written for this project has to reach the copy of the code that is
+// actually answering, and a background helper installed once can sit weeks
+// behind the repository without anything looking wrong. This pulls, restarts,
+// and waits for the new code to answer — so a fix never depends on someone
+// opening a terminal to collect it.
+async function updateHelper(){
+  const button=$("updateHelper");button.disabled=true;
+  const before=button.textContent;button.textContent="Checking…";
+  const note=$("updateNote");note.textContent="";
+  try{
+    const r=await api("/api/update",{method:"POST",body:JSON.stringify({})});
+    const report=r.report||{};
+    const parked=report.stashed
+      ?" Your own edits to the code were parked — git stash pop puts them back."
+      :"";
+    if(!report.updated){
+      note.textContent=(report.reason
+        ||`Already up to date${report.commit?` (${report.commit} on ${report.branch||"this branch"})`:""}.`)+parked;
+      return;
+    }
+    if(!r.restarting){
+      note.textContent=`Updated ${report.was} → ${report.commit}, but this helper could not`
+        +` restart itself. Close it and start it again to run the new code.`+parked;
+      return;
+    }
+    button.textContent="Restarting…";
+    note.textContent=`Updated ${report.was} → ${report.commit}. Waiting for the new code to answer…`+parked;
+    const health=await waitForRestart(report.commit_before,report.build_before);
+    if(!health){
+      note.textContent=`Updated ${report.was} → ${report.commit}, but the helper has not answered`
+        +` yet. Give it a moment and reload this page.`+parked;
+      return;
+    }
+    note.textContent=`Now running ${report.commit}. Reloading…`;
+    setTimeout(()=>location.reload(),600);
+  }catch(err){
+    // A restart can close the socket before the answer lands. That is the
+    // update working, not failing, so it is not reported as an error.
+    note.textContent="";
+    notice(err.message,"error");
+  }
+  finally{button.disabled=false;button.textContent=before}
+}
+// Answering again is not enough: the old process can serve a request or two
+// before the service manager takes it away. A different commit, or a gap where
+// nothing answered, is what proves the new code is the one talking.
+async function waitForRestart(commitBefore,buildBefore,seconds=45){
+  const deadline=Date.now()+seconds*1000;
+  let wentQuiet=false;
+  while(Date.now()<deadline){
+    await new Promise(done=>setTimeout(done,900));
+    try{
+      const r=await fetch("/health",{headers:{"X-Autoapply-Token":token},cache:"no-store"});
+      if(!r.ok){wentQuiet=true;continue}
+      const health=await r.json();
+      const moved=(commitBefore&&health.commit&&health.commit!==commitBefore)
+        ||(buildBefore&&health.build&&health.build!==buildBefore);
+      if(moved||wentQuiet)return health;
+    }catch(err){wentQuiet=true}
+  }
+  return null;
+}
 function renderModel(){
   const sel=$("modelSelect");sel.replaceChildren();
   const list=state.models||[];
@@ -1397,7 +1464,11 @@ function renderKey(){
   // weeks, so the code answering a request can be many commits behind the
   // checkout — and then every symptom belongs to code that is no longer there.
   $("buildNote").textContent=
-    `Bridge build ${provider.build||"unknown"}`
+    `Running the code from ${provider.build||"an unknown build"}`
+    +(provider.commit?` (${provider.commit})`:"")
+    +(provider.auto_update
+      ?" · checks for fixes by itself every few hours"
+      :" · automatic updates are off")
     +(provider.key_source?` · key from ${provider.key_source}`:"")
     +(provider.problem?` · ${provider.problem}`:"");
 }
@@ -1472,6 +1543,7 @@ $("writeAnswers").onclick=writeAnswers;
 $("modelSelect").onchange=e=>saveModel(e.target.value);
 $("providerSelect").onchange=e=>saveProvider(e.target.value);
 $("testProvider").onclick=testProvider;
+$("updateHelper").onclick=updateHelper;
 $("saveCustomBase").onclick=saveCustomBase;
 $("customBase").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();saveCustomBase()}};
 $("tabs").onclick=e=>{if(e.target.dataset.tab)showTab(e.target.dataset.tab)};
