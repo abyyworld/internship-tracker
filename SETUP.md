@@ -21,6 +21,28 @@ demographic answers remain unresolved.
 
 ## Which operating system
 
+### Nothing installed at all
+
+There is a version of the CV editor that needs no helper, no Python and no
+install: **[CV Studio in the browser](https://abyyworld.github.io/internship-tracker/studio.html)**.
+Every "Edit CV for this job" button goes there by itself when no helper answers,
+carrying the posting with it, so the button never leads to a dead end.
+
+It keeps the CV, the advert and the API key in that browser's own storage and
+sends the rewrite request straight from the page to the provider — nothing
+passes through GitHub or any server of this project, and "Forget everything on
+this device" removes the lot. Google AI Studio's free tier is the recommended
+provider there: it is the one verified to accept requests from a web page, which
+several providers refuse on purpose.
+
+What the local helper still does better, and why it stays the default: it reads
+the advert for you (a web page cannot — job boards refuse cross-origin requests,
+so the studio asks you to paste it), it checks every claim against your fact
+bank rather than trusting the model, it keeps a library of tailored CVs, and it
+exports a real PDF instead of the browser's print dialog.
+
+### The helper on your machine
+
 The helper is the same Python everywhere; only the way a machine is told to
 start it differs, and that is handled for you:
 

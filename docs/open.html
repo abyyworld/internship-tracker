@@ -72,7 +72,8 @@ text-decoration:none;font-weight:700;font-size:13.5px;cursor:pointer;border:1px 
       It finds the project folder by itself. <code>start-autoapply.command</code> starts the helper
       just for the current session instead.</p>
     <div class="actions">
-      <button class="btn primary" id="retry">Try again</button>
+      <a class="btn primary" id="studioLink" href="./studio.html">Tailor a CV in the browser instead</a>
+      <button class="btn secondary" id="retry">Try again</button>
       <a class="btn secondary" id="openAnyway" href="#">Open the editor anyway</a>
       <a class="btn secondary" id="postingLink" href="#" target="_blank" rel="noopener">Open the posting</a>
       <a class="btn secondary" href="./">Back to the dashboard</a>
@@ -104,6 +105,12 @@ const editorUrl = destination === "editor"
   ? `${BRIDGE}/editor?url=${encodeURIComponent(postingUrl)}${carried}`
     + (cvId ? `&cv=${encodeURIComponent(cvId)}` : "")
   : destination === "dashboard" ? `${BRIDGE}/dashboard` : `${BRIDGE}/connect`;
+// Where a reader goes when no helper answers. It used to be this page, telling
+// them which file to double-click — which is not an answer for someone who
+// wants their CV tailored. studio.html does the job in the browser instead:
+// nothing to install, the same posting, their own key. The local helper stays
+// the better editor and the studio says so, but it is no longer the only one.
+const studioUrl = "./studio.html" + location.search;
 
 function show(id) {
   for (const section of ["trying", "down", "nourl"]) {
@@ -151,7 +158,9 @@ function attempt() {
   const decide = (alive) => {
     if (settled) return;
     settled = true;
-    if (alive) location.replace(editorUrl); else show("down");
+    if (alive) location.replace(editorUrl);
+    else if (destination === "editor") location.replace(studioUrl);
+    else show("down");
   };
   const failed = () => {
     failures += 1;
