@@ -219,6 +219,17 @@ BSc Computer Science, University of London, 2027"></textarea>
     </div>
 
     <div class="card">
+      <h2>Which CV</h2>
+      <select id="cvPick"></select>
+      <input id="cvName" spellcheck="false" placeholder="Name this CV" style="margin-top:6px">
+      <p class="hint" id="cvNote"></p>
+      <div class="row">
+        <button class="secondary tiny" id="addCv">Add another CV</button>
+        <button class="secondary tiny hidden" id="dropCv">Remove this one</button>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>Model</h2>
       <label for="provider">Provider</label>
       <select id="provider"></select>
@@ -304,9 +315,12 @@ const store = {
 };
 const jobKey = posting.url || "no-url";
 const KEY = {
-  cv: "studio.cv",
+  cv: "studio.cv",                       // what older versions of this page saved
+  cvs: "studio.cvs",                     // the library: every CV kept on this device
+  pick: `studio.pick.${jobKey}`,         // which of them this posting uses
+  last: "studio.last",                   // and which to start a new posting with
   advert: `studio.advert.${jobKey}`,
-  draft: `studio.draft.${jobKey}`,
+  draft: id => `studio.draft.${jobKey}.${id}`,
   role: `studio.role.${jobKey}`,
   company: `studio.company.${jobKey}`,
   provider: "studio.provider",
@@ -472,23 +486,114 @@ function splitDate(value) {
 }
 
 function loadDraft() {
-  try { return JSON.parse(store.get(KEY.draft, "{}")) || {}; }
-  catch (error) { return {}; }
+  try { return JSON.parse(store.get(KEY.draft(currentCvId()), "null")); }
+  catch (error) { return null; }
 }
+// The draft is every line as it now stands, beside the line it started as.
+// An index-keyed map of changes cannot survive a line being cut — every index
+// after it shifts by one — and cutting a line is now something the model can
+// propose.
 function saveDraft() {
-  const kept = {};
-  lines.forEach((line, index) => { if (line.text !== line.original) kept[index] = line.text; });
-  store.set(KEY.draft, JSON.stringify(kept));
+  store.set(KEY.draft(currentCvId()),
+            JSON.stringify(lines.map(line => [line.original, line.text])));
 }
 function rawText() { return lines.map(line => line.text).join("\n"); }
 
+// ── The CVs kept on this device ────────────────────────────────────────────
+// One CV is not how anyone applies. There is a research one and an industry
+// one, or a robotics one and a general one, and which of them a posting wants
+// is a property of the posting. So the CVs are a library, and every posting
+// remembers the one it was tailored from.
+function library() {
+  let saved = [];
+  try { saved = JSON.parse(store.get(KEY.cvs, "[]")) || []; } catch (error) { saved = []; }
+  saved = saved.filter(item => item && typeof item.text === "string" && item.id);
+  if (!saved.length) {
+    // Whatever the single-CV version of this page saved is the first one in it.
+    const only = store.get(KEY.cv, "");
+    if (only) saved = [{id: "cv1", name: "My CV", text: only}];
+  }
+  return saved;
+}
+function saveLibrary(list) { store.set(KEY.cvs, JSON.stringify(list)); }
+function currentCvId() {
+  const list = library();
+  const wanted = store.get(KEY.pick, "") || store.get(KEY.last, "");
+  if (list.some(item => item.id === wanted)) return wanted;
+  return list.length ? list[0].id : "cv1";
+}
+function currentCv() { return library().find(item => item.id === currentCvId()) || null; }
+
+function useCv(id) {
+  store.set(KEY.pick, id);
+  store.set(KEY.last, id);
+  const cv = library().find(item => item.id === id);
+  // Kept in step so an older cached copy of this page still finds a CV.
+  store.set(KEY.cv, cv ? cv.text : "");
+  renderLibrary();
+  if (cv) { setCv(cv.text); showPaste(false); }
+  else { lines = []; render(); showPaste(true); }
+}
+
+function addCv(name, text) {
+  const list = library();
+  const id = `cv${list.length + 1}-${String(list.length + Math.floor(performance.now()))}`;
+  list.push({id, name: (name || "").trim() || `CV ${list.length + 1}`, text});
+  saveLibrary(list);
+  store.drop(KEY.draft(id));
+  useCv(id);
+  return id;
+}
+
+function updateCv(id, text) {
+  const list = library();
+  const found = list.find(item => item.id === id);
+  if (!found) return addCv("", text);
+  found.text = text;
+  saveLibrary(list);
+  store.drop(KEY.draft(id));       // the text itself changed: the edits are in it
+  useCv(id);
+  return id;
+}
+
+function renderLibrary() {
+  const list = library();
+  const id = currentCvId();
+  const select = $("cvPick");
+  select.replaceChildren();
+  for (const item of list) {
+    const node = document.createElement("option");
+    node.value = item.id;
+    node.textContent = item.name;
+    node.selected = item.id === id;
+    select.append(node);
+  }
+  const mine = list.find(item => item.id === id);
+  $("cvName").value = mine ? mine.name : "";
+  $("cvName").disabled = !mine;
+  $("dropCv").classList.toggle("hidden", list.length < 2);
+  $("cvNote").textContent = list.length > 1
+    ? `${list.length} CVs on this device. This posting uses “${mine ? mine.name : "—"}” — `
+      + "every posting remembers its own."
+    : "Add the other versions you send — a robotics one, a research one — and each posting "
+      + "will remember which of them it was tailored from.";
+}
+
 function setCv(text) {
+  const original = text.replace(/\r/g, "").split("\n");
   const draft = loadDraft();
-  lines = text.replace(/\r/g, "").split("\n").map((original, index) => ({
-    original,
-    text: draft[index] === undefined ? original : draft[index],
-    proposal: null,
-  }));
+  if (Array.isArray(draft) && draft.length && Array.isArray(draft[0])) {
+    lines = draft.map(([was, now]) => ({original: was, text: now, proposal: null}));
+  } else if (draft && typeof draft === "object" && !Array.isArray(draft)) {
+    // What the single-CV version of this page wrote: index → edited text.
+    lines = original.map((was, index) => ({
+      original: was,
+      text: draft[index] === undefined ? was : draft[index],
+      proposal: null,
+    }));
+  } else {
+    lines = original.map(was => ({original: was, text: was, proposal: null}));
+  }
   render();
 }
 
@@ -584,7 +689,10 @@ function proposalCard(line) {
   was.textContent = line.text;
   const now = document.createElement("div");
   now.className = "now";
-  now.textContent = line.proposal.text;
+  // Cutting a line is a rewrite too: on a CV, the strongest edit is often the
+  // one that takes a line out so the six seconds go to the ones that count.
+  now.textContent = line.proposal.cut ? "Cut this line" : line.proposal.text;
+  if (line.proposal.cut) now.style.fontStyle = "italic";
   card.append(was, now);
   if (line.proposal.why) {
     const why = document.createElement("div");
@@ -596,8 +704,18 @@ function proposalCard(line) {
   acts.className = "acts";
   const yes = document.createElement("button");
   yes.className = "yes";
-  yes.textContent = "Use this";
-  yes.onclick = () => { line.text = line.proposal.text; line.proposal = null; saveDraft(); render(); };
+  yes.textContent = line.proposal.cut ? "Cut it" : "Use this";
+  yes.onclick = () => {
+    if (line.proposal.cut) {
+      const at = lines.indexOf(line);
+      if (at >= 0) lines.splice(at, 1);
+    } else {
+      line.text = line.proposal.text;
+    }
+    line.proposal = null;
+    saveDraft();
+    render();
+  };
   const no = document.createElement("button");
   no.className = "no";
   no.textContent = "Keep mine";
@@ -1333,11 +1451,11 @@ async function importFile(file) {
       return;
     }
     $("cvPaste").value = text;
-    store.set(KEY.cv, text);
-    store.drop(KEY.draft);
-    setCv(text);
+    editingRaw = false;
+    // Named after the file, because that is what tells two CVs apart.
+    addCv(file.name.replace(/\.[a-z0-9]+$/i, "").replace(/[_-]+/g, " ").trim(), text);
     showPaste(false);
-    say(`Read ${file.name} — ${lines.length} lines. It is stored in this browser only, `
+    say(`Read ${file.name} — ${lines.length} lines. It is kept in this browser only, `
         + "and every line can be edited.", "ok");
   } catch (error) {
     note.textContent = `${file.name} could not be read: ${error.message}. Paste it below instead.`;
@@ -1549,25 +1667,30 @@ const SYSTEM = [
 const MODES = {
   touch: {
     label: "Touch up",
-    note: "Only the lines that clearly answer this advert, and only where the wording can be "
-      + "sharpened. The fewest changes worth making.",
-    order: "Rewrite at most 8 lines: the ones where a sharper phrasing would visibly help "
-      + "against this advert. Leave everything else alone.",
+    note: "Only where the wording can be sharpened — but as many lines as genuinely need it. "
+      + "Nothing is cut.",
+    order: "Change the lines where a sharper phrasing would visibly help against this advert, "
+      + "and leave the rest alone. There is no limit on how many that is, but do not touch a "
+      + "line you cannot clearly improve, and do not cut anything.",
   },
   full: {
     label: "Full rewrite",
-    note: "Every line with something to say about this posting is rewritten to say it first "
-      + "and say it plainly.",
-    order: "Rewrite every line that has something to do with this advert — aim for 12 to 25 "
-      + "lines. Lead each one with what the advert cares about.",
+    note: "Every line that could serve this posting better is rewritten, and the ones that "
+      + "earn nothing are offered up to be cut.",
+    order: "Rewrite every line that could serve this advert better — there is no limit, and "
+      + "rewriting most of the CV is a fine answer if most of it can be improved. Lead each "
+      + "line with what the advert cares about. Where a line earns nothing against this "
+      + "posting, propose cutting it.",
   },
   hard: {
     label: "Go hard",
-    note: "Rewrites aggressively for this posting: leads with the evidence the advert asks "
-      + "for, cuts everything that reads like filler.",
-    order: "Rewrite aggressively: up to 30 lines. Restructure each one so the evidence this "
-      + "advert asks for comes first, cut every clause that would be true of any candidate, "
-      + "and make the numbers impossible to miss.",
+    note: "Rebuilds the CV around this posting: rewrites everything it can, moves the "
+      + "evidence forward, and cuts whatever does not earn its place.",
+    order: "Rebuild this CV for this advert. Rewrite every line that is not a heading, a date "
+      + "or a contact detail. Restructure each one so the evidence this advert asks for comes "
+      + "first and the number is impossible to miss, move a fact to the line where it lands "
+      + "hardest, merge two weak lines into one strong one, and cut every line that does not "
+      + "earn its six seconds against this posting.",
   },
 };
 const savedMode = store.get(KEY.mode, "full");
@@ -1598,6 +1721,8 @@ function tailoringPrompt() {
     MODES[mode].order,
     "Return JSON only, in this exact shape, and nothing else:",
     '{"rewrites":[{"line":12,"text":"the rewritten line","why":"the requirement it answers"}]}',
+    'To propose cutting a line, return it with an empty text: {"line":14,"text":"","why":"why '
+      + 'it earns nothing here"}. Nothing is deleted without the applicant accepting it.',
     "Leave out any line you have not genuinely improved. An empty list is a valid answer.",
   ].filter(Boolean).join("\n");
 }
@@ -1765,7 +1890,7 @@ function salvage(text) {
     const start = open.pop();
     try {
       const item = JSON.parse(text.slice(start, index + 1));
-      if (item && item.line !== undefined && item.text) rewrites.push(item);
+      if (item && item.line !== undefined && item.text !== undefined) rewrites.push(item);
     } catch (error) { /* some other object */ }
   }
   return rewrites.length ? {rewrites} : null;
@@ -1789,8 +1914,10 @@ function parseRewrites(content) {
       text: String(item.text || "").trim(),
       why: String(item.why || "").trim(),
     }))
+    .map(item => ({...item, cut: item.text === ""}))
+    // An empty text is a proposal to cut the line, which is a real edit.
     .filter(item => Number.isInteger(item.line) && item.line >= 0
-      && item.line < lines.length && item.text);
+      && item.line < lines.length && (item.text || item.cut));
 }
 
 async function rewrite() {
@@ -1835,10 +1962,12 @@ async function rewrite() {
     let paraphrased = 0;
     for (const item of rewrites) {
       const line = lines[item.line];
-      if (!line || item.text === line.text) continue;
+      if (!line || (!item.cut && item.text === line.text)) continue;
+      // A line with nothing on it is already nothing to cut.
+      if (item.cut && !line.text.trim()) continue;
       // The same sentence with two words swapped is not an edit worth reading.
-      if (tooSimilar(line.text, item.text)) { paraphrased += 1; continue; }
-      line.proposal = {text: item.text, why: item.why};
+      if (!item.cut && tooSimilar(line.text, item.text)) { paraphrased += 1; continue; }
+      line.proposal = {text: item.text, why: item.why, cut: item.cut};
       offered += 1;
     }
     const took = elapsed();
@@ -1900,16 +2029,24 @@ function showPaste(show) {
   $("pasteCard").classList.toggle("hidden", !show);
   $("cancelPaste").classList.toggle("hidden", !lines.length);
 }
+// "Edit raw text" edits the CV that is open; pasting into an empty page, or
+// after "Add another CV", makes a new one.
+let editingRaw = false;
 $("useCv").onclick = () => {
   const text = $("cvPaste").value;
   if (!text.trim()) { say("Paste the text of your CV first.", "error"); return; }
-  store.set(KEY.cv, text);
-  store.drop(KEY.draft);
-  setCv(text);
+  if (editingRaw && currentCv()) {
+    updateCv(currentCvId(), text);
+    editingRaw = false;
+    showPaste(false);
+    say("Saved. This is the CV this posting will be tailored from.", "ok");
+    return;
+  }
+  addCv("", text);
   showPaste(false);
   say("Saved in this browser. It will be here next time — for every role.", "ok");
 };
-$("cancelPaste").onclick = () => showPaste(false);
+$("cancelPaste").onclick = () => { editingRaw = false; showPaste(false); };
 $("pick").onclick = () => $("file").click();
 $("file").onchange = event => {
   if (event.target.files && event.target.files[0]) importFile(event.target.files[0]);
@@ -1930,6 +2067,7 @@ drop.addEventListener("drop", event => {
   if (file) importFile(file);
 });
 $("editRaw").onclick = () => {
+  editingRaw = true;
   showPaste(true);
   // "Edit raw text" means show me the text, so the fold opens with it.
   $("pasteInstead").open = true;
@@ -1938,12 +2076,15 @@ $("editRaw").onclick = () => {
 };
 $("acceptAll").onclick = () => {
   let taken = 0;
+  const cut = new Set();
   for (const line of lines) {
     if (!line.proposal) continue;
-    line.text = line.proposal.text;
+    if (line.proposal.cut) cut.add(line);
+    else line.text = line.proposal.text;
     line.proposal = null;
     taken += 1;
   }
+  if (cut.size) lines = lines.filter(line => !cut.has(line));
   saveDraft();
   render();
   if (taken) say(`Took ${taken} ${taken === 1 ? "edit" : "edits"}.`, "ok");
@@ -1951,6 +2092,40 @@ $("acceptAll").onclick = () => {
 $("rejectAll").onclick = () => {
   for (const line of lines) line.proposal = null;
   render();
+};
+$("cvPick").onchange = event => useCv(event.target.value);
+$("cvName").oninput = event => {
+  const list = library();
+  const mine = list.find(item => item.id === currentCvId());
+  if (!mine) return;
+  mine.name = event.target.value;
+  saveLibrary(list);
+  $("cvNote").textContent = `${list.length} CVs on this device. This posting uses `
+    + `“${mine.name || "—"}”.`;
+  for (const option of $("cvPick").options) {
+    if (option.value === mine.id) option.textContent = mine.name || "Untitled CV";
+  }
+};
+$("addCv").onclick = () => {
+  editingRaw = false;
+  $("cvPaste").value = "";
+  showPaste(true);
+  $("importNote").textContent = "Drop the other version of your CV, or paste it below. "
+    + "The one you have now is kept.";
+  $("drop").scrollIntoView({block: "center"});
+};
+$("dropCv").onclick = () => {
+  const list = library();
+  const id = currentCvId();
+  const mine = list.find(item => item.id === id);
+  if (!mine || list.length < 2) return;
+  if (!confirm(`Remove “${mine.name}” from this device? Your other CVs stay.`)) return;
+  saveLibrary(list.filter(item => item.id !== id));
+  // Every posting's draft of that CV goes with it.
+  for (const key of store.keys()) if (key.endsWith(`.${id}`)) store.drop(key);
+  store.drop(KEY.pick);
+  useCv(library()[0].id);
+  say(`“${mine.name}” is gone from this device.`, "ok");
 };
 $("download").onclick = downloadPdf;
 $("rewrite").onclick = rewrite;
@@ -2007,12 +2182,14 @@ $("forget").onclick = () => {
   if (!confirm("Delete your CV, your drafts and your API keys from this browser?")) return;
   for (const key of store.keys()) if (key.startsWith("studio.")) store.drop(key);
   lines = [];
+  editingRaw = false;
   $("cvPaste").value = "";
   $("advert").value = "";
   $("roleInput").value = "";
   $("companyInput").value = "";
   $("instruction").value = "";
   asked.clear();
+  renderLibrary();
   renderProvider();
   renderJob();
   render();
@@ -2029,8 +2206,9 @@ renderJob();
 renderProvider();
 renderMode();
 loadModels();
-const saved = store.get(KEY.cv, "");
-if (saved) { setCv(saved); showPaste(false); }
+renderLibrary();
+const opened = currentCv();
+if (opened) { setCv(opened.text); showPaste(false); }
 else { render(); showPaste(true); $("cvPaste").focus(); }
 offerHelper();
 </script>

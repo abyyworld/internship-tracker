@@ -176,6 +176,30 @@ class StudioIsSelfContainedTests(unittest.TestCase):
         self.assertIn("const dangling", self.source)
         self.assertIn("const tail", self.source)
 
+    def test_more_than_one_cv_can_be_kept_and_a_posting_remembers_its_own(self):
+        # Nobody applies with one CV. There is a robotics one and a research
+        # one, and which of them a posting wants is a property of the posting —
+        # so the CVs are a library and each posting remembers the one it used.
+        self.assertIn('cvs: "studio.cvs"', self.source)
+        self.assertRegex(self.source, r"pick: `studio\.pick\.\$\{jobKey\}`")
+        self.assertIn("function library()", self.source)
+        self.assertIn('id="cvPick"', self.source)
+        # The edits made for one posting belong to that posting AND that CV.
+        self.assertRegex(self.source, r"draft: id => `studio\.draft\.\$\{jobKey\}\.\$\{id\}`")
+        # Whatever the single-CV version of this page saved is still found.
+        self.assertRegex(self.source, r'const only = store\.get\(KEY\.cv, ""\)')
+
+    def test_a_rewrite_may_also_be_to_take_the_line_out(self):
+        # The strongest edit a CV can get is often a cut. It is still a
+        # proposal: nothing leaves the document without being accepted.
+        self.assertIn('"text":""', self.source.replace(" ", ""))
+        self.assertIn("Cut this line", self.source)
+        self.assertRegex(self.source, r"cut: item\.text === \"\"")
+        self.assertRegex(self.source, r"lines\.splice\(at, 1\)")
+        # And an accepted cut is kept the way every other edit is, which an
+        # index-keyed draft could not do — every index after it shifts.
+        self.assertRegex(self.source, r"lines\.map\(line => \[line\.original, line\.text\]\)")
+
     def test_it_says_where_the_reader_data_goes(self):
         # The trade is: nothing to install, but the CV and the advert go
         # straight to a third party. Saying so is not optional.
