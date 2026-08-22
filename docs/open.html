@@ -124,30 +124,44 @@ if (destination === "editor" && !/^https:\/\//.test(postingUrl)) {
   attempt();
 }
 
-// The helper answers a favicon request without a token, and an <img> probe is
-// the one cross-origin check a static page can rely on for a loopback address:
-// fetch is subject to private-network preflights the helper does not answer.
-// Whatever the probe says, the redirect is attempted anyway after it — a false
-// negative must never keep someone out of a helper that is running.
+// Is anything listening on the loopback port? Two probes, because neither is
+// reliable alone and a false "not running" locks someone out of a helper that
+// is working:
+//
+//   * an <img> on /favicon.ico — conclusive when it loads, but only newer
+//     builds serve that route, and an older one 404s it into an onerror that
+//     looks exactly like a refused connection;
+//   * a no-cors fetch — resolves for ANY answer including 401 and 404, so it
+//     sees old builds too, but private-network rules can reject it outright
+//     even when the helper is up.
+//
+// So: either probe succeeding is proof. Only both failing outright counts as
+// not running, and anything unresolved after a moment tries the editor anyway —
+// a slow machine or a blocked probe is not a missing helper.
 function attempt() {
   show("trying");
   let settled = false;
+  let failures = 0;
   const decide = (alive) => {
     if (settled) return;
     settled = true;
-    if (alive) {
-      location.replace(editorUrl);
-    } else {
-      show("down");
-    }
+    if (alive) location.replace(editorUrl); else show("down");
   };
+  const failed = () => {
+    failures += 1;
+    if (failures >= 2) decide(false);
+  };
+
   const probe = new Image();
   probe.onload = () => decide(true);
-  probe.onerror = () => decide(false);
+  probe.onerror = failed;
   probe.src = `${BRIDGE}/favicon.ico?t=${Date.now()}`;
-  // No answer either way inside two seconds: try the editor rather than
-  // guessing. A slow machine is not a missing helper.
-  setTimeout(() => decide(true), 2000);
+
+  fetch(`${BRIDGE}/health?probe=${Date.now()}`, {mode: "no-cors", cache: "no-store"})
+    .then(() => decide(true))
+    .catch(failed);
+
+  setTimeout(() => decide(true), 2500);
 }
 
 document.getElementById("retry").addEventListener("click", attempt);
