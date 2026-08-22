@@ -84,10 +84,13 @@ class LinuxTests(unittest.TestCase):
         self.assertIn(f'Exec="{INTERPRETER}" -m autoapply bridge', entry)
 
     def test_systemd_is_used_when_available_and_lingering_is_enabled(self):
+        from unittest.mock import Mock
+
         with tempfile.TemporaryDirectory() as home:
             with patch("pathlib.Path.home", lambda: Path(home)), \
                  patch("autoapply.service.shutil.which", return_value="/bin/systemctl"), \
-                 patch("autoapply.service.subprocess.run") as run, \
+                 patch("autoapply.service.subprocess.run",
+                       return_value=Mock(returncode=0, stderr=b"")) as run, \
                  patch.dict(os.environ, {"USER": "tester"}):
                 result = service.install_linux(SPACED, INTERPRETER)
             self.assertEqual(result["kind"], "systemd")
@@ -96,6 +99,24 @@ class LinuxTests(unittest.TestCase):
             self.assertIn(["systemctl", "--user", "daemon-reload"], called)
             # Without lingering the service stops at logout on most distributions.
             self.assertTrue(any(c[:2] == ["loginctl", "enable-linger"] for c in called))
+
+    def test_systemd_without_a_user_session_still_leaves_a_running_helper(self):
+        """A container, or WSL without systemd: systemctl exists and cannot
+        start anything. Registering a service that never runs and calling it
+        installed is the worst of the available outcomes."""
+        from unittest.mock import Mock
+
+        with tempfile.TemporaryDirectory() as home:
+            with patch("pathlib.Path.home", lambda: Path(home)), \
+                 patch("autoapply.service.shutil.which", return_value="/bin/systemctl"), \
+                 patch("autoapply.service.subprocess.run",
+                       return_value=Mock(returncode=1, stderr=b"Failed to connect to bus")), \
+                 patch("autoapply.service.subprocess.Popen") as popen:
+                result = service.install_linux(SPACED, INTERPRETER)
+            self.assertTrue(Path(result["file"]).exists())
+            self.assertIn("started directly", result["kind"])
+            self.assertIn("Failed to connect to bus", result["note"])
+            self.assertTrue(popen.called, "the helper was not started at all")
 
     def test_without_systemd_it_falls_back_to_an_autostart_entry(self):
         with tempfile.TemporaryDirectory() as home:
