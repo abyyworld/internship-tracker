@@ -49,7 +49,27 @@ if [[ -f "private/bridge.token" ]]; then
   fi
 fi
 
+# Left as a window, the helper dies with the window — which is why the CV
+# editor stopped working the moment this was closed. Unless a window is asked
+# for explicitly, hand over to the installer: it puts the helper behind a login
+# service that starts itself and survives a reboot, and this window can go.
+WANT_WINDOW=""
+for ARG in "$@"; do
+  [[ "$ARG" == "--window" || "$ARG" == "-w" ]] && WANT_WINDOW="yes"
+done
+
+if [[ -z "$WANT_WINDOW" && -x "./install-login-service.command" ]]; then
+  echo "Setting the CV helper up to start by itself, so this does not have to be"
+  echo "done again. Run this with --window for a one-off helper in a window."
+  echo ""
+  exec "./install-login-service.command"
+fi
+
 echo "Starting the private CV helper…"
 echo "Keep this window open while applying. Press Control-C to stop."
+if [[ -z "$WANT_WINDOW" ]]; then
+  echo "(install-login-service.command is not in this folder, so it cannot be"
+  echo " installed as a background service yet.)"
+fi
 (sleep 2; [[ -f "private/bridge.token" ]] && BRIDGE_TOKEN="$(<private/bridge.token)" && print -rn -- "$BRIDGE_TOKEN" | pbcopy && open "http://127.0.0.1:8765/connect#$BRIDGE_TOKEN") &
 exec ".venv/bin/python" -m autoapply bridge
