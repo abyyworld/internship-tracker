@@ -158,6 +158,45 @@ def valid_xref(blob: bytes) -> bool:
     return True
 
 
+def a_real_cv_pdf(target: Path) -> Path:
+    """A PDF of the kind people actually have: reportlab, compressed streams.
+
+    Built with the project's own renderer, so what the studio has to read back
+    is exactly what the local editor hands people to send to employers.
+    """
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
+
+    document = SimpleDocTemplate(str(target), pagesize=A4,
+                                 leftMargin=15 * mm, rightMargin=15 * mm,
+                                 topMargin=13 * mm, bottomMargin=14 * mm)
+    name = ParagraphStyle("name", fontName="Times-Bold", fontSize=22, leading=25,
+                          alignment=1)
+    head = ParagraphStyle("head", fontName="Helvetica-Bold", fontSize=10, leading=14,
+                          spaceBefore=10)
+    body = ParagraphStyle("body", fontName="Times-Roman", fontSize=10, leading=13)
+    def track(value: str) -> str:
+        """Letterspacing the way this project's CV generator does it: the
+        glyphs are the word and the spaces are typography, so a reader that
+        takes them literally hands back A D A   L O V E L A C E."""
+        return ("&nbsp;" * 4).join(" ".join(word) for word in value.split(" "))
+
+    document.build([
+        Paragraph(track("ADA LOVELACE"), name),
+        Paragraph("London &#183; ada@example.test", body),
+        Spacer(1, 8),
+        Paragraph(track("EXPERIENCE AND ML WORK"), head),
+        Paragraph("Robotics Intern &#8212; Robot Co, Summer 2025", body),
+        Paragraph("Built a vision pipeline for a pick-and-place arm in Python and ROS.", body),
+        Paragraph("Rewrote the grasp planner and cut cycle time by 20 percent.", body),
+        Paragraph(track("EDUCATION"), head),
+        Paragraph("BSc Computer Science, University of London, 2027", body),
+    ])
+    return target
+
+
 def launch_chromium(play):
     try:
         return play.chromium.launch()
@@ -206,7 +245,30 @@ def main() -> int:
         check("no helper banner when nothing is listening",
               not page.is_visible("#helperBanner"))
 
-        print("\n[2] the CV is pasted once and set as a document")
+        print("\n[2a] the CV people already have, read here")
+        # The step that made this page worse than the editor it stands in for
+        # was retyping a CV that already exists as a PDF.
+        source = a_real_cv_pdf(Path(tempfile.mkdtemp()) / "Ada Lovelace CV.pdf")
+        page.set_input_files("#file", str(source))
+        page.wait_for_selector("#sheet .b", timeout=20000)
+        imported = page.inner_text("#sheet")
+        check("the name came through", "ADA LOVELACE" in imported, imported[:120])
+        # Letterspaced heads are drawn as loose glyphs; taken literally they
+        # would go into the CV as "A D A   L O V E L A C E" and be read that
+        # way by every system that parses it.
+        check("letterspacing was undone, including the short words",
+              "EXPERIENCE AND ML WORK" in imported, imported[:200])
+        check("and the lines stayed lines",
+              "Rewrote the grasp planner and cut cycle time by 20 percent." in imported,
+              imported[:300])
+        check("the em dash survived", "—" in imported, imported[:200])
+        check("it says the file stayed here",
+              "this browser only" in page.inner_text("#notice"), page.inner_text("#notice"))
+        check("a scanned or unreadable file is refused honestly",
+              page.evaluate("looksLikeText('\\x01\\x02\\x03 \\x7f'.repeat(40))") is False)
+
+        print("\n[2] the CV can also be pasted, and is set as a document")
+        page.click("#editRaw")
         page.fill("#cvPaste", CV)
         page.click("#useCv")
         page.wait_for_selector("#sheet .b")
