@@ -1469,7 +1469,9 @@ function renderKey(){
     +(provider.auto_update
       ?" · checks for fixes by itself every few hours"
       :" · automatic updates are off")
-    +(provider.key_source?` · key from ${provider.key_source}`:"")
+    // "key from not configured" is what a prefix gets you; key_source is
+    // already a phrase — a path, an environment variable, or a plain reason.
+    +(provider.key_source?` · key: ${provider.key_source}`:"")
     +(provider.problem?` · ${provider.problem}`:"");
 }
 async function exportPdf(){
