@@ -57,7 +57,7 @@ def main():
         check("the posting travelled with it",
               "Robotics Intern" in page.inner_text("#roleTitle"), page.inner_text("#roleTitle"))
         check("and so did the company",
-              "Amazon" in page.inner_text("#jobFacts"), page.inner_text("#jobFacts"))
+              page.input_value("#companyInput") == "Amazon", page.input_value("#companyInput"))
         check("the posting itself is still one click away",
               page.get_attribute("#postingLink", "href") == POSTING)
         check("it is usable with nothing installed", page.is_visible("#cvPaste"))
