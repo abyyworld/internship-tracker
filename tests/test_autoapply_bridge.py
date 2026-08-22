@@ -209,6 +209,213 @@ class BridgeTests(unittest.TestCase):
                 server.server_close()
                 thread.join(timeout=2)
 
+    def test_the_editor_can_update_the_helper_it_is_talking_to(self):
+        """The fix that never arrives is the one that needs a terminal.
+
+        A helper installed once runs for weeks; the repository moves on without
+        it, and then every symptom belongs to code that is no longer on disk.
+        The editor can pull and hand the process over — and when there is
+        nothing to pull it has to say exactly that, not claim an update.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            tracker = home / "tracker.csv"
+            tracker.write_text("", encoding="utf-8")
+            server = BridgeServer(
+                ("127.0.0.1", 0),
+                home=home,
+                tracker=tracker,
+                token="private-test-token-with-more-than-32-characters",
+            )
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            port = server.server_address[1]
+            connection = http.client.HTTPConnection("127.0.0.1", port)
+            headers = {
+                "Content-Type": "application/json",
+                "X-Autoapply-Token": server.token,
+            }
+
+            def post(path, body=None):
+                connection.request("POST", path, body=json.dumps(body or {}),
+                                   headers=headers)
+                response = connection.getresponse()
+                return response.status, json.loads(response.read())
+
+            try:
+                connection.request("POST", "/api/update", body="{}",
+                                   headers={"Content-Type": "application/json"})
+                self.assertEqual(connection.getresponse().status, 401)
+
+                with patch("autoapply.service.update_checkout",
+                           return_value={"updated": False, "was": "abc1234",
+                                         "commit": "abc1234", "branch": "main",
+                                         "stashed": False}), \
+                     patch("autoapply.service.restart") as restart:
+                    status, current = post("/api/update")
+                self.assertEqual(status, 200)
+                self.assertFalse(current["restarting"])
+                self.assertFalse(current["report"]["updated"])
+                self.assertFalse(restart.called)
+
+                # Something to pull: the answer goes out before the process is
+                # handed over, so the page is never left waiting on a socket
+                # that is about to close.
+                restarted = threading.Event()
+                with patch("autoapply.service.update_checkout",
+                           return_value={"updated": True, "was": "abc1234",
+                                         "commit": "def5678", "branch": "main",
+                                         "stashed": True}), \
+                     patch("autoapply.service.running_under_service",
+                           return_value=True), \
+                     patch("autoapply.service.restart",
+                           side_effect=lambda: restarted.set()):
+                    status, updated = post("/api/update")
+                    self.assertEqual(status, 200)
+                    self.assertTrue(updated["restarting"])
+                    self.assertEqual(updated["report"]["commit"], "def5678")
+                    self.assertTrue(updated["report"]["stashed"])
+                    # What the page compares against to know the new code
+                    # is the one answering.
+                    self.assertIn("build_before", updated["report"])
+                    self.assertIn("commit_before", updated["report"])
+                    self.assertTrue(restarted.wait(timeout=5))
+
+                # A checkout that cannot fast-forward says why in its own
+                # words rather than reporting a silent success.
+                with patch("autoapply.service.update_checkout",
+                           return_value={"updated": False, "was": "abc1234",
+                                         "commit": "abc1234", "branch": "mine",
+                                         "stashed": False,
+                                         "reason": "Could not reach GitHub"}), \
+                     patch("autoapply.service.restart") as restart:
+                    status, blocked = post("/api/update")
+                self.assertEqual(status, 200)
+                self.assertIn("Could not reach GitHub", blocked["report"]["reason"])
+                self.assertFalse(restart.called)
+
+                # /health names the commit, which is how the page tells the
+                # restarted helper from the one it replaced.
+                connection.request("GET", "/health", headers=headers)
+                health = json.loads(connection.getresponse().read())
+                self.assertIn("commit", health)
+                connection.close()
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=2)
+
+    def test_the_helper_repairs_itself_without_being_asked(self):
+        """A background service is installed once and never opened again.
+
+        That is its whole appeal and also how a machine ends up running code
+        from months ago while the fix for what it is doing wrong sits in the
+        repository. So it checks by itself — under rules that matter more than
+        the checking: never touch work in progress, never swap the process out
+        mid-rewrite, and never claim to have restarted when nothing manages it.
+        """
+        import time
+
+        from autoapply.bridge import keep_code_current
+
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            tracker = home / "tracker.csv"
+            tracker.write_text("", encoding="utf-8")
+            server = BridgeServer(
+                ("127.0.0.1", 0),
+                home=home,
+                tracker=tracker,
+                token="private-test-token-with-more-than-32-characters",
+            )
+            try:
+                def run(**patches):
+                    defaults = {
+                        "checkout_commit": lambda *a, **k: "aaa1111",
+                        "update_checkout": lambda *a, **k: {
+                            "updated": False, "was": "aaa1111",
+                            "commit": "aaa1111", "branch": "main",
+                        },
+                        "running_under_service": lambda: True,
+                    }
+                    defaults.update(patches)
+                    with patch.multiple("autoapply.service", **defaults):
+                        keep_code_current(
+                            server, first_check=0, interval=0,
+                            idle_before_restart=0, rounds=1,
+                        )
+
+                # Nothing new upstream: nothing happens, least of all a restart.
+                restarts = []
+                run(restart=lambda: restarts.append(True))
+                self.assertEqual(restarts, [])
+
+                # Something new: pulled, and the process handed over.
+                commits = iter(["aaa1111", "bbb2222", "bbb2222"])
+                run(checkout_commit=lambda *a, **k: next(commits),
+                    update_checkout=lambda *a, **k: {
+                        "updated": True, "was": "aaa1111", "commit": "bbb2222",
+                        "branch": "main"},
+                    restart=lambda: restarts.append(True))
+                self.assertEqual(restarts, [True])
+
+                # Someone is using the editor right now: the new code waits.
+                restarts.clear()
+                server.last_activity = time.monotonic()
+                commits = iter(["aaa1111", "bbb2222", "bbb2222"])
+                with patch.multiple(
+                    "autoapply.service",
+                    checkout_commit=lambda *a, **k: next(commits),
+                    update_checkout=lambda *a, **k: {
+                        "updated": True, "was": "aaa1111", "commit": "bbb2222",
+                        "branch": "main"},
+                    running_under_service=lambda: True,
+                    restart=lambda: restarts.append(True),
+                ):
+                    keep_code_current(server, first_check=0, interval=0,
+                                      idle_before_restart=600, rounds=1)
+                self.assertEqual(restarts, [])
+
+                # Nothing would bring it back, so it stays up with the old code
+                # rather than exiting into silence.
+                restarts.clear()
+                commits = iter(["aaa1111", "bbb2222", "bbb2222"])
+                run(checkout_commit=lambda *a, **k: next(commits),
+                    update_checkout=lambda *a, **k: {
+                        "updated": True, "was": "aaa1111", "commit": "bbb2222",
+                        "branch": "main"},
+                    running_under_service=lambda: False,
+                    restart=lambda: restarts.append(True))
+                self.assertEqual(restarts, [])
+
+                # Unattended, it may not park anyone's work in progress.
+                asked = {}
+
+                def record(project, *, park_local_edits=True):
+                    asked["park"] = park_local_edits
+                    return {"updated": False, "was": "aaa1111",
+                            "commit": "aaa1111", "branch": "main"}
+
+                run(update_checkout=record, restart=lambda: None)
+                self.assertFalse(asked["park"])
+
+                # Turned off, it does not even look.
+                (home / "no-auto-update").write_text("", encoding="utf-8")
+                looked = []
+                run(update_checkout=lambda *a, **k: looked.append(True) or {},
+                    restart=lambda: None)
+                self.assertEqual(looked, [])
+                (home / "no-auto-update").unlink()
+
+                # Shutting down stops the wait instead of holding the process.
+                server.stopping.set()
+                pulled = []
+                run(update_checkout=lambda *a, **k: pulled.append(True) or {},
+                    restart=lambda: None)
+                self.assertEqual(pulled, [])
+            finally:
+                server.server_close()
+
     def test_a_posting_from_any_page_can_be_tailored_for(self):
         """The tracker follows a few hundred boards; the job someone wants is
         routinely on none of them."""

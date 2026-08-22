@@ -279,7 +279,7 @@ def main() -> int:
         # The card's heading is upper-cased by CSS, so compare case-insensitively.
         check("key card names the selected provider",
               "openai key" in page.inner_text("#keyTitle").lower())
-        check("build is shown", "Bridge build" in page.inner_text("#buildNote"),
+        check("build is shown", "Running the code from" in page.inner_text("#buildNote"),
               page.inner_text("#buildNote"))
 
         print("\n[3] switching to my own endpoint")
@@ -340,7 +340,53 @@ def main() -> int:
         check("CV saved to the library",
               "Robot Co" in page.inner_text("#cvList"), page.inner_text("#cvList")[:200])
 
-        print("\n[9] the page is still clean")
+        print("\n[9] updating the helper from the editor")
+        # No real git runs here: a browser test must not fetch from GitHub or
+        # move the checkout it is running out of. What is being tested is the
+        # page's half — that it reports what came back, waits for the new code
+        # to answer, and only then reloads.
+        from unittest.mock import patch
+        from autoapply import bridge as bridge_module, service as service_module
+
+        with patch.object(service_module, "update_checkout", return_value={
+            "updated": False, "was": "aaa1111", "commit": "aaa1111",
+            "branch": "main", "stashed": False,
+        }):
+            page.click("#updateHelper")
+            page.wait_for_function(
+                "() => document.getElementById('updateNote').textContent.trim() !== ''",
+                timeout=20000)
+        check("nothing to pull is said plainly, not as an update",
+              "Already up to date" in page.inner_text("#updateNote"),
+              page.inner_text("#updateNote"))
+
+        with patch.object(service_module, "update_checkout", return_value={
+            "updated": True, "was": "aaa1111", "commit": "bbb2222",
+            "branch": "main", "stashed": True,
+        }), \
+             patch.object(service_module, "checkout_commit", return_value="aaa1111"), \
+             patch.object(service_module, "running_under_service", return_value=True), \
+             patch.object(service_module, "restart", lambda: None), \
+             patch.object(bridge_module, "checkout_commit", return_value="bbb2222"):
+            page.click("#updateHelper")
+            page.wait_for_function(
+                "() => document.getElementById('updateNote').textContent.includes('bbb2222')",
+                timeout=20000)
+            check("the pull is reported with both commits",
+                  "aaa1111" in page.inner_text("#updateNote"),
+                  page.inner_text("#updateNote"))
+            check("parked local edits are not lost silently",
+                  "git stash pop" in page.inner_text("#updateNote"),
+                  page.inner_text("#updateNote"))
+            # The helper now answers as the new commit, which is the only proof
+            # that the restart happened rather than the old process replying.
+            page.wait_for_function(
+                "() => document.getElementById('updateNote').textContent.includes('Reloading')",
+                timeout=20000)
+            check("the page waits for the new code before reloading", True)
+        page.wait_for_load_state("networkidle")
+
+        print("\n[10] the page is still clean")
         errors = [c for c in console if "error" in c.lower()]
         check("no console errors at the end", not errors, "; ".join(errors[:5]))
         browser.close()
