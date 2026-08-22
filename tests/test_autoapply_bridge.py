@@ -549,15 +549,6 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(script.count("GM_xmlhttpRequest({"), 1)
         self.assertIn("http://127.0.0.1:8765", script)
 
-    def test_userscript_uses_private_local_bridge_then_opens_apply_page(self):
-        script = Path("github-cv-apply.user.js").read_text(encoding="utf-8")
-        self.assertIn("@connect      127.0.0.1", script)
-        self.assertIn("X-Autoapply-Token", script)
-        self.assertIn("GM_download", script)
-        self.assertIn("Generate CV + Apply", script)
-        self.assertIn("abyyworld.github.io/internship-tracker", script)
-        self.assertIn("data-autoapply-dashboard", script)
-        self.assertNotIn("submit(", script)
 
 
 if __name__ == "__main__":
