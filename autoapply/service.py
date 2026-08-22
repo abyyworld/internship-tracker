@@ -156,24 +156,51 @@ def install_linux(project: Path, interpreter: Path) -> dict[str, Any]:
         path = units / f"{UNIT}.service"
         path.write_text(systemd_unit(project, interpreter), encoding="utf-8")
         subprocess.run(["systemctl", "--user", "daemon-reload"], capture_output=True)
-        subprocess.run(["systemctl", "--user", "enable", "--now", f"{UNIT}.service"],
-                       capture_output=True)
+        started = subprocess.run(
+            ["systemctl", "--user", "enable", "--now", f"{UNIT}.service"],
+            capture_output=True,
+        )
         # Without this the service stops at logout on most distributions.
         subprocess.run(["loginctl", "enable-linger", os.environ.get("USER", "")],
                        capture_output=True)
-        return {"kind": "systemd", "file": str(path)}
+        if started.returncode == 0:
+            return {"kind": "systemd", "file": str(path)}
+        # systemctl exists but there is no user session behind it — a container,
+        # or WSL without systemd. The unit is written for the day there is one,
+        # and meanwhile the helper is started directly, because leaving someone
+        # with a registered service that never runs is worse than either.
+        _run_directly(project, interpreter)
+        return {
+            "kind": "systemd (unit written, started directly)",
+            "file": str(path),
+            "note": (
+                "systemd could not start it here: "
+                + (started.stderr or b"").decode(errors="replace").strip()[:200]
+                + " — the helper is running now, and the unit will take over "
+                "wherever a systemd user session exists."
+            ),
+        }
     autostart = Path.home() / ".config" / "autostart"
     autostart.mkdir(parents=True, exist_ok=True)
     path = autostart / f"{UNIT}.desktop"
     path.write_text(autostart_desktop(project, interpreter), encoding="utf-8")
+    _run_directly(project, interpreter)
+    return {"kind": "xdg-autostart", "file": str(path)}
+
+
+def _run_directly(project: Path, interpreter: Path) -> None:
+    """Start the helper now, detached from whatever started this."""
+    log = project / "private" / "bridge.log"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    handle = open(log, "ab")
     subprocess.Popen(
         [str(interpreter), "-m", "autoapply", "bridge"],
         cwd=str(project),
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=handle,
+        stderr=handle,
+        stdin=subprocess.DEVNULL,
         start_new_session=True,
     )
-    return {"kind": "xdg-autostart", "file": str(path)}
 
 
 # ── Windows ──────────────────────────────────────────────────────────────────
