@@ -6,6 +6,7 @@ every one of them has a way of being silently wrong — a path with a space, a
 console window nobody asked for, a service that dies at logout.
 """
 
+import contextlib
 import os
 from pathlib import Path
 import subprocess
@@ -16,8 +17,25 @@ from unittest.mock import patch
 from autoapply import service
 
 
+# A path with a space in it, because that is what breaks these files: systemd
+# splits ExecStart on whitespace and a plist is XML. Used only where nothing is
+# written — anything that installs for real gets a temporary folder of its own,
+# since a test that writes outside its sandbox fails on every machine that is
+# not the one it was written on.
 SPACED = Path("/Users/a/Desktop/other projects/internship watcher")
 INTERPRETER = SPACED / ".venv" / "bin" / "python"
+
+
+@contextlib.contextmanager
+def spaced_project():
+    """A real project folder whose path contains a space."""
+    with tempfile.TemporaryDirectory() as directory:
+        project = Path(directory) / "other projects" / "internship watcher"
+        binaries = project / ".venv" / "bin"
+        binaries.mkdir(parents=True)
+        interpreter = binaries / "python"
+        interpreter.write_text("", encoding="utf-8")
+        yield project, interpreter
 
 
 class PlatformDetectionTests(unittest.TestCase):
@@ -107,24 +125,24 @@ class LinuxTests(unittest.TestCase):
         installed is the worst of the available outcomes."""
         from unittest.mock import Mock
 
-        with tempfile.TemporaryDirectory() as home:
+        with tempfile.TemporaryDirectory() as home, spaced_project() as (project, python):
             with patch("pathlib.Path.home", lambda: Path(home)), \
                  patch("autoapply.service.shutil.which", return_value="/bin/systemctl"), \
                  patch("autoapply.service.subprocess.run",
                        return_value=Mock(returncode=1, stderr=b"Failed to connect to bus")), \
                  patch("autoapply.service.subprocess.Popen") as popen:
-                result = service.install_linux(SPACED, INTERPRETER)
+                result = service.install_linux(project, python)
             self.assertTrue(Path(result["file"]).exists())
             self.assertIn("started directly", result["kind"])
             self.assertIn("Failed to connect to bus", result["note"])
             self.assertTrue(popen.called, "the helper was not started at all")
 
     def test_without_systemd_it_falls_back_to_an_autostart_entry(self):
-        with tempfile.TemporaryDirectory() as home:
+        with tempfile.TemporaryDirectory() as home, spaced_project() as (project, python):
             with patch("pathlib.Path.home", lambda: Path(home)), \
                  patch("autoapply.service.shutil.which", return_value=None), \
                  patch("autoapply.service.subprocess.Popen") as popen:
-                result = service.install_linux(SPACED, INTERPRETER)
+                result = service.install_linux(project, python)
             self.assertEqual(result["kind"], "xdg-autostart")
             self.assertTrue(Path(result["file"]).exists())
             # And it starts the helper now rather than only at the next login.

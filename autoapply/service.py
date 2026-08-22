@@ -189,10 +189,18 @@ def install_linux(project: Path, interpreter: Path) -> dict[str, Any]:
 
 
 def _run_directly(project: Path, interpreter: Path) -> None:
-    """Start the helper now, detached from whatever started this."""
+    """Start the helper now, detached from whatever started this.
+
+    The log is a convenience, not a condition: a project folder that cannot be
+    written to is a reason to lose the log, never a reason to leave the person
+    with no helper running.
+    """
     log = project / "private" / "bridge.log"
-    log.parent.mkdir(parents=True, exist_ok=True)
-    handle = open(log, "ab")
+    try:
+        log.parent.mkdir(parents=True, exist_ok=True)
+        handle: Any = open(log, "ab")
+    except OSError:
+        handle = subprocess.DEVNULL
     subprocess.Popen(
         [str(interpreter), "-m", "autoapply", "bridge"],
         cwd=str(project),
