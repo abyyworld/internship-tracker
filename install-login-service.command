@@ -61,30 +61,10 @@ line ""
 line "Installing the CV editor as a background service"
 line "Project : $PROJECT_DIR"
 
-# ── The code it will run ─────────────────────────────────────────────────────
-# A service pointed at a stale checkout is the failure this whole file exists to
-# end, so the checkout is brought up to date first. Nothing is discarded: local
-# changes are parked with git stash and the command to restore them is printed.
-if [[ -d ".git" ]] && command -v git >/dev/null 2>&1; then
-  if [[ -n "$(git status --porcelain 2>/dev/null)" ]]; then
-    git stash push -u -m "autoapply install $(date +%Y-%m-%dT%H:%M:%S)" >/dev/null 2>&1 \
-      && line "Parked  : local changes stashed — restore them with  git stash pop"
-  fi
-  if git fetch origin --quiet 2>/dev/null; then
-    BEFORE="$(git rev-parse --short HEAD 2>/dev/null || true)"
-    # Fast-forward what is checked out. Switching branches from a launcher would
-    # move work out from under someone without asking.
-    git pull --ff-only --quiet 2>/dev/null || true
-    AFTER="$(git rev-parse --short HEAD 2>/dev/null || true)"
-    if [[ "$BEFORE" != "$AFTER" ]]; then
-      line "Updated : $BEFORE → $AFTER"
-    else
-      line "Code    : already current ($AFTER on $(git rev-parse --abbrev-ref HEAD 2>/dev/null))"
-    fi
-  else
-    line "Offline : could not reach GitHub, installing the code already here"
-  fi
-fi
+# The checkout is brought up to date as part of installing — see
+# autoapply/service.py, which does it the same way on every operating system.
+# This file used to carry its own copy of that logic in shell, and two copies of
+# one procedure is how they drift apart.
 
 # ── The environment it will run in ───────────────────────────────────────────
 if [[ ! -x ".venv/bin/python" ]] || ! ".venv/bin/python" -c "import yaml, requests" 2>/dev/null; then
@@ -124,30 +104,48 @@ done
 # Linux and Windows. Keeping a second copy of the plist here is how the two
 # drift apart.
 mkdir -p "private"
-INSTALLED_JSON="$(".venv/bin/python" -m autoapply install-service 2>&1)" || {
+INSTALLED="$(".venv/bin/python" -m autoapply install-service --human 2>&1)" || {
   line ""
   line "The service could not be installed:"
-  printf '%s\n' "$INSTALLED_JSON"
+  printf '%s\n' "$INSTALLED"
   line ""
   line "Press Return to close this window."
   read -t 300 -r _ 2>/dev/null || true
   exit 1
 }
-line "Installed: $(printf '%s' "$INSTALLED_JSON" | sed -n 's/.*"file": *"\([^"]*\)".*/\1/p')"
+printf '%s\n' "$INSTALLED"
 
 # ── Prove it is answering, and pair the browser ──────────────────────────────
 BUILD=""
+SERVING=""
+WANTED="$(git rev-parse --short HEAD 2>/dev/null || true)"
+ask_health() {
+  [[ -f "private/bridge.token" ]] || return 1
+  HEALTH="$(curl -fsS -H "X-Autoapply-Token: $(<private/bridge.token)" \
+    "http://127.0.0.1:$PORT/health" 2>/dev/null || true)"
+  [[ -n "$HEALTH" ]] || return 1
+  BUILD="$(printf '%s' "$HEALTH" | sed -n 's/.*"build": *"\([^"]*\)".*/\1/p')"
+  SERVING="$(printf '%s' "$HEALTH" | sed -n 's/.*"commit": *"\([^"]*\)".*/\1/p')"
+  return 0
+}
 for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
-  if [[ -f "private/bridge.token" ]]; then
-    HEALTH="$(curl -fsS -H "X-Autoapply-Token: $(<private/bridge.token)" \
-      "http://127.0.0.1:$PORT/health" 2>/dev/null || true)"
-    if [[ -n "$HEALTH" ]]; then
-      BUILD="$(printf '%s' "$HEALTH" | sed -n 's/.*"build": *"\([^"]*\)".*/\1/p')"
-      break
-    fi
-  fi
+  ask_health && break
   sleep 1
 done
+
+# The whole point of this file is that the code answering afterwards is the
+# code now on disk. An older process that survived the restart would answer
+# just as happily, so what is checked is which commit is talking — not merely
+# that something is.
+if [[ -n "$WANTED" && -n "$SERVING" && "$WANTED" != "$SERVING" ]]; then
+  line "Replacing: the helper still answering is $SERVING, not $WANTED"
+  launchctl kickstart -k "$DOMAIN/$LABEL" >/dev/null 2>&1 || true
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    sleep 1
+    ask_health || continue
+    [[ "$SERVING" == "$WANTED" ]] && break
+  done
+fi
 
 if [[ -z "$BUILD" ]]; then
   line ""
@@ -166,7 +164,11 @@ open "http://127.0.0.1:$PORT/connect#$BRIDGE_TOKEN" 2>/dev/null || true
 
 line ""
 line "Done. The CV editor is running and will start itself at every login."
-line "Build   : $BUILD"
+line "Build   : $BUILD${SERVING:+  (commit $SERVING)}"
+if [[ -n "$WANTED" && -n "$SERVING" && "$WANTED" != "$SERVING" ]]; then
+  line "Warning : it is answering as $SERVING while this folder is $WANTED."
+  line "          Something older is still holding port $PORT."
+fi
 line "Log     : $PROJECT_DIR/private/bridge.log"
 line ""
 line "You can close this window — the editor keeps running without it."

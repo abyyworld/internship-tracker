@@ -21,8 +21,10 @@ fi
 pkill -f "autoapply bridge" 2>/dev/null || true
 sleep 1
 
-echo "Installing the CV helper as a background service…"
-".venv/bin/python" -m autoapply install-service
+# This also brings the checkout up to date before installing: a service pointed
+# at stale code is the failure the whole thing exists to end.
+echo "Updating the code and installing the CV helper as a background service…"
+".venv/bin/python" -m autoapply install-service --human
 
 for _ in $(seq 1 15); do
   if [[ -f "private/bridge.token" ]]; then
