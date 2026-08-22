@@ -82,9 +82,9 @@ def main():
         # No helper is not a dead end any more: the browser studio does the job
         # with nothing installed, so deciding "not running" has to land there.
         page.wait_for_url("**studio.html**", timeout=12000)
-        page.wait_for_selector("#cvPaste")
+        page.wait_for_selector("#drop")
         check("hands the posting to the browser studio", "studio.html" in page.url, page.url)
-        check("which is usable immediately", page.is_visible("#cvPaste"))
+        check("which is usable immediately", page.is_visible("#drop"))
 
         print("\n[2] a helper that is running but too old to open this posting")
         # The state that produced the screenshot: it answers, so it was handed
