@@ -2171,11 +2171,32 @@ def build_dashboard(rows_out, new_ids, current):
         "\nAny OpenAI-compatible endpoint drives it \u2014 OpenAI, Groq, "
         "OpenRouter, Cerebras, Together, GitHub Models, Google AI Studio, or a "
         "model running locally under Ollama for nothing. The provider and model "
-        "are chosen in the editor.\n",
+        "are chosen in the editor, and each provider keeps its own key file and "
+        "its own chosen model, so switching provider asks for that provider's "
+        "key rather than sending the previous one to an account that never "
+        "issued it. **Test this provider** sends one cheap request and reports "
+        "the endpoint, the status, the provider's own words, the parameters it "
+        "refused and the models it offers.\n",
+        "\nThe dashboard carries three kinds of opportunity behind one switch "
+        "\u2014 **Roles**, **Ventures** and **Funding**. Ventures is the "
+        "accelerators, talent investors, founder fellowships, grants and studios "
+        "that back a person rather than employ one: Y Combinator, Techstars, "
+        "Entrepreneur First, Antler and a16z Speedrun alongside the ones a "
+        "generic list misses \u2014 Conception X for UK PhD researchers, Creator "
+        "Fund, Royal Academy of Engineering Enterprise Fellowships, Innovate UK "
+        "Young Innovators. Half of them take no equity at all, and that is a "
+        "filter. Cheque sizes and equity are shown only where the programme "
+        "publishes them, and cohort dates are deliberately absent \u2014 they "
+        "move every year, so every card links to the page that governs it.\n",
+        "\nAny job posting on any site can be tailored for: the "
+        "`tailor-anywhere.user.js` userscript puts a **\u2726 Tailor my CV** "
+        "button on pages that read like a job advert, reads the posting, and "
+        "opens it in the same local editor \u2014 the tracker's own feeds are a "
+        "starting point, not the limit.\n",
         "\nThe GitHub repository never receives the private profile, fact bank, "
-        "OpenAI key, drafts, or generated PDFs. The editor runs on `127.0.0.1`, "
-        "stores the API key locally as a mode-0600 private file, requires review "
-        "of every proposed change, and never submits an application.\n",
+        "API keys, drafts, or generated PDFs. The editor runs on `127.0.0.1`, "
+        "stores each provider's key locally as a mode-0600 private file, requires "
+        "review of every proposed change, and never submits an application.\n",
         "\nPressing **Generate suggestions** sends the selected job description "
         "and master CV text to the configured endpoint through the user's own "
         "account. Merely opening the editor, editing by hand, or exporting a PDF "
