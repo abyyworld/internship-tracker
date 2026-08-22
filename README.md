@@ -1,5 +1,13 @@
 # 🎯 Universal Academic & Career Tracker — Internships · Research · PhD · New Grad
 
+<p align="center">
+  <a href="https://abyyworld.github.io/internship-tracker/"><img alt="Open the tracker — 1210 open postings" src="https://img.shields.io/badge/Open%20the%20tracker-1210%20open%20postings-1f6feb?style=for-the-badge&labelColor=0d1117"></a>
+  <a href="https://abyyworld.github.io/internship-tracker/studio.html"><img alt="Tailor my CV — in the browser" src="https://img.shields.io/badge/Tailor%20my%20CV-in%20the%20browser-2ea043?style=for-the-badge&labelColor=0d1117"></a>
+</p>
+
+<p align="center"><b><a href="https://abyyworld.github.io/internship-tracker/">https://abyyworld.github.io/internship-tracker/</a></b><br>
+Search and filter every posting, then tailor your CV for one — in the browser, on a phone, with nothing to install.</p>
+
 > Last verified run: **2026-08-22** · **1210 verified-open postings** · **35 research / PhD / postdoc positions**
 
 This tracker watches community internship boards and official Greenhouse, Ashby, and Lever feeds. Career hubs and forecast programmes are kept separate from real postings. Unknown work-authorisation or sponsorship data means **review required**, never assumed eligible.

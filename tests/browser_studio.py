@@ -18,6 +18,7 @@ import json
 import os
 import re
 import tempfile
+import time
 from pathlib import Path
 import socketserver
 import sys
@@ -55,29 +56,49 @@ class Provider(http.server.BaseHTTPRequestHandler):
         origin = self.headers.get("Origin", "*")
         self.send_header("Access-Control-Allow-Origin", origin)
         self.send_header("Access-Control-Allow-Headers", "authorization,content-type")
-        self.send_header("Access-Control-Allow-Methods", "POST,OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
 
     def do_OPTIONS(self) -> None:  # noqa: N802
         self.send_response(204)
         self._cors()
         self.end_headers()
 
+    def _answer(self, status: int, body: bytes) -> None:
+        self.send_response(status)
+        self._cors()
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self) -> None:  # noqa: N802
+        """What an OpenAI-compatible endpoint says its key can reach.
+
+        Including the things that cannot hold a conversation, because a real
+        list is full of them and offering them as a choice is a trap.
+        """
+        if not self.path.rstrip("/").endswith("/models"):
+            self.send_error(404)
+            return
+        listed = ["fake-chat", "fake-chat-lite", "fake-chat-pro",
+                  "models/fake-prefixed", "fake-embed-001", "fake-tts-1"]
+        self._answer(200, json.dumps({"data": [{"id": name} for name in listed]}).encode())
+
     def do_POST(self) -> None:  # noqa: N802
         length = int(self.headers.get("Content-Length", "0"))
         request = json.loads(self.rfile.read(length) or b"{}")
+        if Provider.mode == "slow":
+            # A request that never comes back is what "seems stuck" was. The
+            # page has to stay usable and stoppable for as long as this runs.
+            time.sleep(30)
+            return
         if Provider.mode == "google-error":
             # Google's OpenAI-compatible endpoint wraps errors in an array. A
             # page that assumes {"error": {...}} shows "HTTP 400" and nothing.
-            body = json.dumps([{"error": {
+            self._answer(400, json.dumps([{"error": {
                 "code": 400, "status": "INVALID_ARGUMENT",
                 "message": "API key not valid. Please pass a valid API key.",
-            }}]).encode()
-            self.send_response(400)
-            self._cors()
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
+            }}]).encode())
             return
 
         prompt = request["messages"][-1]["content"]
@@ -97,14 +118,23 @@ class Provider(http.server.BaseHTTPRequestHandler):
                               "text": "Built the vision pipeline for a pick-and-place arm "
                                       "in Python and ROS 2.",
                               "why": "The advert names ROS 2 explicitly."})
+        if Provider.mode == "paraphrase":
+            # What the complaint was: every line comes back as itself with the
+            # words moved around. None of it is worth a reader's attention.
+            picks = []
+            for line in numbered:
+                index, _, text = line.partition(": ")
+                words = text.split()
+                words[0], words[1] = words[1], words[0]
+                picks.append({"line": int(index), "text": " ".join(words),
+                              "why": "Reworded."})
         answer = "```json\\n" + json.dumps({"rewrites": picks}) + "\\n```"
-        body = json.dumps({"choices": [{"message": {"content": answer}}]}).encode()
-        self.send_response(200)
-        self._cors()
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        if Provider.mode == "truncated":
+            # An answer that ran out of room: complete objects, then half of
+            # one more. The complete ones are still advice.
+            answer = json.dumps({"rewrites": picks})
+            answer = answer[:answer.rindex("]")] + ', {"line": 4, "text": "half a li'
+        self._answer(200, json.dumps({"choices": [{"message": {"content": answer}}]}).encode())
 
     def log_message(self, *args) -> None:
         pass
@@ -119,7 +149,7 @@ class Docs(http.server.SimpleHTTPRequestHandler):
 
 
 def serve(handler) -> socketserver.TCPServer:
-    server = socketserver.TCPServer(("127.0.0.1", 0), handler)
+    server = socketserver.ThreadingTCPServer(("127.0.0.1", 0), handler)
     server.daemon_threads = True
     threading.Thread(target=server.serve_forever, daemon=True).start()
     return server
@@ -340,8 +370,33 @@ def main() -> int:
         print("\n[4] rewriting, straight from the page to the provider")
         page.select_option("#provider", "custom")
         page.fill("#customBase", base)
-        page.fill("#model", "fake-chat")
         page.fill("#key", "test-key-not-a-real-one")
+        # Three names hard-coded in a page go stale in months. What the reader's
+        # own key can reach is the only list worth showing.
+        page.wait_for_function("document.querySelectorAll('#model option').length > 2",
+                               timeout=15000)
+        offered_models = page.eval_on_selector_all("#model option", "n => n.map(o => o.value)")
+        check("the endpoint was asked what this key can reach",
+              "fake-chat-lite" in offered_models, str(offered_models))
+        check("a models/ prefix is stripped off",
+              "fake-prefixed" in offered_models, str(offered_models))
+        check("what cannot hold a conversation is left out",
+              not [name for name in offered_models if "embed" in name or "tts" in name],
+              str(offered_models))
+        check("and anything unlisted can still be typed in",
+              "Type a model name" in page.inner_text("#model"), page.inner_text("#model"))
+        page.select_option("#model", "fake-chat")
+
+        page.click('#modes button[data-mode="hard"]')
+        check("how hard to go is a choice, and it says what it means",
+              "aggressively" in page.inner_text("#modeNote"), page.inner_text("#modeNote"))
+        page.click('#modes button[data-mode="full"]')
+        page.fill("#instruction", "lead with the perception work")
+        check("the chosen mode is the marked one",
+              page.eval_on_selector("#modes button.on", "b => b.dataset.mode") == "full")
+        check("what the applicant asked for reaches the model",
+              "lead with the perception work" in page.evaluate("tailoringPrompt()"))
+
         page.click("#rewrite")
         page.wait_for_selector(".proposal", timeout=20000)
         proposals = page.locator(".proposal")
@@ -387,7 +442,46 @@ def main() -> int:
               "refused" in said.lower(), said)
         Provider.mode = "ok"
 
-        print("\n[8] the PDF is a real file, written here")
+        print("\n[8] a provider that hangs can be given up on")
+        # "its taking too long seems stuck": a page that says Rewriting… and
+        # nothing else cannot be told apart from one that has died.
+        Provider.mode = "slow"
+        page.click("#rewrite")
+        page.wait_for_function(
+            "/[0-9]+s/.test(document.getElementById('status').textContent)", timeout=15000)
+        check("the wait is counted out loud, in seconds",
+              "Stop" in page.inner_text("#status"), page.inner_text("#status"))
+        check("and the button is now the way out",
+              page.inner_text("#rewrite").strip() == "Stop", page.inner_text("#rewrite"))
+        page.click("#rewrite")
+        page.wait_for_function(
+            "document.getElementById('notice').textContent.includes('Stopped')", timeout=10000)
+        check("stopping says so and gives the button back",
+              page.inner_text("#rewrite").strip().startswith("Rewrite"),
+              page.inner_text("#rewrite"))
+        check("and the CV was not touched",
+              "cut cycle time by 20 percent." in page.inner_text("#sheet"))
+
+        print("\n[9] the same line with the words moved is not a suggestion")
+        Provider.mode = "paraphrase"
+        page.click("#rewrite")
+        page.wait_for_function(
+            "document.getElementById('notice').textContent.includes('swapped')", timeout=20000)
+        check("nothing was offered for review",
+              page.locator(".proposal").count() == 0, str(page.locator(".proposal").count()))
+        check("and it says what to do about it",
+              "Go hard" in page.inner_text("#notice"), page.inner_text("#notice"))
+
+        print("\n[10] an answer cut off mid-sentence still yields what it managed")
+        Provider.mode = "truncated"
+        page.click("#rewrite")
+        page.wait_for_selector(".proposal", timeout=20000)
+        check("the complete suggestions survived the truncation",
+              page.locator(".proposal").count() >= 1, str(page.locator(".proposal").count()))
+        page.click("#rejectAll")
+        Provider.mode = "ok"
+
+        print("\n[11] the PDF is a real file, written here")
         with page.expect_download(timeout=20000) as caught:
             page.click("#download")
         download = caught.value
@@ -408,7 +502,7 @@ def main() -> int:
         check("and a reader can find every object",
               valid_xref(blob), "xref offsets do not point at their objects")
 
-        print("\n[8b] a long CV runs onto more pages")
+        print("\n[11b] a long CV runs onto more pages")
         page.click("#editRaw")
         page.fill("#cvPaste", CV + "\n\nEXPERIENCE\n"
                   + "\n".join(f"Did a thing worth writing down, number {n}, at some length "
@@ -428,7 +522,7 @@ def main() -> int:
         page.fill("#cvPaste", CV)
         page.click("#useCv")
 
-        print("\n[9] and everything can be deleted from this device")
+        print("\n[12] and everything can be deleted from this device")
         page.evaluate("window.confirm = () => true")
         page.click("#forget")
         page.wait_for_timeout(300)
@@ -437,7 +531,7 @@ def main() -> int:
         check("storage is empty",
               page.evaluate("Object.keys(localStorage).filter(k=>k.startsWith('studio.')).length") == 0)
 
-        print("\n[10] the page stayed clean")
+        print("\n[13] the page stayed clean")
         # The two probes for a local helper are expected to fail here — nothing
         # is listening on 8765 — and a refused loopback request is logged by the
         # browser itself. That noise is the feature working, not a fault.
