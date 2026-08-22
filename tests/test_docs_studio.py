@@ -73,8 +73,20 @@ class StudioIsSelfContainedTests(unittest.TestCase):
         # autoapply/cv_render.py uses, so what is edited is what comes out.
         self.assertIn("width:595.28pt", self.source)
         self.assertIn("--accent:#14324F", self.source)
-        for block in (".name", ".contact", ".section", ".entry", ".bullet"):
+        for block in (".name", ".contact", ".section", ".entry", ".bullet",
+                      ".title", ".sub"):
             self.assertIn(f"#sheet {block}", self.source, f"no styling for {block}")
+
+    def test_it_reads_the_cv_someone_already_has(self):
+        # Retyping a CV that exists as a PDF is not an editor. Both formats are
+        # read in the browser with what the browser already has, so the file
+        # never leaves the machine and no library has to be fetched.
+        for marker in ("DecompressionStream", "ASCII85Decode", "/FlateDecode",
+                       "word/document.xml", "looksLikeText"):
+            self.assertIn(marker, self.source, f"the importer lost: {marker}")
+        # The positions are what turn fragments back into lines.
+        for operator in ('case "cm"', 'case "Tm"', 'case "TJ"', 'case "T*"'):
+            self.assertIn(operator, self.source, f"the PDF reader ignores {operator}")
 
     def test_it_says_where_the_reader_data_goes(self):
         # The trade is: nothing to install, but the CV and the advert go

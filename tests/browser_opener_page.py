@@ -60,7 +60,7 @@ def main():
               page.input_value("#companyInput") == "Amazon", page.input_value("#companyInput"))
         check("the posting itself is still one click away",
               page.get_attribute("#postingLink", "href") == POSTING)
-        check("it is usable with nothing installed", page.is_visible("#cvPaste"))
+        check("it is usable with nothing installed", page.is_visible("#drop"))
 
         print("\n[helper NOT running, and nothing a browser can do instead]")
         page.goto(f"http://127.0.0.1:{port}/open.html?to=dashboard", wait_until="networkidle")
