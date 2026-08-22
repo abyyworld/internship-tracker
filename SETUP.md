@@ -19,6 +19,24 @@ The system deliberately separates discovery from submission:
 There is no unattended bulk-submit mode. Unknown legal, eligibility, consent, or
 demographic answers remain unresolved.
 
+## Which operating system
+
+The helper is the same Python everywhere; only the way a machine is told to
+start it differs, and that is handled for you:
+
+| | Double-click | What gets installed |
+|---|---|---|
+| macOS | `start-autoapply.command` | a LaunchAgent in `~/Library/LaunchAgents` |
+| Linux | `start-autoapply.sh` | a systemd user service, or an XDG autostart entry |
+| Windows | `start-autoapply.bat` | a Startup-folder launcher and a logon task |
+
+All three end in the same place: the helper starts with your session, restarts
+if it stops, and no window has to stay open. `python -m autoapply
+install-service` does it directly on any of them, and `uninstall-service`
+undoes it. Where a service manager exists but cannot start anything — a
+container, or WSL without systemd — the helper is started directly rather than
+leaving a registered service that never runs.
+
 ## 1. Create the local environment
 
 From the repository directory:
