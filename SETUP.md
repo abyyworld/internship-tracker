@@ -80,10 +80,12 @@ there is anything new, fast-forwards the branch it is already on, and restarts
 into the new code once nothing has been in flight for five minutes. Nothing has
 to be opened, and no terminal is involved.
 
-It will not touch work in progress: a checkout with uncommitted edits is left
-exactly as it is and the log says why. It never changes branch. And it only
-restarts where a login service exists to bring it back — otherwise it says the
-new code is on disk and keeps serving until something restarts it.
+It will not touch work in progress. Nothing is stashed and nothing is discarded:
+git itself refuses to overwrite a file you have edited, so an edit to a file the
+update does not touch survives the pull, and one that would be overwritten stops
+the update instead, with git's own reason in the log. It never changes branch.
+And it only restarts where a login service exists to bring it back — otherwise it
+says the new code is on disk and keeps serving until something restarts it.
 
 The editor's right-hand column carries the same thing as a button. **This
 helper** shows the build and commit answering the page, and **Check for an
