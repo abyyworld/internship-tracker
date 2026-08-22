@@ -84,6 +84,18 @@ class NoDeadEndsTests(unittest.TestCase):
         self.assertIn('helperState === "stale"', studio)
         self.assertRegex(studio, r'helperState === "stale"[\s\S]{0,600}helperLink"\)\.classList\.add\("hidden"\)')
 
+    def test_the_local_editor_offers_it_when_it_cannot_load(self):
+        # The last page that could still dead-end: the local editor itself,
+        # when something on this machine is wrong. Whatever that is, the reader
+        # still wants this posting tailored, and the browser studio cannot be
+        # affected by it.
+        from autoapply.editor_ui import EDITOR_PAGE
+
+        self.assertIn("studio.html", EDITOR_PAGE)
+        self.assertIn("Tailor this CV in the browser instead", EDITOR_PAGE)
+        # Carrying the posting, or it lands somewhere that knows nothing.
+        self.assertRegex(EDITOR_PAGE, r'carried\.set\("url",\s*jobUrl\)')
+
     def test_the_dashboard_offers_it_without_a_role(self):
         index = DOCS / "index.html"
         if not index.exists():  # generated; a fresh checkout may not have it yet

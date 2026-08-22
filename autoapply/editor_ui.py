@@ -1488,15 +1488,46 @@ async function exportPdf(){
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────
+// Whatever went wrong here, the reader still wants their CV tailored for this
+// posting — and there is now a version of this editor that runs in the browser
+// and cannot be affected by anything wrong with this machine. Offering it is
+// better than leaving someone on an error with a chore to do.
+function studioFor(){
+  const carried=new URLSearchParams();
+  if(jobUrl)carried.set("url",jobUrl);
+  const job=(state&&state.job)||{};
+  for(const field of ["company","role","location"])
+    if(job[field])carried.set(field,job[field]);
+  for(const field of ["company","role","location"])
+    if(!carried.has(field)&&params.get(field))carried.set(field,params.get(field));
+  return "https://abyyworld.github.io/internship-tracker/studio.html?"+carried.toString();
+}
 function showInitError(msg,reachable){
   notice(msg,"error");
   $("jobTitle").textContent=reachable?"Could not open this posting":"Not connected";
   $("jobMeta").textContent=reachable
     ?"The helper is running and answered — see the message below"
     :"Bridge not running";
-  $("cvDoc").innerHTML='<div class="empty-state" style="border-color:#6f3430;color:var(--red)">'+
-    '<strong>CV not loaded</strong><br><br>'+msg+'<br><br>'+
-    'Double-click <code>start-autoapply.command</code> in the project folder, then reload this page.</div>';
+  const box=document.createElement("div");
+  box.className="empty-state";
+  box.style.borderColor="#6f3430";box.style.color="var(--red)";
+  const title=document.createElement("strong");
+  title.textContent="CV not loaded";
+  box.append(title,document.createElement("br"),document.createElement("br"),
+             document.createTextNode(msg),
+             document.createElement("br"),document.createElement("br"));
+  const escape=document.createElement("a");
+  escape.href=studioFor();
+  escape.textContent="Tailor this CV in the browser instead";
+  escape.style.color="var(--green)";
+  box.append(escape);
+  box.append(document.createTextNode(
+    " — it needs nothing on this machine. Or double-click "));
+  const file=document.createElement("code");
+  file.textContent="install-login-service.command";
+  box.append(file, document.createTextNode(
+    " in the project folder, which repairs and updates the helper."));
+  $("cvDoc").replaceChildren(box);
 }
 async function loadCv(id){
   cvId=id;
