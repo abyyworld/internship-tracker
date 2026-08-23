@@ -255,7 +255,7 @@ BSc Computer Science, University of London, 2027"></textarea>
       <p class="hint" id="cvNote"></p>
       <div class="row">
         <button class="secondary tiny" id="addCv">Add another CV</button>
-        <button class="secondary tiny hidden" id="dropCv">Remove this one</button>
+        <button class="secondary tiny" id="dropCv">Remove this one</button>
       </div>
     </div>
 
@@ -573,6 +573,16 @@ function currentCvId() {
 function currentCv() { return library().find(item => item.id === currentCvId()) || null; }
 
 function useCv(id) {
+  if (!id) {
+    store.drop(KEY.pick);
+    store.drop(KEY.last);
+    store.set(KEY.cv, "");
+    renderLibrary();
+    lines = [];
+    render();
+    showPaste(true);
+    return;
+  }
   store.set(KEY.pick, id);
   store.set(KEY.last, id);
   const cv = library().find(item => item.id === id);
@@ -581,6 +591,20 @@ function useCv(id) {
   renderLibrary();
   if (cv) { setCv(cv.text); showPaste(false); }
   else { lines = []; render(); showPaste(true); }
+}
+
+// A CV is regenerated far more often than it is replaced by a different one.
+// Reading the same file again should leave one entry, not two: the library is
+// what you send to employers, and a list of near-identical copies is how you
+// send the wrong one.
+function keepCv(name, text) {
+  const wanted = (name || "").trim().toLowerCase();
+  const found = library().find(item => item.name.trim().toLowerCase() === wanted);
+  if (found) {
+    updateCv(found.id, text);
+    return {id: found.id, replaced: true};
+  }
+  return {id: addCv(name, text), replaced: false};
 }
 
 function addCv(name, text) {
@@ -619,12 +643,14 @@ function renderLibrary() {
   const mine = list.find(item => item.id === id);
   $("cvName").value = mine ? mine.name : "";
   $("cvName").disabled = !mine;
-  $("dropCv").classList.toggle("hidden", list.length < 2);
-  $("cvNote").textContent = list.length > 1
-    ? `${list.length} CVs on this device. This posting uses “${mine ? mine.name : "—"}” — `
-      + "every posting remembers its own."
-    : "Add the other versions you send — a robotics one, a research one — and each posting "
-      + "will remember which of them it was tailored from.";
+  $("dropCv").textContent = list.length > 1 ? "Remove this one" : "Remove it";
+  $("cvNote").textContent = !list.length
+    ? "Nothing saved on this device yet. Drop a CV above and it is kept here for every posting."
+    : list.length > 1
+      ? `${list.length} CVs on this device. This posting uses “${mine ? mine.name : "—"}” — `
+        + "every posting remembers its own. Dropping a file with the same name replaces it."
+      : `One CV on this device: “${mine ? mine.name : ""}”. Add the other versions you send — `
+        + "a robotics one, a research one — and each posting remembers which it used.";
 }
 
 function setCv(text) {
@@ -1521,10 +1547,14 @@ async function importFile(file) {
     $("cvPaste").value = text;
     editingRaw = false;
     // Named after the file, because that is what tells two CVs apart.
-    addCv(file.name.replace(/\.[a-z0-9]+$/i, "").replace(/[_-]+/g, " ").trim(), text);
+    const named = file.name.replace(/\.[a-z0-9]+$/i, "").replace(/[_-]+/g, " ").trim();
+    const kept = keepCv(named, text);
     showPaste(false);
-    say(`Read ${file.name} — ${lines.length} lines. It is kept in this browser only, `
-        + "and every line can be edited.", "ok");
+    say(kept.replaced
+        ? `Read ${file.name} — ${lines.length} lines. “${named}” was already here, so it was `
+          + "replaced rather than copied, and the drafts made from the old one are gone."
+        : `Read ${file.name} — ${lines.length} lines. It is kept in this browser only, `
+          + "and every line can be edited.", "ok");
   } catch (error) {
     note.textContent = `${file.name} could not be read: ${error.message}. Paste it below instead.`;
     $("pasteInstead").open = true;
@@ -2229,14 +2259,22 @@ $("dropCv").onclick = () => {
   const list = library();
   const id = currentCvId();
   const mine = list.find(item => item.id === id);
-  if (!mine || list.length < 2) return;
-  if (!confirm(`Remove “${mine.name}” from this device? Your other CVs stay.`)) return;
+  if (!mine) return;
+  const last = list.length === 1;
+  if (!confirm(last
+      ? `Remove “${mine.name}”? This is the only CV on this device — the page will ask for `
+        + "one again."
+      : `Remove “${mine.name}” from this device? Your other CVs stay.`)) return;
   saveLibrary(list.filter(item => item.id !== id));
   // Every posting's draft of that CV goes with it.
   for (const key of store.keys()) if (key.endsWith(`.${id}`)) store.drop(key);
   store.drop(KEY.pick);
-  useCv(library()[0].id);
-  say(`“${mine.name}” is gone from this device.`, "ok");
+  store.drop(KEY.last);
+  const left = library();
+  useCv(left.length ? left[0].id : "");
+  say(left.length
+      ? `“${mine.name}” is gone. ${left.length} left on this device.`
+      : `“${mine.name}” is gone. Drop the CV you want to work from.`, "ok");
 };
 $("themeBtn").onclick = () => {
   theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];

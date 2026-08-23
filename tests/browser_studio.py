@@ -427,13 +427,34 @@ def main() -> int:
               "Built a vision pipeline" in page.inner_text("#sheet"))
         # A posting never seen before has no CV of its own to remember, so it
         # opens on the one used last rather than on an empty page.
+        # A CV is regenerated far more often than it is replaced by a different
+        # one, and reading the same file again must leave one entry, not two.
+        before_again = page.locator("#cvPick option").count()
+        page.click("#addCv")
+        page.set_input_files("#file", str(second))
+        page.wait_for_timeout(700)
+        check("reading the same CV again replaces it rather than copying it",
+              page.locator("#cvPick option").count() == before_again,
+              str(page.locator("#cvPick option").count()))
+        check("and it says so", "replaced rather than copied" in page.inner_text("#notice"),
+              page.inner_text("#notice")[:120])
+        page.evaluate("window.confirm = () => true")
+        page.click("#dropCv")
+        page.wait_for_timeout(400)
+        check("removing one leaves the others",
+              page.locator("#cvPick option").count() == before_again - 1,
+              str(page.locator("#cvPick option").count()))
+        page.select_option("#cvPick", index=0)
+        page.wait_for_timeout(300)
+        on_device = page.locator("#cvPick option").count()
+
         page.goto(page_url.replace("12345678", "87654321"), wait_until="networkidle")
         page.wait_for_selector("#sheet .b")
         check("a posting never opened before starts from the CV used last",
               "Ada Lovelace" in page.inner_text("#sheet"), page.inner_text("#sheet")[:120])
         check("and it offers every CV on the device",
-              page.locator("#cvPick option").count() == 2,
-              str(page.locator("#cvPick option").count()))
+              page.locator("#cvPick option").count() == on_device,
+              f"{page.locator('#cvPick option').count()} of {on_device}")
         page.goto(page_url, wait_until="networkidle")
         page.wait_for_selector("#sheet .b")
 
