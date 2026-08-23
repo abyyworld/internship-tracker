@@ -2181,9 +2181,12 @@ def build_dashboard(rows_out, new_ids, current):
         "separate from real postings. Unknown work-authorisation or sponsorship "
         "data means **review required**, never assumed eligible.\n",
         "\n## Filter jobs, generate a CV, then use Simplify\n",
-        "\n[Open the filterable Role Radar dashboard]"
-        "(https://abyyworld.github.io/internship-tracker/) for search, category, "
-        "position type, region, term, degree, company-type, and CV-support filters.\n",
+        "\nSay what you are looking for — “fully funded robotics PhD in the UK”, "
+        "“summer 2027 internship that sponsors” — and [the tracker]"
+        "(https://abyyworld.github.io/internship-tracker/) matches it against every "
+        "internship, new-grad role, PhD and research post, accelerator, scholarship and "
+        "university it knows about, and says on each card which part of what you asked "
+        "for it answers. Filters are there too, in light or dark.\n",
         "\nThe CV editor comes in two forms and the dashboard picks between "
         "them for you. [CV Studio in the browser]"
         "(https://abyyworld.github.io/internship-tracker/studio.html) needs "

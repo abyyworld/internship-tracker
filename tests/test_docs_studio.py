@@ -213,6 +213,46 @@ class StudioIsSelfContainedTests(unittest.TestCase):
         # Even an error thrown before the request is made reaches the reader.
         self.assertRegex(self.source, r"pending\.catch\(error => trouble")
 
+    def test_the_three_settings_are_three_different_things(self):
+        # "go hard and full rewrite means the same thing wth" — they did, once
+        # the line caps went. The difference that can be held in the head is
+        # that only one of them takes anything away.
+        self.assertIn("Wording only", self.source)              # touch up
+        self.assertIn("nothing is taken away", self.source)      # full rewrite
+        self.assertIn("takes things away", self.source)          # go hard
+        # Exactly one of the three removes anything.
+        self.assertEqual(self.source.count("cuts: true"), 1)
+        self.assertEqual(self.source.count("cuts: false"), 2)
+        # And a cut offered under a setting that does not cut is not shown.
+        self.assertRegex(self.source, r"if \(item\.cut && !MODES\[mode\]\.cuts\) continue")
+
+    def test_the_model_is_shown_the_whole_cv_not_only_the_lines_to_change(self):
+        # Rewriting a bullet without the heading above it, the employer it was
+        # for or the dates it ran between is writing blind, and blind rewrites
+        # are the bland ones.
+        self.assertIn("function rewritable", self.source)
+        self.assertRegex(self.source, r'Lines marked > are the ones you may rewrite')
+        # A worked example beats three sentences of description.
+        self.assertIn("before: Worked on the grasp planner", self.source)
+        # And the cheapest model in a family is named as what it is.
+        self.assertIn("WEAK_MODEL", self.source)
+
+    def test_there_is_always_a_way_back_to_the_cv_that_was_saved(self):
+        # Edits are kept per posting, which is right — but a draft with no way
+        # out of it is a trap, and the reader hit it.
+        self.assertIn('id="revert"', self.source)
+        self.assertRegex(self.source, r'\$\("revert"\)\.onclick[\s\S]{0,400}store\.drop\(KEY\.draft')
+        # And a tailored version worth keeping becomes a CV of its own.
+        self.assertIn('id="saveVersion"', self.source)
+        self.assertRegex(self.source, r'addCv\(name\.trim\(\) \|\| suggested, rawText\(\)\)')
+
+    def test_the_studio_is_lit_the_way_the_reader_asked_for(self):
+        for marker in ("prefers-color-scheme:dark", '[data-theme="dark"]', '"radar.theme"',
+                       'id="themeBtn"'):
+            self.assertIn(marker, self.source, f"the studio lost: {marker}")
+        # The sheet is paper: it does not change colour with the room.
+        self.assertRegex(self.source, r"#sheet\{width:595\.28pt[^}]*background:#fff")
+
     def test_it_says_where_the_reader_data_goes(self):
         # The trade is: nothing to install, but the CV and the advert go
         # straight to a third party. Saying so is not optional.
