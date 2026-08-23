@@ -41,9 +41,18 @@ class DashboardTests(unittest.TestCase):
             ):
                 self.assertEqual(dashboard.build(), 1)
             page = output.read_text(encoding="utf-8")
-            self.assertIn('id="search"', page)
+            # The one box everything starts from, and the lenses over the
+            # same corpus.
+            self.assertIn('id="ask"', page)
             self.assertIn('id="region"', page)
-            self.assertIn('id="startupOnly"', page)
+            for lens in ("roles", "research", "ventures", "funding", "universities"):
+                self.assertIn(f'data-lens="{lens}"', page)
+            # Light and dark are a property of the page, not a preference to
+            # be asked for twice: the reader's choice is stored once for the
+            # whole site, and the default follows the device.
+            self.assertIn("prefers-color-scheme: dark", page)
+            self.assertIn('data-theme="dark"', page)
+            self.assertIn('"radar.theme"', page)
             self.assertIn("data-autoapply-dashboard", page)
             # The CV button goes through open.html rather than straight at the
             # helper: a direct link answers with ERR_CONNECTION_REFUSED whenever

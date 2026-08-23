@@ -14,7 +14,7 @@ This tracker watches community internship boards and official Greenhouse, Ashby,
 
 ## Filter jobs, generate a CV, then use Simplify
 
-[Open the filterable Role Radar dashboard](https://abyyworld.github.io/internship-tracker/) for search, category, position type, region, term, degree, company-type, and CV-support filters.
+Say what you are looking for — "fully funded robotics PhD in the UK", "summer 2027 internship that sponsors" — and [the tracker](https://abyyworld.github.io/internship-tracker/) matches it against every internship, new-grad role, PhD and research post, accelerator, scholarship and university it knows about, and says on each card which part of what you asked for it answers. Filters are there too, in light or dark.
 
 The CV editor comes in two forms and the dashboard picks between them for you. [CV Studio in the browser](https://abyyworld.github.io/internship-tracker/studio.html) needs nothing installed: your CV, your API key and your edits stay in that browser, and the rewrite request goes straight from the page to the model provider you choose. Every **Edit CV for this job** button lands there by itself when no local helper is running, so it never leads to a dead end.
 

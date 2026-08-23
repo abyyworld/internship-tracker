@@ -104,7 +104,10 @@ class Provider(http.server.BaseHTTPRequestHandler):
         prompt = request["messages"][-1]["content"]
         # Answer against the lines the page actually numbered, in a fenced code
         # block — which is what models do however firmly they are told not to.
-        numbered = [line for line in prompt.splitlines() if line[:1].isdigit()]
+        # The prompt now carries the whole CV for context, with "> " marking the
+        # lines the model may rewrite. Anything else is there to be read.
+        numbered = [line[2:] for line in prompt.splitlines()
+                    if line.startswith("> ") and line[2:3].isdigit()]
         picks = []
         for line in numbered:
             index, _, text = line.partition(": ")
@@ -462,7 +465,7 @@ def main() -> int:
 
         page.click('#modes button[data-mode="hard"]')
         check("how hard to go is a choice, and it says what it means",
-              "cuts whatever does not earn its place" in page.inner_text("#modeNote"),
+              "takes things away" in page.inner_text("#modeNote"),
               page.inner_text("#modeNote"))
         page.click('#modes button[data-mode="full"]')
         page.fill("#instruction", "lead with the perception work")
@@ -581,6 +584,18 @@ def main() -> int:
 
         print("\n[10b] a line that earns nothing can be cut, with your say-so")
         Provider.mode = "cut"
+        # Only one of the three settings takes anything away, which is what
+        # makes them three settings and not one slider. A cut offered under
+        # "Full rewrite" is not shown at all.
+        page.click("#rewrite")
+        page.wait_for_function(
+            "document.getElementById('notice').textContent.length > 0", timeout=20000)
+        check("a full rewrite never offers to remove a line",
+              page.locator(".proposal").count() == 0,
+              page.inner_text("#notice")[:120])
+        page.click('#modes button[data-mode="hard"]')
+        check("and going hard says that is exactly what it does",
+              "takes things away" in page.inner_text("#modeNote"))
         page.click("#rewrite")
         page.wait_for_selector(".proposal", timeout=20000)
         check("taking a line out is offered as an edit",
