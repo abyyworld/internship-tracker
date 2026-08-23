@@ -24,56 +24,82 @@
   of saved CVs.
 -->
 <style>
-:root{color-scheme:dark;--bg:#07110f;--panel:#10211c;--line:#315346;--text:#f1f8f5;
---muted:#a6b9b2;--green:#70efad;--green2:#25b875;--red:#ff8b82;
+:root{
+color-scheme:light;
+--bg:#f7f8fa;--panel:#ffffff;--sunk:#eef1f5;--line:#e2e6ec;--line-2:#cfd6df;
+--text:#0f1419;--muted:#6b7684;
+--brand:#1a56db;--brand-ink:#ffffff;--brand-soft:#e8eefc;
+--good:#0f7b4f;--red:#b42318;
+--shadow:0 1px 2px rgba(15,20,25,.05),0 2px 8px rgba(15,20,25,.06);
+--paper:0 8px 30px rgba(15,20,25,.13);
+--green:var(--brand);--green2:var(--good);
+/* The document's own ink. A CV is printed on white paper whatever the screen
+   around it is doing, so these three do not change with the theme. */
 --accent:#14324F;--rule:#9DB2C2;--date:#2B3A47}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+color-scheme:dark;
+--bg:#0d1117;--panel:#151b23;--sunk:#1c232c;--line:#242c37;--line-2:#333d4b;
+--text:#e9eef5;--muted:#8b98a8;
+--brand:#5b8cff;--brand-ink:#08101f;--brand-soft:#182742;
+--good:#4ed49a;--red:#ff8b82;
+--shadow:0 1px 2px rgba(0,0,0,.4);--paper:0 10px 40px rgba(0,0,0,.6)}}
+:root[data-theme="dark"]{
+color-scheme:dark;
+--bg:#0d1117;--panel:#151b23;--sunk:#1c232c;--line:#242c37;--line-2:#333d4b;
+--text:#e9eef5;--muted:#8b98a8;
+--brand:#5b8cff;--brand-ink:#08101f;--brand-soft:#182742;
+--good:#4ed49a;--red:#ff8b82;
+--shadow:0 1px 2px rgba(0,0,0,.4);--paper:0 10px 40px rgba(0,0,0,.6)}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#174b3766,transparent 40rem),var(--bg);
-color:var(--text);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-a{color:var(--green)}
+body{margin:0;min-height:100vh;background:var(--bg);
+color:var(--text);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+-webkit-font-smoothing:antialiased}
+a{color:var(--brand)}
 .wrap{max-width:1220px;margin:0 auto;padding:18px 18px 60px}
 header{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
-.eyebrow{color:var(--green);font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+.eyebrow{color:var(--brand);font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
 h1{margin:6px 0 4px;font-size:26px;line-height:1.15;letter-spacing:-.03em}
 h2{font-size:15px;margin:0 0 6px}
 .sub{color:var(--muted);font-size:13.5px;margin:0}
 .cols{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
 @media (max-width:980px){.cols{grid-template-columns:minmax(0,1fr)}}
-.card{background:linear-gradient(150deg,#13271f,#0c1714);border:1px solid var(--line);
+.card{background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);
 border-radius:16px;padding:15px;margin-bottom:13px}
 .hint{color:var(--muted);font-size:12.5px;margin:6px 0 0}
 .hint.bad{color:var(--red);font-weight:600}
 label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
-input,select,textarea{width:100%;background:#0b1f18;border:1px solid #2c5c47;border-radius:10px;
+input,select,textarea{width:100%;background:var(--sunk);border:1px solid var(--line-2);border-radius:10px;
 color:var(--text);padding:9px 10px;font:inherit;font-size:13.5px}
 textarea{min-height:110px;resize:vertical;line-height:1.5}
 button{font:inherit;font-weight:700;font-size:13.5px;border-radius:11px;padding:9px 13px;
 cursor:pointer;border:1px solid transparent;white-space:nowrap}
 button:disabled{opacity:.55;cursor:default}
-.primary{background:var(--green2);color:#04150d}
-.secondary{background:#12241d;border-color:var(--line);color:var(--text)}
+.primary{background:var(--brand);color:var(--brand-ink)}
+.secondary{background:var(--panel);border-color:var(--line-2);color:var(--text)}
 .tiny{padding:5px 9px;font-size:12px;border-radius:8px}
 .row{display:flex;gap:8px;flex-wrap:wrap}
 .row>button{flex:1}
-#modes button.on{background:var(--green2);color:#04150d;border-color:transparent}
+#modes button.on{background:var(--brand);color:var(--brand-ink);border-color:transparent}
 a.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 13px;border-radius:11px;
 text-decoration:none;font-weight:700;font-size:13px;border:1px solid var(--line);
-background:#12241d;color:var(--text)}
+background:var(--panel);color:var(--text)}
 .banner{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;
-border:1px solid var(--line);background:#0e1f19;border-radius:14px;padding:11px 14px;margin-bottom:13px}
-.notice{border-radius:11px;padding:10px 12px;font-size:13px;margin:0 0 12px;border:1px solid var(--line);background:#0e1f19}
-.notice.error{border-color:#6f3430;color:var(--red)}
-.notice.ok{border-color:#2c5c47;color:var(--green)}
+border:1px solid var(--line);background:var(--panel);box-shadow:var(--shadow);
+border-radius:14px;padding:11px 14px;margin-bottom:13px}
+.notice{border-radius:11px;padding:10px 12px;font-size:13px;margin:0 0 12px;
+border:1px solid var(--line);background:var(--panel)}
+.notice.error{border-color:var(--red);color:var(--red)}
+.notice.ok{border-color:var(--good);color:var(--good)}
 .banner.hidden,.notice.hidden{display:none}
 /* Beats a.btn's own display, which is more specific than a bare class. */
 .hidden{display:none!important}
 .count{color:var(--muted);font-size:12.5px}
-.pill{display:inline-block;background:#0f2a20;border:1px solid #2c5c47;color:var(--green);
+.pill{display:inline-block;background:var(--brand-soft);border:1px solid transparent;color:var(--brand);
 border-radius:99px;padding:2px 9px;font-size:11.5px;margin:0 5px 5px 0}
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 #drop{border:1.5px dashed var(--line);border-radius:13px;padding:22px 16px;text-align:center;
 margin-top:10px;transition:border-color .15s,background .15s}
-#drop.over{border-color:var(--green2);background:#0f2a20}
+#drop.over{border-color:var(--brand);background:var(--brand-soft)}
 #drop strong{font-size:14px}
 
 /* ── The document ─────────────────────────────────────────────────────────
@@ -82,7 +108,7 @@ margin-top:10px;transition:border-color .15s,background .15s}
    is resized, so the proportions survive. */
 #paper{overflow:hidden}
 #sheet{width:595.28pt;min-height:841.89pt;padding:36pt 42.52pt 40pt;background:#fff;color:#111;
-transform-origin:top left;box-shadow:0 18px 50px #0008;border-radius:2px}
+transform-origin:top left;box-shadow:var(--paper);border-radius:2px}
 #sheet .b{outline:none;white-space:pre-wrap}
 #sheet .b:focus{background:#eef5ff;border-radius:3px}
 #sheet .name{font:700 24pt/27pt "Times New Roman",Times,serif;text-align:center;color:#111}
@@ -141,6 +167,7 @@ font:11pt/1.5 "Times New Roman",Times,serif}
   <div class="row" style="flex:0 0 auto">
     <a class="btn" id="postingLink" href="#" target="_blank" rel="noopener">Open the posting</a>
     <a class="btn" href="./">Dashboard</a>
+    <button class="secondary" id="themeBtn" type="button">Auto</button>
   </div>
 </header>
 
@@ -196,6 +223,8 @@ BSc Computer Science, University of London, 2027"></textarea>
           <button class="secondary tiny" id="acceptAll">Accept all</button>
           <button class="secondary tiny" id="rejectAll">Reject all</button>
           <button class="secondary tiny" id="editRaw">Edit raw text</button>
+          <button class="secondary tiny hidden" id="revert">Back to my original</button>
+          <button class="secondary tiny hidden" id="saveVersion">Save this version</button>
           <button class="primary tiny" id="download">Download PDF</button>
         </div>
       </div>
@@ -305,6 +334,23 @@ const posting = {
 const helperState = params.get("helper") || "";
 const BRIDGE = "http://127.0.0.1:8765";
 const $ = id => document.getElementById(id);
+
+// The theme is the reader's, and it is the same one the dashboard uses: the
+// two pages are one site, and choosing again on each of them is not a feature.
+const THEMES = ["system", "light", "dark"];
+const THEME_MARK = {system: "Auto", light: "Light", dark: "Dark"};
+let theme = "system";
+try {
+  const kept = localStorage.getItem("radar.theme");
+  if (THEMES.includes(kept)) theme = kept;
+} catch (error) { /* private mode */ }
+function applyTheme() {
+  if (theme === "system") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", theme);
+  const button = document.getElementById("themeBtn");
+  if (button) button.textContent = THEME_MARK[theme];
+}
+applyTheme();
 
 const store = {
   get(key, fallback = "") {
@@ -617,6 +663,8 @@ function render() {
   });
   const changed = lines.filter(line => line.text !== line.original).length;
   const open = lines.filter(line => line.proposal).length;
+  $("revert").classList.toggle("hidden", !changed);
+  $("saveVersion").classList.toggle("hidden", !changed);
   $("docCount").textContent = open
     ? `${open} suggested ${open === 1 ? "edit" : "edits"} waiting — accept or reject each one.`
     : (changed
@@ -1534,6 +1582,9 @@ const NOT_CHAT = /embed|whisper|tts|audio|imagen|veo|dall-e|moderation|rerank|aq
 // Models that think before answering are worth naming, because thinking is
 // what the reader feels as "stuck".
 const SLOW_MODEL = /(^|[^a-z])(pro|thinking|reasoner|o[134])([^a-z]|$)/i;
+// The cheapest model of a family is the one people land on, and rewriting a CV
+// well is not a cheap task: the difference shows up as bland, obvious lines.
+const WEAK_MODEL = /lite|mini|8b|small|nano|haiku|flash-8b|1b|3b/i;
 
 function knownModels(provider) {
   const cached = store.get(KEY.models(provider.id), "");
@@ -1573,9 +1624,14 @@ function modelNote() {
   if (cached.length) parts.push(`${cached.length} models this key can reach.`);
   else if (provider.id !== "custom") parts.push("The usual ones. Add your key and this list "
     + "fills in with everything your key can actually reach.");
-  if (SLOW_MODEL.test(chosenModel())) {
-    parts.push("This one thinks before it answers — that is the wait. A flash or lite model "
-      + "rewrites a full CV in a few seconds.");
+  const chosen = chosenModel();
+  if (SLOW_MODEL.test(chosen)) {
+    parts.push("This one thinks before it answers — that is the wait, and it is usually worth "
+      + "it for a CV.");
+  } else if (WEAK_MODEL.test(chosen)) {
+    parts.push("This is the fastest of its family and the weakest: it tends to give bland, "
+      + "obvious rewrites. For a CV, the plain flash or pro model of the same family is a "
+      + "different standard of writing.");
   }
   $("modelNote").textContent = parts.join(" ");
 }
@@ -1682,48 +1738,66 @@ const SYSTEM = [
   "   of real improvements is worth far more than a long list of paraphrases.",
   "3. Never rewrite headings, contact details, dates or the person's name.",
   "4. One line in, one line out: no bullet characters, no markdown, no quotes around the text.",
+  "",
+  "What the difference looks like, for an advert asking for closed-loop evaluation in C++:",
+  "  before: Worked on the grasp planner and improved performance by rewriting parts of it.",
+  "  after:  Cut pick-and-place cycle time 20% by rewriting the grasp planner in C++.",
+  "The number moved to the front, the vague verb went, and the advert's own word arrived —",
+  "and every fact in the second line was already in the first.",
 ].join("\n");
 
 const MODES = {
   touch: {
     label: "Touch up",
-    note: "Only where the wording can be sharpened — but as many lines as genuinely need it. "
-      + "Nothing is cut.",
-    order: "Change the lines where a sharper phrasing would visibly help against this advert, "
-      + "and leave the rest alone. There is no limit on how many that is, but do not touch a "
-      + "line you cannot clearly improve, and do not cut anything.",
+    note: "Wording only. Every line stays, in the order it is in — they just read better.",
+    order: "Change only the wording. Sharpen any line whose phrasing could be clearer or "
+      + "stronger against this advert, as many as genuinely need it, and leave the rest alone. "
+      + "Do not reorder what a line says, do not move facts between lines, and do not cut "
+      + "anything.",
+    cuts: false,
   },
   full: {
     label: "Full rewrite",
-    note: "Every line that could serve this posting better is rewritten, and the ones that "
-      + "earn nothing are offered up to be cut.",
-    order: "Rewrite every line that could serve this advert better — there is no limit, and "
-      + "rewriting most of the CV is a fine answer if most of it can be improved. Lead each "
-      + "line with what the advert cares about. Where a line earns nothing against this "
-      + "posting, propose cutting it.",
+    note: "Every line rebuilt to lead with what this advert asks for. Still every line — "
+      + "nothing is taken away.",
+    order: "Rewrite the lines themselves, not just their words. Restructure each one so the "
+      + "evidence this advert asks for comes first and the measured result is impossible to "
+      + "miss, and move a fact from one line to the line where it lands hardest. Rewriting "
+      + "most of the CV is a fine answer. Do not propose cutting anything: every line stays.",
+    cuts: false,
   },
   hard: {
     label: "Go hard",
-    note: "Rebuilds the CV around this posting: rewrites everything it can, moves the "
-      + "evidence forward, and cuts whatever does not earn its place.",
-    order: "Rebuild this CV for this advert. Rewrite every line that is not a heading, a date "
-      + "or a contact detail. Restructure each one so the evidence this advert asks for comes "
-      + "first and the number is impossible to miss, move a fact to the line where it lands "
-      + "hardest, merge two weak lines into one strong one, and cut every line that does not "
-      + "earn its six seconds against this posting.",
+    note: "The only setting that takes things away: it rewrites, merges weak lines, and cuts "
+      + "what earns nothing — so the CV comes back shorter and pointed at this one job.",
+    order: "Rebuild this CV for this advert, and make it shorter. Do everything a full rewrite "
+      + "does, then go further: merge two weak lines into one strong one, and cut every line "
+      + "that does not earn its six seconds against this posting. A CV that comes back with "
+      + "fewer, sharper lines is the point.",
+    cuts: true,
   },
 };
 const savedMode = store.get(KEY.mode, "full");
 let mode = MODES[savedMode] ? savedMode : "full";
 
+function rewritable(text, kind) {
+  return text.trim().length > 12 && ["body", "bullet", "sub", "pair"].includes(kind);
+}
+
 function tailoringPrompt() {
   const advert = $("advert").value.trim();
   const instruction = $("instruction").value.trim();
+  // The whole CV, in order, so a bullet is read under the job it belongs to
+  // and against the dates it happened in. A ">" marks a line you may rewrite;
+  // everything else is there to be understood, not touched.
   const numbered = lines
-    .map((line, index) => ({index, text: line.text, kind: kindOf(line.text, index)}))
-    .filter(entry => entry.text.trim().length > 12
-      && ["body", "bullet", "sub", "pair"].includes(entry.kind))
-    .map(entry => `${entry.index}: ${entry.text}`)
+    .map((line, index) => {
+      const text = line.text;
+      if (!text.trim()) return "";
+      const mark = rewritable(text, kindOf(text, index)) ? ">" : " ";
+      return `${mark} ${index}: ${text}`;
+    })
+    .filter(Boolean)
     .join("\n");
   return [
     instruction ? `What the applicant asked for, above everything else: ${instruction}\n` : "",
@@ -1734,15 +1808,18 @@ function tailoringPrompt() {
     advert ? `\nThe advert:\n${advert}`
            : "\n(The advert text was not available, so work from the role title and what the"
              + " CV itself says the work was.)",
-    "\nThe CV. Only these lines may be rewritten — headings, dates and contact details are",
-    "not listed, because they are not yours to change:",
+    "\nThe whole CV, in order. Lines marked > are the ones you may rewrite; the rest are",
+    "context — the section a bullet sits under, whose job it was, and when. Read them, and",
+    "never return a line that is not marked >:",
     numbered,
     "",
     MODES[mode].order,
     "Return JSON only, in this exact shape, and nothing else:",
     '{"rewrites":[{"line":12,"text":"the rewritten line","why":"the requirement it answers"}]}',
-    'To propose cutting a line, return it with an empty text: {"line":14,"text":"","why":"why '
-      + 'it earns nothing here"}. Nothing is deleted without the applicant accepting it.',
+    MODES[mode].cuts
+      ? 'To propose cutting a line, return it with an empty text: {"line":14,"text":"","why":"why '
+        + 'it earns nothing here"}. Nothing is deleted without the applicant accepting it.'
+      : "Never return an empty text: this setting does not remove lines.",
     "Leave out any line you have not genuinely improved. An empty list is a valid answer.",
   ].filter(Boolean).join("\n");
 }
@@ -1981,6 +2058,10 @@ async function rewrite() {
   // which is exactly what it was mistaken for. The seconds say which it is.
   const started = Date.now();
   const elapsed = () => Math.max(1, Math.round((Date.now() - started) / 1000));
+  if (!$("advert").value.trim()) {
+    say("No advert pasted, so this is written against the role title alone — paste the job "
+        + "description for rewrites that answer what it actually asks for.", "");
+  }
   status(`Asking ${provider.label}…`);
   const ticking = setInterval(
     () => status(`Asking ${provider.label} — ${elapsed()}s. Press Stop to give up.`), 1000);
@@ -1993,6 +2074,7 @@ async function rewrite() {
     for (const item of rewrites) {
       const line = lines[item.line];
       if (!line || (!item.cut && item.text === line.text)) continue;
+      if (item.cut && !MODES[mode].cuts) continue;
       // A line with nothing on it is already nothing to cut.
       if (item.cut && !line.text.trim()) continue;
       // The same sentence with two words swapped is not an edit worth reading.
@@ -2156,6 +2238,41 @@ $("dropCv").onclick = () => {
   useCv(library()[0].id);
   say(`“${mine.name}” is gone from this device.`, "ok");
 };
+$("themeBtn").onclick = () => {
+  theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
+  try { localStorage.setItem("radar.theme", theme); } catch (error) { /* private mode */ }
+  applyTheme();
+};
+// "when i reopened the job description i couldnt revert back to the unchanged
+// cv" — every edit is kept per posting, which is right, but a draft with no way
+// out of it is a trap. The original is never overwritten: it is the CV in the
+// library, and this puts it back.
+$("revert").onclick = () => {
+  const cv = currentCv();
+  if (!cv) return;
+  const changed = lines.filter(line => line.text !== line.original).length;
+  if (!confirm(`Undo ${changed} ${changed === 1 ? "change" : "changes"} for this posting and `
+               + `go back to “${cv.name}” as you saved it?`)) return;
+  store.drop(KEY.draft(currentCvId()));
+  setCv(cv.text);
+  say("Back to your original. The tailored version for this posting is gone.", "ok");
+};
+
+// The other half of the same problem: a version worth keeping should not only
+// exist as one posting's draft.
+$("saveVersion").onclick = () => {
+  const cv = currentCv();
+  const role = jobRole() || posting.role || "";
+  const company = jobCompany() || posting.company || "";
+  const suggested = [cv ? cv.name : "CV", [company, role].filter(Boolean).join(" ")]
+    .filter(Boolean).join(" — ");
+  const name = prompt("Save this tailored version as its own CV, to reuse and apply with:",
+                      suggested);
+  if (name === null) return;
+  addCv(name.trim() || suggested, rawText());
+  say(`Saved as “${name.trim() || suggested}”. It is in “Which CV” for every posting now.`, "ok");
+};
+
 $("download").onclick = downloadPdf;
 // When nothing seems to happen, this says which part is not working: one
 // request, one word back, and whatever the provider said if it refused.
