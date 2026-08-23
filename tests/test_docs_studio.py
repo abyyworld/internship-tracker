@@ -246,6 +246,17 @@ class StudioIsSelfContainedTests(unittest.TestCase):
         self.assertIn('id="saveVersion"', self.source)
         self.assertRegex(self.source, r'addCv\(name\.trim\(\) \|\| suggested, rawText\(\)\)')
 
+    def test_the_library_holds_what_is_sent_out_and_nothing_else(self):
+        # A CV is regenerated far more often than it is replaced by a different
+        # one. Reading the same file again must leave one entry, not two: a
+        # list of near-identical copies is how the wrong one gets sent.
+        self.assertIn("function keepCv", self.source)
+        self.assertIn("replaced rather than copied", self.source)
+        # And the last CV can be removed too — a library with no way to empty
+        # it is not a library.
+        self.assertNotRegex(self.source, r'\$\("dropCv"\)\.classList\.toggle\("hidden"')
+        self.assertRegex(self.source, r"const last = list\.length === 1")
+
     def test_the_studio_is_lit_the_way_the_reader_asked_for(self):
         for marker in ("prefers-color-scheme:dark", '[data-theme="dark"]', '"radar.theme"',
                        'id="themeBtn"'):
