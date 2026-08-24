@@ -459,10 +459,74 @@ def main() -> int:
         page.wait_for_selector("#sheet .b")
 
         print("\n[3] the advert is pasted, because a web page cannot fetch it")
-        page.fill("#advert", "We need ROS 2 and C++ for a production pick-and-place cell. "
-                             "Tell us what you measured.")
+        page.fill("#advert",
+                  "We need ROS 2 and C++ for a production pick-and-place cell.\n"
+                  "- Experience with closed-loop evaluation and imitation learning\n"
+                  "- Comfortable with Docker and reproducible experiments\n"
+                  "- You have measured a policy success rate honestly\n"
+                  "Tell us what you measured, and how you knew it was true.")
         check("the page counts what it was given",
               "words" in page.inner_text("#advertNote"), page.inner_text("#advertNote"))
+
+        print("\n[3b] it says how much of the advert the CV already answers")
+        page.wait_for_selector("#matchCard:not(.hidden)", timeout=10000)
+        score = page.inner_text("#matchScore")
+        check("a score is shown", score.endswith("%") and score != "0%", score)
+        missing = page.inner_text("#matchMissing")
+        check("and what is asked for but missing is named",
+              "docker" in missing.lower() or "reproducible" in missing.lower(), missing[:120])
+        page.click("#matchFoundWrap summary")     # what it answers is behind a fold
+        page.wait_for_timeout(200)
+        check("what the CV does answer is there too",
+              "ros" in page.inner_text("#matchFound").lower(), page.inner_text("#matchFound")[:120])
+        # The number has to move when the CV does, or it is decoration.
+        before = int(score.rstrip("%"))
+        page.evaluate("lines.push({original: '', text: 'Docker, reproducible experiments, CI.',"
+                      " proposal: null}); saveDraft(); render();")
+        page.wait_for_timeout(400)
+        after = int(page.inner_text("#matchScore").rstrip("%"))
+        check("and it rises when the CV answers more of it", after > before, f"{before}% then {after}%")
+        page.evaluate("lines.pop(); saveDraft(); render();")
+        page.wait_for_timeout(300)
+
+        print("\n[3c] every line can be moved, cut or rewritten on its own")
+        first_body = page.locator("#sheet .body").first
+        first_body.hover()
+        page.wait_for_timeout(200)
+        tools = page.locator(".hold:has(.body) .rowtools").first
+        check("the controls appear on the line under the pointer", tools.is_visible())
+        check("and they are not part of what the line says",
+              not any(mark in page.evaluate("lines.map(l => l.text).join('')")
+                      for mark in ("✦", "↑", "↓", "✕")),
+              page.inner_text("#sheet .body")[:80])
+        was = page.evaluate("lines.map(l => l.text).join('|')")
+        page.evaluate("moveLine(4, 1)")
+        page.wait_for_timeout(300)
+        check("moving a line moves it", page.evaluate("lines.map(l => l.text).join('|')") != was)
+        page.evaluate("moveLine(5, -1)")
+        page.wait_for_timeout(300)
+        check("and moving it back puts it back",
+              page.evaluate("lines.map(l => l.text).join('|')") == was)
+
+        print("\n[3d] how tightly it is set, and whether it fits")
+        page.wait_for_function("document.getElementById('pageNote').textContent.includes('page')",
+                               timeout=10000)
+        roomy_note = page.inner_text("#pageNote")
+        check("the page count is shown", "page" in roomy_note, roomy_note)
+        page.click('#density button:has-text("Tighter")')
+        page.wait_for_timeout(500)
+        check("tightening changes the sheet itself",
+              page.evaluate("getComputedStyle(document.getElementById('sheet'))"
+                            ".getPropertyValue('--d').trim()") == "0.88",
+              page.evaluate("getComputedStyle(document.getElementById('sheet'))"
+                            ".getPropertyValue('--d')"))
+        page.reload(wait_until="networkidle")
+        page.wait_for_selector("#sheet .b")
+        check("and it is remembered for this CV",
+              page.evaluate("getComputedStyle(document.getElementById('sheet'))"
+                            ".getPropertyValue('--d').trim()") == "0.88")
+        page.click('#density button:has-text("Normal")')
+        page.wait_for_timeout(400)
 
         print("\n[4] rewriting, straight from the page to the provider")
         page.select_option("#provider", "custom")
@@ -653,6 +717,9 @@ def main() -> int:
         check("set in the CV's own fonts",
               b"/Times-Roman" in blob and b"/Helvetica-Bold" in blob)
         check("on A4", b"/MediaBox [0 0 595.28 841.89]" in blob)
+        check("the page count on screen is the one in the file",
+              page.inner_text("#pageNote").startswith(str(blob.count(b"/Type /Page "))),
+              f"{page.inner_text('#pageNote')} vs {blob.count(b'/Type /Page ')} in the file")
         check("and a reader can find every object",
               valid_xref(blob), "xref offsets do not point at their objects")
 
