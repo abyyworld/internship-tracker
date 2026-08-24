@@ -2195,6 +2195,16 @@ def build_dashboard(rows_out, new_ids, current):
         "model provider you choose. Every **Edit CV for this job** button lands "
         "there by itself when no local helper is running, so it never leads to "
         "a dead end.\n",
+        "\nIt keeps every CV you send — a robotics one, a research one — and "
+        "each posting remembers which of them it was tailored from. Drop in a "
+        "PDF or a Word file and it is read here, set as A4 at true size, and "
+        "exported as a real PDF written by the page itself. Against a pasted "
+        "advert it scores what your CV already answers and names the phrases it "
+        "does not, without a key and without sending anything anywhere. Where "
+        "the posting is on Greenhouse, Lever or Ashby it can read the advert "
+        "from the board for you. Any line can be rewritten, moved or cut on its "
+        "own, the page count comes from the PDF writer rather than a guess, and "
+        "one control sets the whole CV tighter when it has to fit.\n",
         "\nThe helper that runs on your own machine stays the better editor: it "
         "reads the advert for you, checks every claim against your fact bank, "
         "keeps a library of tailored CVs, and exports a real PDF. It installs "
