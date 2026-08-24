@@ -304,6 +304,21 @@ class StudioIsSelfContainedTests(unittest.TestCase):
         self.assertIn("scaled(spec, density)", self.source)
         self.assertIn("density: id => `studio.density.${id}`", self.source)
 
+    def test_the_advert_is_fetched_where_the_board_publishes_one(self):
+        # A web page cannot read another site's HTML, which is why the advert
+        # is pasted. But the three boards this tracker reads from publish the
+        # posting as JSON from an endpoint that answers browser requests, so
+        # for most of what lands here the paste is avoidable.
+        self.assertIn("function advertSourceFor", self.source)
+        for endpoint in ("boards-api.greenhouse.io", "api.lever.co", "api.ashbyhq.com"):
+            self.assertIn(endpoint, self.source, f"no route for {endpoint}")
+        # It is offered, not imposed, and a board that refuses says so and
+        # leaves the paste box where it was.
+        self.assertIn('id="fetchAdvert"', self.source)
+        self.assertIn("Paste the description instead", self.source)
+        # And a request to a third party is disclosed, like every other one.
+        self.assertIn("straight from that board", self.source)
+
     def test_it_says_where_the_reader_data_goes(self):
         # The trade is: nothing to install, but the CV and the advert go
         # straight to a third party. Saying so is not optional.
