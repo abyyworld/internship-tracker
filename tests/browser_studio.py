@@ -468,6 +468,78 @@ def main() -> int:
         check("the page counts what it was given",
               "words" in page.inner_text("#advertNote"), page.inner_text("#advertNote"))
 
+        print("\n[3a] the advert can come from the board, where the board allows it")
+        # The three boards this tracker reads from publish the posting as JSON
+        # from an endpoint that answers browser requests. What can be checked
+        # here is the part that goes wrong silently: which URL maps to which
+        # endpoint, and what is done with the answer.
+        routes = page.evaluate("""() => ({
+          greenhouse: advertSourceFor("https://boards.greenhouse.io/acme/jobs/4567"),
+          greenhouse2: advertSourceFor("https://job-boards.greenhouse.io/acme/jobs/4567?gh_src=x"),
+          lever: advertSourceFor("https://jobs.lever.co/acme/2b7e-uuid"),
+          ashby: advertSourceFor("https://jobs.ashbyhq.com/acme/1234-uuid"),
+          elsewhere: advertSourceFor("https://careers.example.com/jobs/9"),
+        })""")
+        check("a Greenhouse posting maps to its board API",
+              routes["greenhouse"]["api"].startswith(
+                  "https://boards-api.greenhouse.io/v1/boards/acme/jobs/4567"),
+              str(routes["greenhouse"]))
+        check("including the newer host, without the tracking query",
+              routes["greenhouse2"]["api"].endswith("jobs/4567?content=true"),
+              str(routes["greenhouse2"]))
+        check("a Lever posting maps to its posting API",
+              routes["lever"]["api"] == "https://api.lever.co/v0/postings/acme/2b7e-uuid?mode=json",
+              str(routes["lever"]))
+        check("an Ashby posting maps to its job board",
+              routes["ashby"]["api"] == "https://api.ashbyhq.com/posting-api/job-board/acme",
+              str(routes["ashby"]))
+        check("and anywhere else is left to the paste box", routes["elsewhere"] is None,
+              str(routes["elsewhere"]))
+        html = page.evaluate("""() => htmlToText(
+          "&lt;p&gt;We need &lt;b&gt;ROS 2&lt;/b&gt;.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;C++&lt;/li&gt;&lt;li&gt;Docker&lt;/li&gt;&lt;/ul&gt;")""")
+        check("the board's HTML becomes the words a reader would meet",
+              "We need ROS 2." in html and "- C++" in html and "<" not in html, repr(html))
+        # Each board answers in a different shape. Stubbing the request keeps
+        # the test honest about what is being checked — the reading of the
+        # answer, not whether Greenhouse was reachable from here.
+        for board, url, payload, wanted in [
+            ("greenhouse", "https://boards.greenhouse.io/acme/jobs/4567",
+             '{"content":"&lt;p&gt;Own the matching engine in C++.&lt;/p&gt;&lt;ul&gt;'
+             '&lt;li&gt;Low latency&lt;/li&gt;&lt;li&gt;Linux&lt;/li&gt;&lt;/ul&gt;'
+             + "&lt;p&gt;" + "You will measure everything you ship. " * 8 + "&lt;/p&gt;\"}",
+             "matching engine"),
+            ("lever", "https://jobs.lever.co/acme/2b7e-uuid",
+             '{"descriptionPlain":"' + "We build execution systems in C++ and Python. " * 6
+             + '","lists":[{"text":"You bring","content":"&lt;li&gt;C++&lt;/li&gt;"}]}',
+             "execution systems"),
+            ("ashby", "https://jobs.ashbyhq.com/acme/1234-uuid",
+             '{"jobs":[{"id":"1234-uuid","descriptionPlain":"'
+             + "Research engineering on robot learning infrastructure. " * 12 + '"}]}',
+             "robot learning infrastructure"),
+        ]:
+            fetched = page.evaluate("""async ([url, body, wanted]) => {
+              const real = window.fetch;
+              window.fetch = async () => new Response(body, {status: 200});
+              const before = posting.url;
+              posting.url = url;
+              document.getElementById("advert").value = "";
+              const ok = await fetchAdvert(true);
+              posting.url = before;
+              window.fetch = real;
+              const got = document.getElementById("advert").value;
+              return {ok, has: got.includes(wanted), words: got.split(/\\s+/).length};
+            }""", [url, payload, wanted])
+            check(f"a {board} answer is read into the advert",
+                  fetched["ok"] and fetched["has"], str(fetched))
+        # Put back the advert the rest of this run is written against.
+        page.fill("#advert",
+                  "We need ROS 2 and C++ for a production pick-and-place cell.\n"
+                  "- Experience with closed-loop evaluation and imitation learning\n"
+                  "- Comfortable with Docker and reproducible experiments\n"
+                  "- You have measured a policy success rate honestly\n"
+                  "Tell us what you measured, and how you knew it was true.")
+        page.wait_for_timeout(400)
+
         print("\n[3b] it says how much of the advert the CV already answers")
         page.wait_for_selector("#matchCard:not(.hidden)", timeout=10000)
         score = page.inner_text("#matchScore")
@@ -753,11 +825,15 @@ def main() -> int:
               page.evaluate("Object.keys(localStorage).filter(k=>k.startsWith('studio.')).length") == 0)
 
         print("\n[13] the page stayed clean")
-        # The two probes for a local helper are expected to fail here — nothing
-        # is listening on 8765 — and a refused loopback request is logged by the
-        # browser itself. That noise is the feature working, not a fault.
+        # Expected noise, and both of these are the design working: the probes
+        # for a local helper that is not running, and the advert fetch for a
+        # posting on a board this machine has no route to. The browser logs a
+        # failed request itself, whatever the page does about it.
+        expected = ("ERR_CONNECTION_REFUSED", "ERR_TUNNEL_CONNECTION_FAILED",
+                    "ERR_NAME_NOT_RESOLVED", "ERR_INTERNET_DISCONNECTED",
+                    "ERR_PROXY_CONNECTION_FAILED")
         quiet = [c for c in console[:before_provoking] + [c for c in console if c.startswith("pageerror")]
-                 if "error" in c.lower() and "ERR_CONNECTION_REFUSED" not in c]
+                 if "error" in c.lower() and not any(mark in c for mark in expected)]
         check("no console errors", not quiet, "; ".join(quiet[:4]))
         browser.close()
 

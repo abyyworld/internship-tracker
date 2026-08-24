@@ -289,6 +289,9 @@ BSc Computer Science, University of London, 2027"></textarea>
       job boards refuse it. Paste the description here and every rewrite is written against
       what the role actually asks for.</p>
       <textarea id="advert" spellcheck="false" placeholder="Paste the job description…"></textarea>
+      <div class="row hidden" id="fetchRow" style="margin-top:8px">
+        <button class="secondary tiny" id="fetchAdvert">Fetch it for me</button>
+      </div>
       <p class="hint" id="advertNote"></p>
     </div>
 
@@ -358,6 +361,9 @@ BSc Computer Science, University of London, 2027"></textarea>
       on this device. When you press <strong>Rewrite</strong>, this page sends the CV text and
       the advert directly to the provider above using your key — the same call the local helper
       would make. It never passes through GitHub or any server of this project.</p>
+      <p class="hint">When the posting is on Greenhouse, Lever or Ashby, this page can read the
+      advert straight from that board — one request to the board you are applying to, which
+      already sees you when you open the posting. Everywhere else it is pasted.</p>
       <p class="hint"><strong>Google AI Studio</strong> is the free tier and is known to accept
       requests from a web page. Some providers refuse browser requests on purpose; if yours does,
       the message will say exactly that.</p>
@@ -1934,6 +1940,114 @@ function advertNote() {
   renderMatch();
 }
 
+// ── Fetching the advert, where the board publishes one ────────────────────
+// A web page cannot read another site's HTML — that is the whole reason this
+// is pasted. But the three boards this tracker actually reads from all publish
+// the posting as JSON from an endpoint that allows browser requests, and the
+// posting URL says which board it is and which posting. So for most of what
+// lands here, the paste is avoidable.
+function advertSourceFor(url) {
+  let parsed;
+  try { parsed = new URL(url); } catch (error) { return null; }
+  const host = parsed.hostname.toLowerCase();
+  const parts = parsed.pathname.split("/").filter(Boolean);
+
+  if (host.endsWith("greenhouse.io")) {
+    // boards.greenhouse.io/acme/jobs/123 and job-boards.greenhouse.io/acme/jobs/123
+    const at = parts.indexOf("jobs");
+    if (at > 0 && parts[at + 1]) {
+      return {board: "greenhouse", org: parts[at - 1], id: parts[at + 1].split("?")[0],
+              api: `https://boards-api.greenhouse.io/v1/boards/${parts[at - 1]}/jobs/`
+                   + `${parts[at + 1].split("?")[0]}?content=true`};
+    }
+  }
+  if (host.endsWith("lever.co")) {
+    // jobs.lever.co/acme/<uuid>
+    if (parts.length >= 2) {
+      return {board: "lever", org: parts[0], id: parts[1],
+              api: `https://api.lever.co/v0/postings/${parts[0]}/${parts[1]}?mode=json`};
+    }
+  }
+  if (host.endsWith("ashbyhq.com")) {
+    // jobs.ashbyhq.com/acme/<uuid> — the board is public, one posting is not,
+    // so the whole board comes back and the posting is found in it.
+    if (parts.length >= 2) {
+      return {board: "ashby", org: parts[0], id: parts[1],
+              api: `https://api.ashbyhq.com/posting-api/job-board/${parts[0]}`};
+    }
+  }
+  return null;
+}
+
+// The boards send HTML, sometimes escaped inside JSON. A CV editor needs the
+// words, in the order a reader would meet them.
+function htmlToText(html) {
+  const holder = document.createElement("textarea");
+  holder.innerHTML = String(html || "");
+  const decoded = holder.value || String(html || "");
+  return decoded
+    .replace(/<\s*(br|\/p|\/div|\/li|\/h[1-6]|\/tr)\s*\/?>/gi, "\n")
+    .replace(/<\s*li[^>]*>/gi, "- ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\r/g, "")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .split("\n").map(line => line.trim()).join("\n")
+    .trim();
+}
+
+async function fetchAdvert(quiet = false) {
+  const source = advertSourceFor(posting.url);
+  if (!source) return false;
+  const button = $("fetchAdvert");
+  const was = button.textContent;
+  button.disabled = true;
+  button.textContent = "Reading the posting…";
+  try {
+    const endpoint = source.api;
+    const response = await fetch(endpoint, {headers: {Accept: "application/json"}});
+    if (!response.ok) throw new Error(`the board answered ${response.status}`);
+    const payload = await response.json();
+    let text = "";
+    if (source.board === "greenhouse") {
+      text = htmlToText(payload.content);
+    } else if (source.board === "lever") {
+      text = [payload.descriptionPlain || htmlToText(payload.description),
+              ...(payload.lists || []).map(list =>
+                `${list.text}\n${htmlToText(list.content)}`),
+              payload.additionalPlain || ""].filter(Boolean).join("\n\n");
+    } else if (source.board === "ashby") {
+      const jobs = (payload && payload.jobs) || [];
+      const job = jobs.find(item => String(item.id) === source.id
+                            || String(item.jobUrl || "").includes(source.id));
+      if (!job) throw new Error("that posting is not on the board any more");
+      text = job.descriptionPlain || htmlToText(job.descriptionHtml);
+    }
+    text = String(text || "").trim();
+    if (text.split(/\s+/).filter(Boolean).length < 40) {
+      throw new Error("what came back was too short to be the advert");
+    }
+    $("advert").value = text;
+    store.set(KEY.advert, text);
+    advertNote();
+    say(`Read the advert from ${source.board} — ${text.split(/\s+/).length} words. `
+        + "Every rewrite is now written against what it actually asks for.", "ok");
+    return true;
+  } catch (error) {
+    // Not a failure worth shouting about on a page load: the paste box is
+    // right there, and it is what the reader expected to use anyway.
+    const message = `Could not read the posting from ${source.board}: ${error.message}. `
+      + "Paste the description instead.";
+    if (quiet) $("advertNote").textContent = message;
+    else say(message, "error");
+    return false;
+  } finally {
+    button.disabled = false;
+    button.textContent = was;
+  }
+}
+
 // ── What the advert asks for, and whether the CV answers it ────────────────
 // Done here rather than by a model, for three reasons: it costs nothing, it
 // works with no key, and it is checkable — a percentage nobody can reproduce
@@ -2093,8 +2207,23 @@ function matchAgainstAdvert() {
 
 function renderMatch() {
   const result = matchAgainstAdvert();
-  $("matchCard").classList.toggle("hidden", !result);
-  if (!result) return;
+  const waiting = !result && lines.length > 0;
+  $("matchCard").classList.toggle("hidden", !result && !waiting);
+  $("matchMissingWrap").classList.toggle("hidden", !result);
+  $("matchFoundWrap").classList.toggle("hidden", !result);
+  if (!result) {
+    if (!waiting) return;
+    const words = $("advert").value.trim().split(/\s+/).filter(Boolean).length;
+    $("matchScore").textContent = "—";
+    $("matchWord").textContent = "";
+    $("matchBar").style.width = "0%";
+    $("matchNote").textContent = words
+      ? `Paste a little more of the advert — ${words} words is not enough to read what it `
+        + "asks for."
+      : "Paste the advert above and this fills in: the phrases it leans on, how many of them "
+        + "your CV already answers, and which ones it does not.";
+    return;
+  }
   const {score, found, missing, terms} = result;
   $("matchScore").textContent = `${score}%`;
   $("matchWord").textContent = `of the ${terms} things this advert leans on`;
@@ -2840,6 +2969,7 @@ $("key").onchange = event => {
   loadModels(true);
 };
 $("advert").oninput = () => { store.set(KEY.advert, $("advert").value); advertNote(); };
+$("fetchAdvert").onclick = () => fetchAdvert(false);
 $("roleInput").oninput = () => { store.set(KEY.role, jobRole()); renderJob(); };
 $("companyInput").oninput = () => { store.set(KEY.company, jobCompany()); renderJob(); };
 $("forget").onclick = () => {
@@ -2870,6 +3000,12 @@ renderJob();
 renderProvider();
 renderMode();
 loadModels();
+if (advertSourceFor(posting.url)) {
+  $("fetchRow").classList.remove("hidden");
+  // Once, on arrival, and only when there is nothing to lose: a reader who has
+  // already pasted or edited the advert does not want it overwritten.
+  if (!$("advert").value.trim()) fetchAdvert(true);
+}
 renderLibrary();
 setDensity(store.get(KEY.density(currentCvId()), "normal"), false);
 const opened = currentCv();
