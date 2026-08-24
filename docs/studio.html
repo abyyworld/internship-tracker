@@ -29,7 +29,7 @@ color-scheme:light;
 --bg:#f7f8fa;--panel:#ffffff;--sunk:#eef1f5;--line:#e2e6ec;--line-2:#cfd6df;
 --text:#0f1419;--muted:#6b7684;
 --brand:#1a56db;--brand-ink:#ffffff;--brand-soft:#e8eefc;
---good:#0f7b4f;--red:#b42318;
+--good:#0f7b4f;--good-soft:#e3f6ec;--warn:#8a5300;--warn-soft:#fdf1de;--red:#b42318;
 --shadow:0 1px 2px rgba(15,20,25,.05),0 2px 8px rgba(15,20,25,.06);
 --paper:0 8px 30px rgba(15,20,25,.13);
 --green:var(--brand);--green2:var(--good);
@@ -41,14 +41,14 @@ color-scheme:dark;
 --bg:#0d1117;--panel:#151b23;--sunk:#1c232c;--line:#242c37;--line-2:#333d4b;
 --text:#e9eef5;--muted:#8b98a8;
 --brand:#5b8cff;--brand-ink:#08101f;--brand-soft:#182742;
---good:#4ed49a;--red:#ff8b82;
+--good:#4ed49a;--good-soft:#12291f;--warn:#e3b341;--warn-soft:#2a2113;--red:#ff8b82;
 --shadow:0 1px 2px rgba(0,0,0,.4);--paper:0 10px 40px rgba(0,0,0,.6)}}
 :root[data-theme="dark"]{
 color-scheme:dark;
 --bg:#0d1117;--panel:#151b23;--sunk:#1c232c;--line:#242c37;--line-2:#333d4b;
 --text:#e9eef5;--muted:#8b98a8;
 --brand:#5b8cff;--brand-ink:#08101f;--brand-soft:#182742;
---good:#4ed49a;--red:#ff8b82;
+--good:#4ed49a;--good-soft:#12291f;--warn:#e3b341;--warn-soft:#2a2113;--red:#ff8b82;
 --shadow:0 1px 2px rgba(0,0,0,.4);--paper:0 10px 40px rgba(0,0,0,.6)}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;background:var(--bg);
@@ -94,9 +94,26 @@ border:1px solid var(--line);background:var(--panel)}
 /* Beats a.btn's own display, which is more specific than a bare class. */
 .hidden{display:none!important}
 .count{color:var(--muted);font-size:12.5px}
+#density button.on{background:var(--brand);color:var(--brand-ink);border-color:transparent}
+.pages{font-weight:700}
+.pages.over{color:var(--warn)}
 .pill{display:inline-block;background:var(--brand-soft);border:1px solid transparent;color:var(--brand);
 border-radius:99px;padding:2px 9px;font-size:11.5px;margin:0 5px 5px 0}
+.pill.miss{background:var(--warn-soft);color:var(--warn)}
+.pill.has{background:var(--good-soft);color:var(--good)}
+.score{display:flex;align-items:baseline;gap:7px;margin-bottom:6px}
+.score b{font-size:27px;letter-spacing:-.03em;line-height:1}
+.score span{color:var(--muted);font-size:12.5px}
+.bar{height:7px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:var(--good);
+transition:width .25s ease}
+.bar i.low{background:var(--warn)}
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+/* Nothing in here may push a sibling out of the column: an overflowing toolbar
+   puts Download under the sidebar, where it is visible and unclickable. */
+.toolbar>*{min-width:0}
+#density{flex:0 1 auto;gap:3px;align-items:center}
+#density button{flex:0 0 auto}
 #drop{border:1.5px dashed var(--line);border-radius:13px;padding:22px 16px;text-align:center;
 margin-top:10px;transition:border-color .15s,background .15s}
 #drop.over{border-color:var(--brand);background:var(--brand-soft)}
@@ -107,30 +124,56 @@ margin-top:10px;transition:border-color .15s,background .15s}
    lays out. The whole sheet is scaled to fit its column; nothing inside it
    is resized, so the proportions survive. */
 #paper{overflow:hidden}
-#sheet{width:595.28pt;min-height:841.89pt;padding:36pt 42.52pt 40pt;background:#fff;color:#111;
+#sheet{--d:1;width:595.28pt;min-height:841.89pt;padding:36pt 42.52pt 40pt;background:#fff;color:#111;
 transform-origin:top left;box-shadow:var(--paper);border-radius:2px}
 #sheet .b{outline:none;white-space:pre-wrap}
+.hold{position:relative}
+#sheet .entry,#sheet .pair{position:relative}
+.rowtools{position:absolute;right:-6pt;top:-9pt;display:none;gap:1px;z-index:6;
+background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:2px;
+box-shadow:var(--shadow)}
+.hold:hover>.rowtools,.hold:focus-within>.rowtools,
+#sheet .entry:hover>.rowtools,#sheet .entry:focus-within>.rowtools,
+#sheet .pair:hover>.rowtools,#sheet .pair:focus-within>.rowtools{display:flex}
+.rowtools button{font:600 12px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+width:22px;height:20px;padding:0;border-radius:5px;background:transparent;border:0;
+color:var(--muted);cursor:pointer}
+.rowtools button:hover{background:var(--brand-soft);color:var(--brand)}
+.rowtools button.ask:hover{background:var(--good-soft);color:var(--good)}
+@media print{.rowtools{display:none!important}}
 #sheet .b:focus{background:#eef5ff;border-radius:3px}
-#sheet .name{font:700 24pt/27pt "Times New Roman",Times,serif;text-align:center;color:#111}
-#sheet .contact{font:8.3pt/11pt Helvetica,Arial,sans-serif;text-align:center;color:var(--date);margin-top:4pt}
-#sheet .section{font:700 10pt/12pt Helvetica,Arial,sans-serif;color:var(--accent);
+#sheet .name{font-weight:700;font-family:"Times New Roman",Times,serif;
+font-size:calc(24pt * var(--d));line-height:calc(27pt * var(--d));text-align:center;color:#111}
+#sheet .contact{font-family:Helvetica,Arial,sans-serif;font-size:calc(8.3pt * var(--d));
+line-height:calc(11pt * var(--d));text-align:center;color:var(--date);margin-top:calc(4pt * var(--d))}
+#sheet .section{font-weight:700;font-family:Helvetica,Arial,sans-serif;
+font-size:calc(10pt * var(--d));line-height:calc(12pt * var(--d));color:var(--accent);
 letter-spacing:1.6pt;text-transform:uppercase;margin:13pt 0 1pt;
 border-bottom:1.1px solid var(--rule);padding-bottom:3pt}
-#sheet .entry{display:flex;gap:10pt;align-items:baseline;margin-top:7pt}
-#sheet .entry .title{font:700 10.8pt/13pt "Times New Roman",Times,serif;flex:1}
-#sheet .entry .when{font:700 8.4pt/13pt Helvetica,Arial,sans-serif;color:var(--date);white-space:nowrap}
-#sheet .title{font:700 10.8pt/13pt "Times New Roman",Times,serif;margin-top:7pt}
-#sheet .sub{font:italic 9.8pt/13.5pt "Times New Roman",Times,serif;color:#3D4A56}
-#sheet .tagline{font:italic 11.5pt/14pt "Times New Roman",Times,serif;text-align:center;
+#sheet .entry{display:flex;gap:10pt;align-items:baseline;margin-top:calc(7pt * var(--d))}
+#sheet .entry .title{font-weight:700;font-family:"Times New Roman",Times,serif;
+font-size:calc(10.8pt * var(--d));line-height:calc(13pt * var(--d));flex:1}
+#sheet .entry .when{font-weight:700;font-family:Helvetica,Arial,sans-serif;
+font-size:calc(8.4pt * var(--d));line-height:calc(13pt * var(--d));color:var(--date);white-space:nowrap}
+#sheet .title{font-weight:700;font-family:"Times New Roman",Times,serif;
+font-size:calc(10.8pt * var(--d));line-height:calc(13pt * var(--d));margin-top:calc(7pt * var(--d))}
+#sheet .sub{font-style:italic;font-family:"Times New Roman",Times,serif;
+font-size:calc(9.8pt * var(--d));line-height:calc(13.5pt * var(--d));color:#3D4A56}
+#sheet .tagline{font-style:italic;font-family:"Times New Roman",Times,serif;
+font-size:calc(11.5pt * var(--d));line-height:calc(14pt * var(--d));text-align:center;
 color:var(--accent);margin-top:6pt}
-#sheet .body{font:9.7pt/12.1pt "Times New Roman",Times,serif;margin-top:2pt;text-align:justify}
-#sheet .bullet{font:9.7pt/12.1pt "Times New Roman",Times,serif;margin-top:2pt;
+#sheet .body{font-family:"Times New Roman",Times,serif;font-size:calc(9.7pt * var(--d));
+line-height:calc(12.1pt * var(--d));margin-top:calc(2pt * var(--d));text-align:justify}
+#sheet .bullet{font-family:"Times New Roman",Times,serif;font-size:calc(9.7pt * var(--d));
+line-height:calc(12.1pt * var(--d));margin-top:calc(2pt * var(--d));
 padding-left:11pt;text-indent:-11pt}
-#sheet .pair{display:flex;gap:10pt;align-items:baseline;margin-top:3pt}
-#sheet .pair .label{font:700 8.4pt/12pt Helvetica,Arial,sans-serif;color:var(--accent);
+#sheet .pair{display:flex;gap:10pt;align-items:baseline;margin-top:calc(3pt * var(--d))}
+#sheet .pair .label{font-weight:700;font-family:Helvetica,Arial,sans-serif;
+font-size:calc(8.4pt * var(--d));line-height:calc(12pt * var(--d));color:var(--accent);
 flex:0 0 92pt;letter-spacing:.3pt}
-#sheet .pair .values{font:9.6pt/12pt "Times New Roman",Times,serif;flex:1}
-#sheet .gap{height:6pt}
+#sheet .pair .values{font-family:"Times New Roman",Times,serif;font-size:calc(9.6pt * var(--d));
+line-height:calc(12pt * var(--d));flex:1}
+#sheet .gap{height:calc(6pt * var(--d))}
 #sheet .changed{background:#eaf6ee;border-radius:3px}
 .proposal{background:#eef8f2;border:1px solid #bfe3cd;border-left:3px solid var(--green2);
 border-radius:6px;padding:6pt 8pt;margin:5pt 0}
@@ -219,6 +262,7 @@ BSc Computer Science, University of London, 2027"></textarea>
     <div class="card">
       <div class="toolbar">
         <div class="count" id="docCount">Click any line and type — this is exactly how it prints.</div>
+        <div class="row" id="density"></div>
         <div class="row" style="flex:0 0 auto">
           <button class="secondary tiny" id="acceptAll">Accept all</button>
           <button class="secondary tiny" id="rejectAll">Reject all</button>
@@ -246,6 +290,21 @@ BSc Computer Science, University of London, 2027"></textarea>
       what the role actually asks for.</p>
       <textarea id="advert" spellcheck="false" placeholder="Paste the job description…"></textarea>
       <p class="hint" id="advertNote"></p>
+    </div>
+
+    <div class="card hidden" id="matchCard">
+      <h2>Against this advert</h2>
+      <div class="score"><b id="matchScore">—</b><span id="matchWord"></span></div>
+      <div class="bar"><i id="matchBar"></i></div>
+      <p class="hint" id="matchNote"></p>
+      <div id="matchMissingWrap">
+        <label>Asked for, not in your CV</label>
+        <div id="matchMissing"></div>
+      </div>
+      <details id="matchFoundWrap" style="margin-top:8px">
+        <summary class="hint" style="cursor:pointer">What it already answers</summary>
+        <div id="matchFound" style="margin-top:6px"></div>
+      </details>
     </div>
 
     <div class="card">
@@ -376,6 +435,7 @@ const KEY = {
   mode: "studio.mode",
   instruction: `studio.instruction.${jobKey}`,
   models: id => `studio.models.${id}`,
+  density: id => `studio.density.${id}`,
   key: id => `studio.key.${id}`,
   model: id => `studio.model.${id}`,
 };
@@ -589,6 +649,7 @@ function useCv(id) {
   // Kept in step so an older cached copy of this page still finds a CV.
   store.set(KEY.cv, cv ? cv.text : "");
   renderLibrary();
+  setDensity(store.get(KEY.density(id), "normal"), false);
   if (cv) { setCv(cv.text); showPaste(false); }
   else { lines = []; render(); showPaste(true); }
 }
@@ -695,8 +756,51 @@ function render() {
     ? `${open} suggested ${open === 1 ? "edit" : "edits"} waiting — accept or reject each one.`
     : (changed
       ? `${changed} ${changed === 1 ? "line differs" : "lines differ"} from your original.`
-      : "Click any line and type — this is exactly how it prints.");
+      : "Click any line and type. Hover one for ✦ rewrite, move and cut.");
   fitPage();
+  renderMatch();
+  pageNote();
+}
+
+// The controls have to sit outside the editable element: inside it they would
+// be read back as part of the line the moment anybody typed.
+function rowTools(index) {
+  const tools = document.createElement("div");
+  tools.className = "rowtools";
+  tools.contentEditable = "false";
+  const add = (label, title, handler, kind = "") => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = kind;
+    button.textContent = label;
+    button.title = title;
+    button.onmousedown = event => event.preventDefault();   // keep the caret
+    button.onclick = event => { event.stopPropagation(); handler(); };
+    tools.append(button);
+  };
+  add("✦", "Rewrite this line for this job", () => rewriteLine(index), "ask");
+  add("↑", "Move this line up", () => moveLine(index, -1));
+  add("↓", "Move this line down", () => moveLine(index, 1));
+  add("✕", "Cut this line", () => cutLine(index));
+  return tools;
+}
+
+function moveLine(index, by) {
+  const to = index + by;
+  if (to < 0 || to >= lines.length) return;
+  const [line] = lines.splice(index, 1);
+  lines.splice(to, 0, line);
+  saveDraft();
+  render();
+}
+
+function cutLine(index) {
+  const line = lines[index];
+  if (!line) return;
+  if (line.text.trim() && !confirm(`Cut this line?\n\n${line.text.trim().slice(0, 120)}`)) return;
+  lines.splice(index, 1);
+  saveDraft();
+  render();
 }
 
 function blockFor(line, index) {
@@ -722,6 +826,7 @@ function blockFor(line, index) {
     const read = () => `${title.textContent} — ${when.textContent}`;
     editable(title, line, read);
     editable(when, line, read);
+    row.append(rowTools(index));
     return row;
   }
   if (kind === "pair") {
@@ -738,13 +843,20 @@ function blockFor(line, index) {
     const read = () => `${label.textContent}\u2003${values.textContent}`;
     editable(label, line, read);
     editable(values, line, read);
+    row.append(rowTools(index));
     return row;
   }
   const node = document.createElement("div");
   node.className = kind + " b" + changed;
   node.textContent = kind === "bullet" ? line.text.trim() : line.text;
   editable(node, line, () => node.textContent);
-  return node;
+  // Wrapped, because this element is the editable one: the controls go beside
+  // it rather than in it. The wrapper carries no styling, so the typography and
+  // the margins that set this document are untouched.
+  const hold = document.createElement("div");
+  hold.className = "hold";
+  hold.append(node, rowTools(index));
+  return hold;
 }
 
 function editable(node, line, read) {
@@ -843,9 +955,59 @@ function trouble(message) {
 // refuses to load or a megabyte inlined. The layout below is the one in
 // autoapply/cv_render.py: A4, 42.52pt side margins, Times body, letterspaced
 // Helvetica-Bold heads in #14324F, right-aligned dates.
+// How tightly the CV is set. The same multiplier drives the stylesheet (every
+// size on the sheet is that number times --d) and the writer below, so what is
+// on screen stays what comes out of the file.
+const DENSITIES = [
+  {id: "roomy", label: "Roomy", scale: 1.06},
+  {id: "normal", label: "Normal", scale: 1},
+  {id: "tight", label: "Tight", scale: 0.94},
+  {id: "tighter", label: "Tighter", scale: 0.88},
+];
+let density = 1;
+
+function densityId() {
+  const found = DENSITIES.find(item => Math.abs(item.scale - density) < 0.001);
+  return found ? found.id : "normal";
+}
+
+function setDensity(id, remember = true) {
+  const chosen = DENSITIES.find(item => item.id === id) || DENSITIES[1];
+  density = chosen.scale;
+  if (remember) store.set(KEY.density(currentCvId()), chosen.id);
+  $("sheet").style.setProperty("--d", String(density));
+  renderDensity();
+  fitPage();
+  pageNote();
+}
+
+function renderDensity() {
+  const box = $("density");
+  box.replaceChildren();
+  const now = densityId();
+  for (const item of DENSITIES) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "secondary tiny" + (item.id === now ? " on" : "");
+    button.textContent = item.label;
+    button.title = `Set the whole CV ${item.id === "roomy" ? "looser" : "tighter"}`;
+    button.onclick = () => setDensity(item.id);
+    box.append(button);
+  }
+  const note = document.createElement("span");
+  note.className = "count pages";
+  note.id = "pageNote";
+  box.append(note);
+}
+
+const scaled = (spec, by) => ({...spec, size: spec.size * by, lead: spec.lead * by,
+                               track: spec.track ? spec.track * by : spec.track,
+                               css: spec.css.replace(/([\d.]+)px/, (all, size) =>
+                                 `${(Number(size) * by).toFixed(2)}px`)});
+
 const PAGE = {w: 595.28, h: 841.89, left: 42.52, top: 36, bottom: 40};
 const CONTENT_W = PAGE.w - 2 * PAGE.left;
-const FONTS = {
+const FONT_TABLE = {
   name: {font: "F2", size: 24, lead: 27, css: 'bold 24px "Times New Roman"'},
   contact: {font: "F3", size: 8.3, lead: 11, css: '8.3px Helvetica, Arial'},
   section: {font: "F4", size: 10, lead: 12, css: 'bold 10px Helvetica, Arial', track: 1.6},
@@ -857,6 +1019,7 @@ const FONTS = {
   when: {font: "F4", size: 8.4, lead: 13, css: 'bold 8.4px Helvetica, Arial'},
   body: {font: "F1", size: 9.7, lead: 12.1, css: '9.7px "Times New Roman"'},
 };
+const FONTS = FONT_TABLE;
 const ACCENT = [0.078, 0.196, 0.310];   // #14324F
 const RULE = [0.616, 0.698, 0.761];     // #9DB2C2
 const DATE_INK = [0.169, 0.227, 0.278]; // #2B3A47
@@ -908,7 +1071,31 @@ function pdfString(text) {
   return out;
 }
 
+let pagesWritten = 1;
+
+// Asked of the writer rather than of the screen: a count measured any other way
+// can say "one page" and then hand over two.
+let counting = null;
+function pageNote() {
+  clearTimeout(counting);
+  counting = setTimeout(() => {
+    const note = $("pageNote");
+    if (!note) return;
+    if (!lines.length) { note.textContent = ""; return; }
+    try { buildPdf(); } catch (error) { note.textContent = ""; return; }
+    note.textContent = pagesWritten === 1 ? "1 page" : `${pagesWritten} pages`;
+    note.classList.toggle("over", pagesWritten > 1);
+    note.title = pagesWritten > 1
+      ? "Tighter, or fewer lines, if it has to be one page."
+      : "It fits on one page.";
+  }, 180);
+}
+
 function buildPdf() {
+  // Shadows the table above for this whole function, so every size, leading and
+  // margin below is the density-scaled one.
+  const FONTS = Object.fromEntries(
+    Object.entries(FONT_TABLE).map(([name, spec]) => [name, scaled(spec, density)]));
   const pages = [];
   let ops = [];
   let y = PAGE.h - PAGE.top;
@@ -935,7 +1122,7 @@ function buildPdf() {
   lines.forEach((line, index) => {
     const kind = kindOf(line.text, index);
     const value = line.text.trim();
-    if (kind === "gap") { y -= 6; return; }
+    if (kind === "gap") { y -= 6 * density; return; }
     if (kind === "name") {
       room(FONTS.name.lead); y -= FONTS.name.lead;
       put(value, FONTS.name, PAGE.left + (CONTENT_W - widthOf(value, FONTS.name)) / 2);
@@ -954,18 +1141,18 @@ function buildPdf() {
       return;
     }
     if (kind === "section") {
-      room(26);
-      y -= 15;
+      room(26 * density);
+      y -= 15 * density;
       put(value.toUpperCase(), FONTS.section, PAGE.left, ACCENT);
-      y -= 4;
+      y -= 4 * density;
       ops.push(`${RULE[0]} ${RULE[1]} ${RULE[2]} RG`, "1.1 w",
                `${PAGE.left} ${y.toFixed(2)} m ${(PAGE.left + CONTENT_W).toFixed(2)} ${y.toFixed(2)} l S`);
       return;
     }
     if (kind === "entry") {
       const parts = splitDate(value) || {title: value, when: ""};
-      room(FONTS.title.lead + 5);
-      y -= FONTS.title.lead + 4;
+      room(FONTS.title.lead + 5 * density);
+      y -= FONTS.title.lead + 4 * density;
       const when = parts.when || "";
       const whenWidth = when ? widthOf(when, FONTS.when) : 0;
       const rows = wrap(parts.title, FONTS.title, CONTENT_W - whenWidth - 12);
@@ -978,8 +1165,8 @@ function buildPdf() {
       return;
     }
     if (kind === "title") {
-      room(FONTS.title.lead + 5);
-      y -= 4;
+      room(FONTS.title.lead + 5 * density);
+      y -= 4 * density;
       paragraph(value, FONTS.title);
       return;
     }
@@ -989,7 +1176,7 @@ function buildPdf() {
     }
     if (kind === "pair") {
       const parts = pairOf(value) || {label: value, values: ""};
-      const labelWidth = 92;
+      const labelWidth = 92 * density;
       const rows = wrap(parts.values, FONTS.pairValue, CONTENT_W - labelWidth - 10);
       rows.forEach((row, row_index) => {
         room(FONTS.pairValue.lead);
@@ -1001,11 +1188,11 @@ function buildPdf() {
     }
     if (kind === "bullet") {
       const text = value.replace(/^[•\-*–]\s+/, "");
-      wrap(text, FONTS.body, CONTENT_W - 11).forEach((row, row_index) => {
+      wrap(text, FONTS.body, CONTENT_W - 11 * density).forEach((row, row_index) => {
         room(FONTS.body.lead);
         y -= FONTS.body.lead;
         if (row_index === 0) put("•", FONTS.body, PAGE.left);
-        put(row, FONTS.body, PAGE.left + 11);
+        put(row, FONTS.body, PAGE.left + 11 * density);
       });
       return;
     }
@@ -1027,6 +1214,7 @@ function buildPdf() {
     + Object.entries(fontIds).map(([name, id]) => `/${name} ${id} 0 R`).join(" ")
     + " >> >>";
   // Each page costs two objects, and the page tree sits after them all.
+  pagesWritten = pages.length;
   const pagesId = objects.length + pages.length * 2 + 1;
   const pageIds = [];
   for (const page of pages) {
@@ -1743,6 +1931,199 @@ function advertNote() {
   $("advertNote").textContent = words
     ? `${words} words — rewrites will be written against this.`
     : "Without the advert, rewrites work from the role title alone.";
+  renderMatch();
+}
+
+// ── What the advert asks for, and whether the CV answers it ────────────────
+// Done here rather than by a model, for three reasons: it costs nothing, it
+// works with no key, and it is checkable — a percentage nobody can reproduce
+// is worth less than no percentage at all. The rule is simply whether the
+// term the advert leans on appears in the CV.
+const STOP = new Set(((
+  "a about above across after again against all also am an and another any are around as at "
+  + "back be because been before being below best better between both but by can cannot come "
+  + "could day did do does doing done down during each either else etc even every few first "
+  + "for from further get give go good great had has have having he help her here hers him his "
+  + "how i if in including into is it its just keep know least less like little long look made "
+  + "make many may me might more most much must my need never new next no nor not now of off "
+  + "often on once one only or other others our out over own part per put same see seem several "
+  + "shall she should show since so some such take than that the their them then there these "
+  + "they this those through time to too under until up upon us use used using very via want "
+  + "was way we well were what when where whether which while who whom why will with within "
+  + "without work would year years you your yours "
+  // The boilerplate every advert is made of, which tells you nothing about the job.
+  + "ability able applicant applicants apply candidate candidates career company culture "
+  + "day-to-day deliver delivery desirable duties employer environment essential excellent "
+  + "experience following gain hire hiring ideal join knowledge look looking opportunity "
+  + "opportunities passion passionate people person position preferred problem qualifications "
+  + "requirement requirements responsibilities role roles salary skill skills strong success "
+  + "successful support team teams us welcome working world "
+  + "bonus comfortable daily familiarity familiar plus preferred nice weekly monthly end own "
+  + "owns owner talk present presentation stack thing things lot lots year years month months "
+  // The title line names the job, not what it needs.
+  + "intern interns internship graduate junior senior placement summer winter autumn spring "
+  // Words that qualify a requirement without being one. Not "deep": deep
+  // learning is a thing somebody asks for.
+  + "building modern various general hands-on solid broad proven relevant "
+).split(" ")).filter(Boolean));
+
+const bareWords = value => String(value).toLowerCase()
+  .replace(/[^a-z0-9+#./ -]/g, " ")
+  .replace(/\s+/g, " ")
+  .trim()
+  .split(" ")
+  // A full stop inside a word is part of it — Node.js, 3.11 — at the end it is
+  // punctuation, and "manipulation." is not a thing anyone asks for.
+  .map(word => word.replace(/^[.-]+|[.-]+$/g, ""))
+  .filter(Boolean);
+
+// A pair of words only means something if the advert put them next to each
+// other in the same breath. Across a comma they are two different
+// requirements: "calibration, semantic mapping" is not "calibration semantic".
+// Split where punctuation ends a clause, which is punctuation followed by
+// space — so CI/CD, Node.js and RGB-D survive intact.
+const clausesOf = value => String(value)
+  .split(/(?:[.,;:!?)\]]+(?=\s|$)|[\n\r]+|\s[-•*\u2022]\s|\sand\s|\sor\s)/)
+  .filter(part => part && part.trim());
+
+// "ROS 2" and "ros2", "pipelines" and "pipeline" are the same claim.
+const stem = word => word.replace(/(?:ies|es|s)$/, m => (m === "ies" ? "y" : ""));
+const flat = value => bareWords(value).map(stem).join(" ");
+
+function advertTerms(advert) {
+  const raw = String(advert);
+  // What names a technology, said once, matters more than a word said three
+  // times: PyTorch, ROS 2, C++, MuJoCo, RGB-D. They are recognisable without a
+  // vocabulary to maintain — an internal capital, a digit, or a symbol.
+  const named = new Set();
+  for (const token of raw.match(/[A-Za-z][A-Za-z0-9+#.]*/g) || []) {
+    if (/[a-z][A-Z]/.test(token) || /^[A-Z]{2,}$/.test(token) || /[0-9+#]/.test(token)) {
+      named.add(stem(token.toLowerCase()));
+    }
+  }
+  // A line that starts with a bullet is where an advert puts its requirements.
+  const asked = new Set();
+  for (const line of raw.split(/\n/)) {
+    if (!/^\s*[-•*\u2022]/.test(line)) continue;
+    for (const word of bareWords(line)) asked.add(stem(word));
+  }
+
+  const counts = new Map();
+  const bump = (term, weight) => counts.set(term, (counts.get(term) || 0) + weight);
+  for (const clause of clausesOf(raw)) {
+    const words = bareWords(clause);
+    for (let index = 0; index < words.length; index += 1) {
+      const word = words[index];
+      if (STOP.has(word) || word.length < 3 || /^\d+$/.test(word)) continue;
+      const root = stem(word);
+      // Said once is enough. What separates a requirement from filler is not
+      // how often it appears but what kind of word it is and where it sits.
+      bump(word, 1 + (named.has(root) ? 2 : 0) + (asked.has(root) ? 0.6 : 0));
+      const next = words[index + 1];
+      if (!next || STOP.has(next) || next.length < 3) continue;
+      // A pair is where the real requirement usually lives — "imitation
+      // learning", "closed-loop evaluation" — so it outranks either half.
+      bump(`${word} ${next}`, 2.4 + (named.has(stem(next)) ? 1 : 0));
+    }
+  }
+
+  const ranked = [...counts.entries()]
+    .map(([term, weight]) => ({term, weight}))
+    // An adverb is not a requirement: "rate honestly" and "evaluation
+    // disagrees" are sentence fragments, not things to have done.
+    .filter(({term}) => !term.split(" ").some(word => /ly$/.test(word) && word.length > 5))
+    .sort((a, b) => b.weight - a.weight || a.term.localeCompare(b.term));
+  // Phrases first, whatever their weight: "imitation learning" is one thing the
+  // advert asks for, and listing "imitation" and "learning" separately turns
+  // one requirement into two halves of itself.
+  const ordered = [...ranked.filter(item => item.term.includes(" ")),
+                   ...ranked.filter(item => !item.term.includes(" "))];
+  const kept = [];
+  for (const candidate of ordered) {
+    if (candidate.weight < 1.5) continue;
+    const overlaps = kept.some(other =>
+      other.term === candidate.term
+      || other.term.split(" ").includes(candidate.term)
+      || candidate.term.split(" ").includes(other.term));
+    if (overlaps) continue;
+    kept.push(candidate);
+    if (kept.length >= 22) break;
+  }
+  return kept;
+}
+
+function matchAgainstAdvert() {
+  const advert = $("advert").value.trim();
+  // Too little of either and the number would be noise dressed as a measurement.
+  if (!lines.length) return null;
+  if (advert.split(/\s+/).filter(Boolean).length < 25) return null;
+  const terms = advertTerms(advert);
+  if (!terms.length) return null;
+  const cv = ` ${flat(rawText())} `;
+  // Per line as well as whole, because a requirement is answered by a line that
+  // contains its words — not only by one that repeats them in order. The CV
+  // says "closed-loop policy evaluation"; the advert asks for "closed-loop
+  // evaluation"; that is the same claim, and a substring test says it is not.
+  const perLine = lines.map(line => ` ${flat(line.text)} `);
+  const has = term => {
+    const wanted = flat(term);
+    if (cv.includes(` ${wanted} `)) return true;
+    // "ROS 2" and "ros2" are the same thing written two ways.
+    if (wanted.includes(" ") && cv.replace(/ /g, "").includes(wanted.replace(/ /g, ""))) return true;
+    const parts = wanted.split(" ").filter(Boolean);
+    if (parts.length < 2) return false;
+    return perLine.some(line => parts.every(part => line.includes(` ${part} `)));
+  };
+
+  const found = [];
+  const missing = [];
+  let earned = 0;
+  let total = 0;
+  for (const {term, weight} of terms) {
+    total += weight;
+    if (has(term)) {
+      earned += weight;
+      found.push(term);
+    } else {
+      missing.push(term);
+    }
+  }
+  return {score: Math.round((earned / total) * 100), found, missing, terms: terms.length};
+}
+
+function renderMatch() {
+  const result = matchAgainstAdvert();
+  $("matchCard").classList.toggle("hidden", !result);
+  if (!result) return;
+  const {score, found, missing, terms} = result;
+  $("matchScore").textContent = `${score}%`;
+  $("matchWord").textContent = `of the ${terms} things this advert leans on`;
+  $("matchBar").style.width = `${Math.max(2, score)}%`;
+  $("matchBar").classList.toggle("low", score < 55);
+  $("matchNote").textContent = missing.length
+    ? "Each one below is a phrase the advert uses that your CV does not. Where you have "
+      + "actually done it, say so in their words — where you have not, leave it out. This "
+      + "counts words, not truth."
+    : "Every phrase this advert leans on already appears in your CV.";
+  const chips = (box, list, kind) => {
+    const node = $(box);
+    node.replaceChildren();
+    if (!list.length) {
+      const empty = document.createElement("span");
+      empty.className = "hint";
+      empty.textContent = "Nothing.";
+      node.append(empty);
+      return;
+    }
+    for (const term of list) {
+      const pill = document.createElement("span");
+      pill.className = `pill ${kind}`;
+      pill.textContent = term;
+      node.append(pill);
+    }
+  };
+  chips("matchMissing", missing, "miss");
+  chips("matchFound", found, "has");
 }
 
 // ── Talking to the provider ────────────────────────────────────────────────
@@ -2051,6 +2432,73 @@ function parseRewrites(content) {
     // An empty text is a proposal to cut the line, which is a real edit.
     .filter(item => Number.isInteger(item.line) && item.line >= 0
       && item.line < lines.length && (item.text || item.cut));
+}
+
+// The whole-CV pass is the wrong tool for "this one line is weak". It costs a
+// minute, returns twenty suggestions, and buries the one that was wanted.
+function oneLinePrompt(index) {
+  const advert = $("advert").value.trim();
+  const instruction = $("instruction").value.trim();
+  const around = lines
+    .map((line, at) => ({at, text: line.text}))
+    .filter(entry => entry.text.trim())
+    .map(entry => `${entry.at === index ? ">" : " "} ${entry.at}: ${entry.text}`)
+    .join("\n");
+  return [
+    instruction ? `What the applicant asked for, above everything else: ${instruction}\n` : "",
+    `The role: ${jobRole() || "(not given)"}`,
+    jobCompany() ? `The company: ${jobCompany()}` : "",
+    advert ? `\nThe advert:\n${advert}` : "\n(No advert text, so work from the role title.)",
+    "\nThe CV, in order. Rewrite only the line marked > — the rest is context:",
+    around,
+    "",
+    `Rewrite line ${index} so it answers this advert better. Every fact in it must already`,
+    "be somewhere in the CV above. If you cannot genuinely improve it, say so by returning",
+    'the same text. Return JSON only: {"text":"the line","why":"the requirement it answers"}',
+  ].filter(Boolean).join("\n");
+}
+
+async function rewriteLine(index) {
+  if (busy) { say("Wait for the rewrite that is already running.", ""); return; }
+  const line = lines[index];
+  if (!line || !line.text.trim()) return;
+  const provider = currentProvider();
+  const base = currentBase();
+  const key = $("key").value.trim();
+  const model = chosenModel() || provider.models[0] || "";
+  if (!base || !key || !model) {
+    trouble("Choose a provider and a model, and paste your key, to rewrite a line.");
+    return;
+  }
+  busy = true;
+  const started = Date.now();
+  status(`Rewriting one line with ${model}…`);
+  say("");
+  try {
+    const content = await callProvider(base, key, model, oneLinePrompt(index));
+    const text = String(content).replace(/```(?:json)?/g, "");
+    const cut = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+    const answer = JSON.parse(cut);
+    const written = String(answer.text || "").trim();
+    status("");
+    if (!written || written === line.text.trim()) {
+      say("It had nothing better for that line, which is a real answer.", "");
+      return;
+    }
+    if (tooSimilar(line.text, written)) {
+      say("What came back was the same line reworded, so it is not worth your time.", "");
+      return;
+    }
+    line.proposal = {text: written, why: String(answer.why || "").trim()};
+    render();
+    say(`One suggestion, in ${Math.max(1, Math.round((Date.now() - started) / 1000))}s — `
+        + "accept it or keep yours.", "ok");
+  } catch (error) {
+    trouble(error.message);
+  } finally {
+    running = null;
+    busy = false;
+  }
 }
 
 async function rewrite() {
@@ -2423,6 +2871,7 @@ renderProvider();
 renderMode();
 loadModels();
 renderLibrary();
+setDensity(store.get(KEY.density(currentCvId()), "normal"), false);
 const opened = currentCv();
 if (opened) { setCv(opened.text); showPaste(false); }
 else { render(); showPaste(true); $("cvPaste").focus(); }
