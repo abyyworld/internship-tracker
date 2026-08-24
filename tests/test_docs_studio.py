@@ -262,7 +262,47 @@ class StudioIsSelfContainedTests(unittest.TestCase):
                        'id="themeBtn"'):
             self.assertIn(marker, self.source, f"the studio lost: {marker}")
         # The sheet is paper: it does not change colour with the room.
-        self.assertRegex(self.source, r"#sheet\{width:595\.28pt[^}]*background:#fff")
+        # (--d, the density multiplier, now leads the rule.)
+        self.assertRegex(self.source, r"#sheet\{[^}]*width:595\.28pt[^}]*background:#fff")
+
+    def test_it_says_how_much_of_the_advert_the_cv_answers(self):
+        # The one thing every CV tool is asked for, and the one it must not
+        # fake: a score anybody can reproduce by reading the two documents.
+        # Done here rather than by a model — it costs nothing, needs no key,
+        # and can be checked.
+        self.assertIn("function advertTerms", self.source)
+        self.assertIn("function matchAgainstAdvert", self.source)
+        self.assertIn("Asked for, not in your CV", self.source)
+        # It counts words appearing, and says so rather than implying more.
+        self.assertIn("counts words, not truth", self.source)
+        # A phrase is answered by a line carrying its words, not only by one
+        # that repeats them in order: "closed-loop policy evaluation" answers
+        # "closed-loop evaluation".
+        self.assertIn("const perLine", self.source)
+        # And a pair of words only counts when the advert put them together.
+        self.assertIn("const clausesOf", self.source)
+
+    def test_a_line_can_be_worked_on_by_itself(self):
+        # The whole-CV pass is the wrong tool for one weak line: it costs a
+        # minute and buries the answer among twenty others.
+        self.assertIn("function rewriteLine", self.source)
+        self.assertIn("function moveLine", self.source)
+        self.assertIn("function cutLine", self.source)
+        # The controls must never become part of the text they sit beside.
+        self.assertIn('tools.contentEditable = "false"', self.source)
+        self.assertRegex(self.source, r'hold\.append\(node, rowTools\(index\)\)')
+
+    def test_the_page_count_comes_from_the_writer(self):
+        # A count measured any other way can say "one page" and then hand over
+        # two. This one is whatever the file turned out to be.
+        self.assertIn("pagesWritten = pages.length", self.source)
+        self.assertIn("function pageNote", self.source)
+        # Density is one number driving both the sheet and the file, so what is
+        # on screen stays what comes out.
+        self.assertIn("--d:1", self.source)
+        self.assertRegex(self.source, r"font-size:calc\(9\.7pt \* var\(--d\)\)")
+        self.assertIn("scaled(spec, density)", self.source)
+        self.assertIn("density: id => `studio.density.${id}`", self.source)
 
     def test_it_says_where_the_reader_data_goes(self):
         # The trade is: nothing to install, but the CV and the advert go
