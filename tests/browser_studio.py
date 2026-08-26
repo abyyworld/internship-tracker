@@ -92,6 +92,16 @@ class Provider(http.server.BaseHTTPRequestHandler):
             # page has to stay usable and stoppable for as long as this runs.
             time.sleep(30)
             return
+        if Provider.mode == "echo-key":
+            # Some gateways quote the credential they rejected straight back.
+            # The page has to refuse to render it: the key field is a password
+            # field, and a key in the notice is a key in the screenshot.
+            sent = self.headers.get("Authorization", "").replace("Bearer ", "")
+            self._answer(401, json.dumps({"error": {
+                "message": f"Invalid API key provided: {sent}. "
+                           "Check your key at the provider's dashboard.",
+            }}).encode())
+            return
         if Provider.mode == "google-error":
             # Google's OpenAI-compatible endpoint wraps errors in an array. A
             # page that assumes {"error": {...}} shows "HTTP 400" and nothing.
@@ -699,6 +709,26 @@ def main() -> int:
               page.get_attribute("#status", "class"))
         page.fill("#key", was_key)
         page.wait_for_timeout(700)
+
+        print("\n[7d] a provider that hands the key back does not get it printed")
+        # The key box is a password field and this page says the key never
+        # leaves the browser. A provider quoting the rejected key into its
+        # error message would put it on screen, into the screenshot and into
+        # the support thread the reader pastes it to.
+        Provider.mode = "echo-key"
+        page.click("#rewrite")
+        page.wait_for_function(
+            "document.getElementById('status').classList.contains('bad')", timeout=20000)
+        whole_page = page.inner_text("body")
+        check("the key is nowhere on the page",
+              was_key not in whole_page,
+              [line for line in whole_page.splitlines() if was_key in line])
+        check("but the reader is still told the key was refused",
+              "refused" in page.inner_text("#notice").lower(), page.inner_text("#notice"))
+        check("and what is left of the provider's own words is still there",
+              "dashboard" in page.inner_text("#notice").lower(), page.inner_text("#notice"))
+        Provider.mode = "ok"
+        page.wait_for_timeout(300)
 
         print("\n[8] a provider that hangs can be given up on")
         # "its taking too long seems stuck": a page that says Rewriting… and

@@ -16,6 +16,7 @@ inside "Risk-".
 
 from pathlib import Path
 import re
+import secrets
 import subprocess
 import unittest
 
@@ -38,6 +39,15 @@ CREDENTIALS = {
     "private key file": r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----",
 }
 
+# The bridge's bearer token is secrets.token_urlsafe(32) — no vendor prefix, so
+# nothing above could ever match it, which is exactly how a credential gets
+# past a scanner. What gives that kind away is not its shape but the name it is
+# assigned to, so the name is what is looked for.
+OPAQUE_SECRET = re.compile(
+    r"(?i)[a-z0-9_]*(?:token|secret|passwd|password|bearer|credential|api_?key)"
+    r"\"?\s*[:=]\s*\"?([A-Za-z0-9_\-]{32,})"
+)
+
 # Files whose whole purpose is to describe the shape of a key. A placeholder
 # has to be recognisable as one, so these are allowed to talk about prefixes.
 DOCUMENTATION = {"tests/test_no_secrets.py"}
@@ -59,6 +69,11 @@ def looks_invented(value: str) -> bool:
         return True
     body = re.sub(r"^[A-Za-z_]+[-_]?(?:v1-|proj-)?", "", value)
     return len(set(body)) < 8                    # too few distinct characters
+
+
+def _is_a_name(value: str) -> bool:
+    """A long identifier is not a credential: no issued token spells words."""
+    return bool(re.fullmatch(r"[a-z][a-z0-9]*(?:[_-][a-z0-9]+)+", value))
 
 
 def tracked_files() -> list[str]:
@@ -93,6 +108,33 @@ class NoCredentialIsPublished(unittest.TestCase):
         self.assertEqual(found, [], "a credential appears to be committed:\n"
                                     + "\n".join(found))
 
+    def test_no_tracked_file_assigns_an_opaque_secret(self):
+        """The kind of credential no prefix can find.
+
+        The bridge writes secrets.token_urlsafe(32) and every route trusts it.
+        It looks like nothing in particular, so the only handle on it is the
+        name it is written under.
+        """
+        found = []
+        for name in tracked_files():
+            if name in DOCUMENTATION:
+                continue
+            path = ROOT / name
+            if not path.is_file() or path.suffix in {".csv", ".html", ".json"}:
+                continue                         # data files, not source
+            try:
+                text = path.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            for match in OPAQUE_SECRET.finditer(text):
+                value = match.group(1)
+                if looks_invented(value) or _is_a_name(value):
+                    continue
+                line = text[:match.start()].count("\n") + 1
+                found.append(f"{name}:{line} assigns {value[:10]}… to a secret")
+        self.assertEqual(found, [], "an opaque secret appears to be committed:\n"
+                                    + "\n".join(found))
+
     def test_the_private_directory_is_not_tracked(self):
         # The helper writes every provider's key, the fact bank and generated
         # CVs here. One `git add -A` from the repository root is all it would
@@ -100,14 +142,15 @@ class NoCredentialIsPublished(unittest.TestCase):
         # internet — and it is checked, not assumed.
         offenders = [name for name in tracked_files()
                      if name.startswith("private/") or name.startswith(".private/")
-                     or name.endswith(".key") or name == ".env"
+                     or name.endswith(".key") or name.endswith(".token")
+                     or name == ".env"
                      or name.endswith("/.env") or name.endswith(".pem")
                      or name.endswith(".p12") or name.endswith(".sqlite3")]
         self.assertEqual(offenders, [], f"these should never be tracked: {offenders}")
 
     def test_the_ignore_rules_that_hold_that_true_are_still_there(self):
         ignored = (ROOT / ".gitignore").read_text(encoding="utf-8")
-        for rule in ("private/", "*.key", "*.sqlite3"):
+        for rule in ("private/", "*.key", "*.token", "*.sqlite3"):
             self.assertIn(rule, ignored, f".gitignore no longer protects {rule}")
 
     def test_a_key_would_actually_be_caught(self):
@@ -128,6 +171,36 @@ class NoCredentialIsPublished(unittest.TestCase):
             self.assertTrue(
                 any(re.search(pattern, sample) for pattern in CREDENTIALS.values()),
                 f"nothing would catch {sample[:10]}…")
+
+    def test_a_bridge_token_would_be_caught(self):
+        """The case the prefix patterns cannot see.
+
+        secrets.token_urlsafe(32) is what the bridge writes, and every route
+        trusts it. It has no prefix, so only the name it is assigned to gives
+        it away — and a value with real entropy must not be waved through as a
+        fixture.
+        """
+        issued = secrets.token_urlsafe(32)
+        for line in (f'BRIDGE_TOKEN = "{issued}"',
+                     f'bridge_token: {issued}',
+                     f'"authToken": "{issued}"',
+                     f'api_key={issued}'):
+            match = OPAQUE_SECRET.search(line)
+            self.assertIsNotNone(match, f"nothing would catch {line[:20]}…")
+            self.assertFalse(looks_invented(match.group(1)))
+            self.assertFalse(_is_a_name(match.group(1)))
+
+    def test_ordinary_code_is_not_an_opaque_secret(self):
+        for line in ('max_tokens: 2000,',
+                     'token = tokenize(line)',
+                     'SECRET_HEADER = "x-autoapply-approval-token"',
+                     'password_field = "the_one_labelled_password_on_the_form"',
+                     'api_key = os.environ.get("OPENAI_API_KEY", "")'):
+            match = OPAQUE_SECRET.search(line)
+            if match is None:
+                continue
+            self.assertTrue(looks_invented(match.group(1)) or _is_a_name(match.group(1)),
+                            f"{line} reads as a committed secret")
 
     def test_a_fixture_is_told_apart_from_a_credential(self):
         # The test suite has to hand key-shaped strings to the code under
