@@ -937,7 +937,9 @@ window.addEventListener("resize", fitPage);
 function say(message, kind = "") {
   const box = $("notice");
   box.className = "notice " + kind + (message ? "" : " hidden");
-  box.textContent = message || "";
+  // Redacted here as well as at the provider, so a message routed through some
+  // path added later cannot put a key on screen either.
+  box.textContent = message ? redactKeys(message) : "";
 }
 function status(message) {
   $("status").textContent = message || "";
@@ -2400,10 +2402,38 @@ function tooSimilar(before, after) {
   return overlap >= 0.88 && lengths <= 0.12;
 }
 
+// A provider that echoes the rejected key back must not put it on screen. The
+// key field is a password field and this page says the key never leaves this
+// browser; a key printed into the notice, screenshotted and pasted into a
+// support thread undoes both promises at once. Every key this device has is
+// removed, not only the one in the field, because the reader may have switched
+// provider since the request went out.
+function redactKeys(text) {
+  let out = String(text);
+  const secrets = new Set();
+  const typed = (($("key") || {}).value || "").trim();
+  if (typed) secrets.add(typed);
+  for (const name of store.keys()) {
+    if (!name.startsWith("studio.key.")) continue;
+    const saved = store.get(name, "").trim();
+    if (saved) secrets.add(saved);
+  }
+  for (const secret of secrets) {
+    // A short value is a word, not a key, and blanking it would turn an
+    // ordinary sentence into ellipses.
+    if (secret.length >= 8) out = out.split(secret).join("\u2026");
+  }
+  return out;
+}
+
 // Providers disagree about the shape of an error. Google's OpenAI-compatible
 // endpoint wraps it in an array; others use {error:{message}}, or a bare
 // {message}, or plain text.
 function providerSaid(payload, response) {
+  return redactKeys(providerMessage(payload, response));
+}
+
+function providerMessage(payload, response) {
   let body = payload;
   if (Array.isArray(body)) body = body.find(item => item && typeof item === "object") || {};
   if (body && typeof body === "object") {
