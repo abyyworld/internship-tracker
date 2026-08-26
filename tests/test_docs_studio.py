@@ -360,6 +360,27 @@ class NoDeadEndsTests(unittest.TestCase):
         # Carrying the posting, or it lands somewhere that knows nothing.
         self.assertRegex(EDITOR_PAGE, r'carried\.set\("url",\s*jobUrl\)')
 
+    def test_a_provider_that_echoes_the_key_back_cannot_print_it(self):
+        # The Python client has stripped an echoed key out of an error since
+        # the day that path was written, for the reason written next to it: a
+        # provider that hands the rejected key back must not put it in a
+        # message the reader pastes into a chat window. The browser studio ran
+        # the same failure path without it. Redacted twice — once where the
+        # provider is read, and once where anything at all is rendered — so a
+        # path added later cannot reintroduce it.
+        studio = STUDIO.read_text(encoding="utf-8")
+        self.assertIn("function redactKeys(text)", studio)
+        self.assertIn("return redactKeys(providerMessage(payload, response));", studio)
+        self.assertIn("box.textContent = message ? redactKeys(message) : \"\";", studio)
+        # Every key on the device, not only the one in the box: the reader may
+        # have changed provider between the request and its answer.
+        self.assertRegex(studio, r'redactKeys[\s\S]{0,600}startsWith\("studio\.key\."\)')
+
+    def test_the_dashboard_ranking_error_cannot_print_the_key_either(self):
+        from dashboard_page import TEMPLATE
+
+        self.assertRegex(TEMPLATE, r"why = String\(why\)\.split\(key\)\.join")
+
     def test_the_dashboard_offers_it_without_a_role(self):
         index = DOCS / "index.html"
         if not index.exists():  # generated; a fresh checkout may not have it yet

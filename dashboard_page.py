@@ -973,7 +973,11 @@ async function rankWithModel() {
     const payload = await response.json();
     if (!response.ok) {
       const said = (Array.isArray(payload) ? payload[0] : payload) || {};
-      throw new Error((said.error && said.error.message) || `${response.status}`);
+      let why = (said.error && said.error.message) || `${response.status}`;
+      // A provider that echoes the rejected key back must not put it into the
+      // sentence under the button, which is read, screenshotted and pasted.
+      if (key && key.length >= 8) why = String(why).split(key).join("\u2026");
+      throw new Error(why);
     }
     const content = payload.choices && payload.choices[0] && payload.choices[0].message
       && payload.choices[0].message.content;
