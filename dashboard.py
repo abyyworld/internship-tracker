@@ -246,3 +246,11 @@ def build() -> int:
     )
     OUTPUT.write_text(page, encoding="utf-8")
     return len(jobs)
+
+
+# Both workflows publish this page by running `python dashboard.py`. Without
+# this, that command imports the module, defines build(), and exits having
+# written nothing — so the daily watch refreshed tracker.csv while the public
+# dashboard kept serving whatever snapshot was last committed by hand.
+if __name__ == "__main__":
+    print(f"{OUTPUT.relative_to(ROOT)}: {build()} opportunities")
