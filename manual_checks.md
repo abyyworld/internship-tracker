@@ -1,4 +1,4 @@
-# Manual Check List — 2026-08-27
+# Manual Check List — 2026-08-28
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -117,5 +117,8 @@ Use the local cockpit or private autoapply database to record your decision; per
 ## Sources that failed this run
 Roles previously seen only in these sources remain stale; they are not marked closed.
 
+- **Greenhouse/xAI**: The read operation timed out
 - **Greenhouse/Graphcore**: degraded: parsed zero roles unexpectedly
+- **Greenhouse/DeepMind**: The read operation timed out
+- **Greenhouse/Formic**: The read operation timed out
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
