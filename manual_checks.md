@@ -1,4 +1,4 @@
-# Manual Check List — 2026-08-29
+# Manual Check List — 2026-08-30
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 

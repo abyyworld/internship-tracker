@@ -1,14 +1,14 @@
 # 🎯 Universal Academic & Career Tracker — Internships · Research · PhD · New Grad
 
 <p align="center">
-  <a href="https://abyyworld.github.io/internship-tracker/"><img alt="Open the tracker — 1361 open postings" src="https://img.shields.io/badge/Open%20the%20tracker-1361%20open%20postings-1f6feb?style=for-the-badge&labelColor=0d1117"></a>
+  <a href="https://abyyworld.github.io/internship-tracker/"><img alt="Open the tracker — 1356 open postings" src="https://img.shields.io/badge/Open%20the%20tracker-1356%20open%20postings-1f6feb?style=for-the-badge&labelColor=0d1117"></a>
   <a href="https://abyyworld.github.io/internship-tracker/studio.html"><img alt="Tailor my CV — in the browser" src="https://img.shields.io/badge/Tailor%20my%20CV-in%20the%20browser-2ea043?style=for-the-badge&labelColor=0d1117"></a>
 </p>
 
 <p align="center"><b><a href="https://abyyworld.github.io/internship-tracker/">https://abyyworld.github.io/internship-tracker/</a></b><br>
 Search and filter every posting, then tailor your CV for one — in the browser, on a phone, with nothing to install.</p>
 
-> Last verified run: **2026-08-29** · **1361 verified-open postings** · **35 research / PhD / postdoc positions**
+> Last verified run: **2026-08-30** · **1356 verified-open postings** · **35 research / PhD / postdoc positions**
 
 This tracker watches community internship boards and official Greenhouse, Ashby, and Lever feeds. Career hubs and forecast programmes are kept separate from real postings. Unknown work-authorisation or sponsorship data means **review required**, never assumed eligible.
 
@@ -49,60 +49,20 @@ Pressing **Generate suggestions** sends the selected job description and master 
 
 | Metric | Count |
 |--|--:|
-| Verified-open postings | 1361 |
-| Roles discovered today | 35 |
-| New verified postings | 35 |
+| Verified-open postings | 1356 |
+| Roles discovered today | 0 |
+| New verified postings | 0 |
 | Research / PhD / postdoc positions | 35 |
 | Elite tier | 212 |
 | High tier | 163 |
-| Eligibility still needs review | 1361 |
+| Eligibility still needs review | 1356 |
 | Deadlines within 10 days | 0 |
 
-**By category:** Software Engineering 683 · Quant / Finance 191 · AI / ML 131 · Robotics & Embodied AI 114 · Data 76 · Hardware / EE 57 · Security 52 · Systems & Infra 38 · Computational Science 19
+**By category:** Software Engineering 683 · Quant / Finance 187 · AI / ML 130 · Robotics & Embodied AI 114 · Data 76 · Hardware / EE 57 · Security 52 · Systems & Infra 38 · Computational Science 19
 
-**By region:** US 1153 · UK 72 · Canada 35 · Unknown 28 · Singapore 13 · Netherlands 9 · US / Canada 5 · Hong Kong 4 · Ireland 4 · Switzerland 4 · US / Austria 3 · US / Italy 2 · UK / Ireland 2 · Australia 2 · China / Hong Kong 2 · France 2 · US / Global 2 · South Korea 2 · Serbia 2 · US / UAE 2 · US / Australia 2 · US / UK 2 · Singapore / China / Hong Kong 1 · US / France / Singapore / Hong Kong 1 · Remote 1 · Germany 1 · Poland 1 · India 1 · US / Canada / UK 1 · US / Europe 1 · UK / Australia 1
+**By region:** US 1151 · UK 70 · Canada 35 · Unknown 27 · Singapore 13 · Netherlands 9 · US / Canada 5 · Hong Kong 4 · Ireland 4 · Switzerland 4 · US / Austria 3 · UK / Ireland 2 · Australia 2 · China / Hong Kong 2 · France 2 · US / Global 2 · South Korea 2 · Serbia 2 · US / Italy 2 · US / UAE 2 · US / Australia 2 · US / UK 2 · Singapore / China / Hong Kong 1 · US / France / Singapore / Hong Kong 1 · Remote 1 · Germany 1 · Poland 1 · India 1 · US / Canada / UK 1 · US / Europe 1 · UK / Australia 1
 
-**By degree evidence:** Unknown 1144 · Advanced/unknown 125 · PhD 46 · Undergraduate eligible 37 · Masters 9
-
-## Newly opened (35)
-
-| Company | Role | Category | Region | Term | Eligibility |
-|--|--|--|--|--|--|
-| **Waymo** | [2027 Summer Intern, MS/PhD, Quantitative UX Researcher, Growth/International Expansion](https://careers.withwaymo.com/jobs?gh_jid=8163364) | Quant / Finance | US | Summer 2027 | review required |
-| **Altice USA** | [Software Development Engineer 1](https://www.optimumcareers.com/job/Bethpage-Software-Dev-Engineer-I-NY-11714/1420351500/?ats=successfactors&utm_source=Simplify&ref=Simplify) | Software Engineering | US | New Grad 2026 | review required |
-| **Anheuser-Busch** | [Technology Intern](https://abinbev.wd1.myworkdayjobs.com/en-US/USA/job/St-Louis-Missouri/Technology-Internship_30102525?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Ambiguous | review required |
-| **Barry-Wehmiller** | [Entry Level Software Engineer](https://barrywehmiller.wd1.myworkdayjobs.com/BWConfidential/job/Dallas-TX/Entry-Level-Software-Engineer_R022649?utm_source=Simplify&ref=Simplify) | Software Engineering | US | New Grad 2026 | review required |
-| **Booz Allen** | [AI Software Developer Intern](https://bah.wd1.myworkdayjobs.com/bah_jobs/job/San-Diego-CA/AI-Software-Developer-Intern_R0248115?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Ambiguous | review required |
-| **Booz Allen** | [Data Scientist Intern - Summer Games](https://bah.wd1.myworkdayjobs.com/bah_jobs/job/Rome-NY/University--2027-Summer-Games-Data-Scientist-Intern_R0248143?utm_source=Simplify&ref=Simplify) | Data | US / Italy | Summer | review required |
-| **Booz Allen** | [Data Scientist Intern - Summer Games](https://bah.wd1.myworkdayjobs.com/bah_jobs/job/Colorado-Springs-CO/University--2027-Summer-Games-Data-Scientist-Intern_R0248132?utm_source=Simplify&ref=Simplify) | Data | US | Summer | review required |
-| **Booz Allen** | [Data Scientist Intern - University](https://bah.wd1.myworkdayjobs.com/bah_jobs/job/Charleston-SC/University---2027-Summer-Games-Data-Scientist-Intern_R0248137?utm_source=Simplify&ref=Simplify) | Data | US | Summer 2027 | review required |
-| **Booz Allen** | [Data Scientist Intern - University](https://bah.wd1.myworkdayjobs.com/bah_jobs/job/Atlanta-GA/University--2027-Summer-Games-Data-Scientist-Intern_R0248140?utm_source=Simplify&ref=Simplify) | Data | US | Summer 2027 | review required |
-| **Booz Allen** | [Software Developer Intern - Summer Games](https://bah.wd1.myworkdayjobs.com/bah_jobs/job/Rome-NY/University--2027-Summer-Games-Software-Developer-Intern_R0248141?utm_source=Simplify&ref=Simplify) | Software Engineering | US / Italy | Summer | review required |
-| **Booz Allen** | [Software Developer Intern - University](https://bah.wd1.myworkdayjobs.com/bah_jobs/job/Charleston-SC/University---2027-Summer-Games-Software-Developer-Intern_R0248134?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer 2027 | review required |
-| **Booz Allen** | [Software Developer Intern - University](https://bah.wd1.myworkdayjobs.com/bah_jobs/job/Atlanta-GA/University---2027-Summer-Games-Software-Developer-Intern---Atlanta--GA_R0248138?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer 2027 | review required |
-| **Booz Allen** | [Software Developer Intern - University - 2027 Summer Games](https://bah.wd1.myworkdayjobs.com/bah_jobs/job/Colorado-Springs-CO/University--2027-Summer-Games-Software-Developer-Intern_R0248130?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer 2027 | review required |
-| **Brunswick** | [Reinforcement Learning Intern - Boating Intelligence Design Lab](https://brunswick.wd1.myworkdayjobs.com/en-US/search/job/Champaign-IL/Software-Engineering-Intern_JR-051449?utm_source=Simplify&ref=Simplify) | AI / ML | US | Ambiguous | review required |
-| **CSX** | [Engineering Intern - Positive Train Control - Paid](https://fa-eowa-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CSXCareers/job/54826?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Ambiguous | review required |
-| **CSX** | [Technology Intern - Paid](https://fa-eowa-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CSXCareers/job/54806?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Ambiguous | review required |
-| **Charles Schwab** | [Data Engineering Intern - Data Engineering](https://career-schwab.icims.com/jobs/126227/job?mobile=true&needsRedirect=false&utm_source=Simplify&ref=Simplify) | Software Engineering | US | Ambiguous | review required |
-| **Charles Schwab** | [Software Engineering Intern - Technology](https://career-schwab.icims.com/jobs/126228/job?mobile=true&needsRedirect=false&utm_source=Simplify&ref=Simplify) | Software Engineering | US | Ambiguous | review required |
-| **DefenseStorm** | [Junior Product Engineer - Software Engineer 1](https://defensestorm.applytojob.com/apply/VI1cWuBKQ3/Junior-Product-Engineer-Software-Engineer-I?utm_source=Simplify&ref=Simplify) | Software Engineering | US | New Grad 2026 | review required |
-| **Huntington Bancshares** | [Data and Analytics Intern](https://huntington.wd12.myworkdayjobs.com/HNBcareers/job/Columbus-OH/Summer-2027-Data-and-Analytics-Internship_R0075377?utm_source=Simplify&ref=Simplify) | Data | US | Summer 2027 | review required |
-| **Intuit** | [Software Engineer Intern - Full Stack](https://jobs.intuit.com/job/mountain-view/summer-2027-software-engineering-intern-full-stack/27595/99856180864?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer 2027 | review required |
-| **Johns Hopkins Applied Physics Laboratory** | [Modeler and Data Analyst New Grad 🎓](https://careers.jhuapl.edu/jobs/59858?icims=1&utm_source=Simplify&ref=Simplify) | Computational Science | US | New Grad 2026 | review required |
-| **Leidos** | [Computer Engineering Co-op](https://leidos.wd5.myworkdayjobs.com/External/job/Bethesda-MD/Computer-Engineering-Co-op_R-00190756?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Ambiguous | review required |
-| **Marathon Petroleum** | [Operations Research Engineer 1](https://mpc.wd1.myworkdayjobs.com/en-US/MPCCareers/job/Findlay-Ohio/Operations-Research-Engineer-1_00022581?utm_source=Simplify&ref=Simplify) | Software Engineering | US | New Grad 2026 | review required |
-| **Mastercard** | [Data Engineer Intern](https://mastercard.wd1.myworkdayjobs.com/Campus/job/OFallon-Missouri/Data-Engineering-Intern--Summer-2027---St-Louis--MO--US_R-284901?utm_source=Simplify&ref=Simplify) | Data | US | Summer 2027 | review required |
-| **Mastercard** | [Data Scientist Intern - Summer 2027](https://mastercard.wd1.myworkdayjobs.com/Campus/job/OFallon-Missouri/Data-Scientist-Intern--Summer-2027---St-Louis--MO--US_R-284869?utm_source=Simplify&ref=Simplify) | Data | US | Summer 2027 | review required |
-| **Northwood Space** | [Embedded Software Engineer Intern](https://jobs.ashbyhq.com/NorthwoodSpace/d0cca9dd-ea90-4c3b-94b4-17761932d11c/application?embed=true&utm_source=Simplify&ref=Simplify) | Hardware / EE | US | Ambiguous | review required |
-| **Northwood Space** | [RF Engineer Intern - Summer Internship](https://jobs.ashbyhq.com/NorthwoodSpace/f086c92a-7e4b-4799-8f2a-2ad8b13111ca/application?embed=true&utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer | review required |
-| **Northwood Space** | [Software Engineer Intern - Multiple Teams](https://jobs.ashbyhq.com/NorthwoodSpace/ce3d4b73-461e-4128-a6f1-f933897e8119/application?embed=true&utm_source=Simplify&ref=Simplify) | Software Engineering | US | Ambiguous | review required |
-| **Northwood Space** | [Supply Chain Data &amp; Analytics Intern](https://jobs.ashbyhq.com/NorthwoodSpace/69f99cd7-3ce7-413a-8cfe-29b7ccbc1490/application?embed=true&utm_source=Simplify&ref=Simplify) | Data | US | Ambiguous | review required |
-| **Persona AI** | [Robotics Software Intern - Manipulation](https://jobs.ashbyhq.com/persona.ai/1e8d195c-e28e-423d-a06a-9eeb401ed4fc/application?embed=true&utm_source=Simplify&ref=Simplify) | Robotics &amp; Embodied AI | US | Ambiguous | review required |
-| **Philips** | [Data AI/ML Engineer Intern - Image Guided Therapy Devices - Software R&amp;D](https://philips.wd3.myworkdayjobs.com/jobs-and-careers/job/Plymouth-Minnesota-United-States/Intern---Data-AI-ML-Engineering---Plymouth--MN---Summer-2027_590404?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer 2027 | review required |
-| **Schroders** | [Public Markets Quants Intern - Quants \(Public Markets\)](https://ekbq.fa.em2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_2/job/1941?utm_source=Simplify&ref=Simplify) | Software Engineering | UK | Ambiguous | review required |
-| **Solace Health** | [Associate Data Engineer - College Grad](https://jobs.ashbyhq.com/solace/7deb5d7e-9960-4407-9600-aa8e84d9edba/application?embed=true&utm_source=Simplify&ref=Simplify) | Data | US | New Grad 2026 | review required |
-| **Vertiv** | [Service Technology Research Intern - Summer 2027 🎓](https://egup.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX/job/20270351?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Summer 2027 | review required |
+**By degree evidence:** Unknown 1142 · Advanced/unknown 123 · PhD 46 · Undergraduate eligible 36 · Masters 9
 
 ## Browse by category
 
@@ -155,12 +115,13 @@ Every category is listed the same way. Live geography reflects what official fee
 
 _643 more are in [tracker.csv](tracker.csv)._
 
-### Quant / Finance (191 live)
+### Quant / Finance (187 live)
 
 | Company | Role | Region | Focus | Company signal | Equity signal |
 |--|--|--|--|--|--|
 | **Akuna Capital** | [Quantitative Development &amp; Strategy Intern 🇺🇸](https://akunacapital.com/careers/job/8021481/?gh_jid=8021481&utm_source=github-vansh-ouckah) | US |  | unknown | unknown |
 | **Akuna Capital** | [Quantitative Research Intern 🇺🇸](https://akunacapital.com/careers/job/8036614/?gh_jid=8036614&utm_source=github-vansh-ouckah) | US | research | unknown | unknown |
+| **Citadel** | [Quantitative Research Analyst University Graduate](https://www.citadel.com/careers/details/quantitative-research-analyst-university-graduate-us/?utm_source=Simplify&ref=Simplify) | US | research | unknown | unknown |
 | **Citadel** | [Quantitative Trader: Equity Quantitative Research – University Graduate](https://www.citadel.com/careers/details/quantitative-trader-equity-quantitative-research-university-graduate-us/?utm_source=Simplify&ref=Simplify) | US | research | unknown | unknown |
 | **Citadel Securities** | [Quantitative Research Analyst – University Graduate](https://www.citadelsecurities.com/careers/details/quantitative-research-analyst-university-graduate-europe/?utm_source=Simplify&ref=Simplify) | UK / Ireland | research | unknown | unknown |
 | **Citadel Securities** | [Quantitative Trader New Grad](https://www.citadelsecurities.com/careers/details/quantitative-trader-university-graduate-europe/?utm_source=Simplify&ref=Simplify) | UK |  | unknown | unknown |
@@ -198,11 +159,10 @@ _643 more are in [tracker.csv](tracker.csv)._
 | **Jump Trading** | [Campus AI Research Engineer \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8052281) | US | research | unknown | unknown |
 | **Jump Trading** | [Campus AI Research Engineer - Deep Learning \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8052338) | US | research | unknown | unknown |
 | **Jump Trading** | [Campus AI Research Engineer – Research Automation \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8052351) | US | research | unknown | unknown |
-| **Jump Trading** | [Campus AI Researcher, PhD/Postdoc \(Full-Time\)](https://www.jumptrading.com/hr/job?gh_jid=7976923) | UK | phd-position | unknown | unknown |
 
-_151 more are in [tracker.csv](tracker.csv)._
+_147 more are in [tracker.csv](tracker.csv)._
 
-### AI / ML (131 live)
+### AI / ML (130 live)
 
 | Company | Role | Region | Focus | Company signal | Equity signal |
 |--|--|--|--|--|--|
@@ -223,7 +183,7 @@ _151 more are in [tracker.csv](tracker.csv)._
 | **🔥 NVIDIA** | [Research Scientist – PhD New College Grad - Generative AI for Physical AI 🎓](https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Research-Scientist--Generative-AI-for-Physical-AI---PhD-New-College-Grad-2026_JR2016032?utm_source=Simplify&ref=Simplify) | US | research,phd-position | unknown | unknown |
 | **Cerebras Systems** | [Kernel Engineer - New Grad](https://jobs.ashbyhq.com/cerebras/9c7da4b8-446b-4bf2-8d07-23241590bf2e) | US | hardware,research,neuroscience,phd-position | unknown | unknown |
 | **Databricks** | [PhD GenAI Research Scientist Intern](https://databricks.com/company/careers/open-positions/job?gh_jid=7011263002) | US | research,phd-position | unknown | unknown |
-| **Palantir** | [Forward Deployed Software Engineer, Internship - Commercial](https://jobs.lever.co/palantir/d5486403-c050-4920-b2e0-91b69b61ebb2/apply?utm_source=Simplify&ref=Simplify) | US | autonomy,hardware,llm,computer-vision,infra | unknown | unknown |
+| **Palantir** | [Forward Deployed Software Engineer, Internship - Commercial](https://jobs.lever.co/palantir/d5486403-c050-4920-b2e0-91b69b61ebb2) | US | autonomy,hardware,llm,computer-vision,infra | unknown | unknown |
 | **Palantir** | [Forward Deployed Software Engineer, Internship - Commercial](https://jobs.lever.co/palantir/2ad0ab10-34c3-410d-883b-8052864a95cd) | South Korea | autonomy,hardware,llm,computer-vision,infra | unknown | unknown |
 | **Palantir** | [Forward Deployed Software Engineer, Internship - Commercial](https://jobs.lever.co/palantir/599b1907-aba1-4303-837b-66e69a521636) | UK | autonomy,llm,computer-vision,infra | unknown | unknown |
 | **Palantir** | [Forward Deployed Software Engineer, New Grad - Commercial](https://jobs.lever.co/palantir/2aa14e4f-d406-486e-9aa8-6ff3358d70a0/apply?utm_source=Simplify&ref=Simplify) | UK | autonomy,hardware,llm,computer-vision,infra | unknown | unknown |
@@ -247,7 +207,7 @@ _151 more are in [tracker.csv](tracker.csv)._
 | **CNO Financial Group** | [Artificial Intelligence Information Technology Intern - AI](https://cnoinc.wd5.myworkdayjobs.com/Careers/job/Carmel-IN/Artificial-Intelligence--AI--IT-Intern-2027---REMOTE_JR170389?utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
 | **Castleton Commodities International** | [Data Science Machine Learning Intern](https://osv-cci.wd1.myworkdayjobs.com/en-US/CCICareers/job/Stamford-CT/Data-Science-Machine-Learning-Internship--Summer-2027-_R1344?utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
 
-_91 more are in [tracker.csv](tracker.csv)._
+_90 more are in [tracker.csv](tracker.csv)._
 
 ### Robotics & Embodied AI (114 live)
 
@@ -525,6 +485,7 @@ The company signal is a discovery aid, not a prediction. Private-company options
 | **Amazon** | [Robotics - Software Development Engineer Intern/Co-op](https://www.amazon.jobs/en/jobs/3136266/robotics-software-development-engineer-intern-co-op-2026?no_int_redir=1&utm_source=github-vansh-ouckah) | Robotics &amp; Embodied AI | US | 2026 | review required |
 | **Apple** | [Software Engineer Intern, Undergrad](https://jobs.apple.com/en-us/details/200664785/software-undergrad-engineering-internships?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
 | **Apple** | [Software Engineering Intern, Masters](https://jobs.apple.com/en-us/details/200664320/software-engineering-masters-internships?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
+| **Citadel** | [Quantitative Research Analyst University Graduate](https://www.citadel.com/careers/details/quantitative-research-analyst-university-graduate-us/?utm_source=Simplify&ref=Simplify) | Quant / Finance | US | New Grad 2026 | review required |
 | **Citadel** | [Quantitative Trader: Equity Quantitative Research – University Graduate](https://www.citadel.com/careers/details/quantitative-trader-equity-quantitative-research-university-graduate-us/?utm_source=Simplify&ref=Simplify) | Quant / Finance | US | New Grad 2026 | review required |
 | **Citadel** | [Sector Data Scientist Intern](https://www.citadel.com/careers/details/sector-data-scientist-2027-intern-us/?utm_source=Simplify&ref=Simplify) | Data | US | 2027 | review required |
 | **Citadel** | [Software Engineer Intern](https://www.citadel.com/careers/details/software-engineer-intern-us/?utm_source=github-vansh-ouckah) | Software Engineering | US | Summer 2027 | review required |
@@ -600,9 +561,9 @@ The company signal is a discovery aid, not a prediction. Private-company options
 | **Jump Trading** | [Campus FPGA Engineer \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8003013) | Quant / Finance | US | Unknown | review required |
 | **Jump Trading** | [Campus ML Research Engineer \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=7977145) | Quant / Finance | UK | Unknown | review required |
 | **Jump Trading** | [Campus Python Software Engineer \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8027955) | Quant / Finance | Singapore | Unknown | review required |
-| **Jump Trading** | [Campus Quantitative Researcher \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8027900) | Quant / Finance | China / Hong Kong | Winter/Spring 2027 | review required |
 | **Jump Trading** | [Campus Quantitative Researcher \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8010307) | Quant / Finance | Netherlands | Unknown | review required |
 | **Jump Trading** | [Campus Quantitative Researcher \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8027939) | Quant / Finance | Singapore | Unknown | review required |
+| **Jump Trading** | [Campus Quantitative Researcher \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8027900) | Quant / Finance | China / Hong Kong | Winter/Spring 2027 | review required |
 | **Jump Trading** | [Campus Quantitative Researcher \(M1/M2 Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8059384) | Quant / Finance | France | Unknown | review required |
 | **Jump Trading** | [Campus Quantitative Researcher Intern - PhD 🎓](https://boards.greenhouse.io/embed/job_app?token=8049938&utm_source=Simplify&ref=Simplify) | Quant / Finance | US | Ambiguous | review required |
 | **Jump Trading** | [Campus Quantitative Researcher, PhD \(Full-Time\)](https://www.jumptrading.com/hr/job?gh_jid=8125888) | Quant / Finance | US | Unknown | review required |
@@ -611,7 +572,6 @@ The company signal is a discovery aid, not a prediction. Private-company options
 | **Jump Trading** | [Campus Quantitative Trader \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8050772) | Quant / Finance | Netherlands | Unknown | review required |
 | **Jump Trading** | [Campus Quantitative Trader \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8027922) | Quant / Finance | China / Hong Kong | Unknown | review required |
 | **Jump Trading** | [Campus Software Engineer \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=7975026) | Quant / Finance | UK | Unknown | review required |
-| **Jump Trading** | [Campus Systems Engineer \(Intern\)](https://www.jumptrading.com/hr/job?gh_jid=8027952) | Quant / Finance | Singapore | Unknown | review required |
 
 _275 more are in [tracker.csv](tracker.csv)._
 
