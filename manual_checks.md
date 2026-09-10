@@ -1,4 +1,4 @@
-# Manual Check List — 2026-09-09
+# Manual Check List — 2026-09-10
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -119,3 +119,4 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
+- **Greenhouse/Skild AI**: The read operation timed out
