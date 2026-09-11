@@ -91,6 +91,10 @@ def detect_ats(url: str) -> str:
         return "lever"
     if host.endswith("ashbyhq.com"):
         return "ashby"
+    # One host per employer tenant, e.g. pimco.wd1.myworkdayjobs.com, so match the
+    # suffix rather than maintaining a list that goes stale each hiring season.
+    if host.endswith("myworkdayjobs.com") or host.endswith("myworkday.com"):
+        return "workday"
     return "unknown"
 
 
@@ -101,6 +105,13 @@ def external_id(url: str, ats: str | None = None) -> str:
     query = dict(parse_qsl(parsed.query))
     if ats == "greenhouse":
         return query.get("token") or query.get("gh_jid") or (path[-1] if path else "")
+    if ats == "workday":
+        # Workday posting paths end in <Job_Title>_<REQ-ID>. The requisition id is the
+        # only stable part: the title slug changes whenever an employer edits the
+        # advert, and keying on the whole path would mint a duplicate job each time.
+        tail = path[-1] if path else ""
+        match = re.search(r"_([A-Za-z]*[-_]?\d{3,})$", tail)
+        return match.group(1) if match else tail
     if ats in {"lever", "ashby"}:
         # Hosted forms append `/apply` or `/application`; the stable posting ID
         # is the UUID before that suffix, not the suffix itself.

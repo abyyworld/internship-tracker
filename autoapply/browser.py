@@ -9,6 +9,10 @@ ALLOWED_HOST_SUFFIXES = {
     "greenhouse": ("greenhouse.io",),
     "lever": ("lever.co",),
     "ashby": ("ashbyhq.com",),
+    # Workday is one host per employer tenant, all under myworkdayjobs.com, plus the
+    # older wd*.myworkday.com form. Allowing the suffix rather than each tenant is
+    # what makes this general instead of a list that goes stale every hiring season.
+    "workday": ("myworkdayjobs.com", "myworkday.com"),
 }
 
 CAPTCHA_SELECTORS = (

@@ -1,6 +1,7 @@
 from .ashby import AshbyAdapter
 from .greenhouse import GreenhouseAdapter
 from .lever import LeverAdapter
+from .workday import WorkdayAdapter
 
 
 def get_adapter(ats: str):
@@ -8,6 +9,7 @@ def get_adapter(ats: str):
         "greenhouse": GreenhouseAdapter,
         "lever": LeverAdapter,
         "ashby": AshbyAdapter,
+        "workday": WorkdayAdapter,
     }
     try:
         return adapters[ats]()
