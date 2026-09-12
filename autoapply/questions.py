@@ -96,6 +96,23 @@ def classify(field: FormField) -> Category:
         return Category.GRAD_MONTH
     if _has(prompt, r"^(expected )?(graduation|graduate).*\byear\b"):
         return Category.GRAD_YEAR
+    # Greenhouse and Ashby education blocks label graduation "End date", not
+    # "Graduation date", so three real applications stalled on an End date field
+    # that classified as unknown and therefore blocked approval. Only treat it as
+    # graduation inside an education context: an employment block has end dates too,
+    # and answering those with a graduation date would be wrong rather than merely
+    # unhelpful.
+    # No word boundaries here on purpose: field keys are snake_case, so \beducation\b
+    # never matches "education_end_date_month" because the underscore is itself a word
+    # character. That silently left the branch below dead on exactly the fields it
+    # exists for.
+    if _has(text, r"(school|education|degree|universit|college|discipline|study|academic)"):
+        if _has(prompt, r"\bend date\b.*\bmonth\b.*\byear\b|\bend date\b$"):
+            return Category.GRAD_DATE
+        if _has(prompt, r"\bend date\b.*\bmonth\b"):
+            return Category.GRAD_MONTH
+        if _has(prompt, r"\bend date\b.*\byear\b"):
+            return Category.GRAD_YEAR
     if _has(prompt, r"^(school|university|college|institution)( name)?\b"):
         return Category.SCHOOL
     if _has(prompt, r"^(field of study|discipline|major|course of study)\b"):
