@@ -108,6 +108,41 @@ def _question_jurisdiction(prompt: str, job: Job) -> str:
     return jurisdiction_for(job)
 
 
+_ISO_COUNTRY = {
+    "gb": ("United Kingdom", "UK", "+44", "GBR"),
+    "us": ("United States", "United States of America", "USA", "+1"),
+    "ie": ("Ireland", "IRL", "+353"), "nl": ("Netherlands", "NLD", "+31"),
+    "ca": ("Canada", "CAN", "+1"), "ch": ("Switzerland", "CHE", "+41"),
+    "de": ("Germany", "DEU", "+49"), "fr": ("France", "FRA", "+33"),
+    "no": ("Norway", "NOR", "+47"), "sg": ("Singapore", "SGP", "+65"),
+    "jp": ("Japan", "JPN", "+81"), "au": ("Australia", "AUS", "+61"),
+    "cn": ("China", "CHN", "+86"), "in": ("India", "IND", "+91"),
+    "kr": ("South Korea", "Korea, Republic of", "KOR", "+82"),
+    "il": ("Israel", "ISR", "+972"), "uz": ("Uzbekistan", "UZB", "+998"),
+    "rs": ("Serbia", "SRB", "+381"),
+}
+
+
+def _alternates(desired: str) -> list[str]:
+    """Other exact spellings of the same fact, most specific first."""
+    trimmed = desired.strip()
+    out = [desired, trimmed]
+    out.extend(_ISO_COUNTRY.get(normalize_text(trimmed), ()))
+    if "," in trimmed:
+        # "Birmingham, United Kingdom" answers a city field with "Birmingham" and a
+        # country field with "United Kingdom". Offer each half, never a merge of them.
+        head, _, tail = trimmed.partition(",")
+        out.append(head.strip())
+        out.append(tail.strip())
+    seen, unique = set(), []
+    for candidate in out:
+        key = normalize_text(candidate)
+        if candidate and key not in seen:
+            seen.add(key)
+            unique.append(candidate)
+    return unique
+
+
 def _match_option(
     field: FormField, desired: Any
 ) -> tuple[Any, str] | None:
@@ -127,6 +162,24 @@ def _match_option(
     wanted = normalize_text(str(desired))
     exact = [option for option in field.options if normalize_text(option) == wanted]
     candidates = exact
+    if not candidates:
+        # The same fact renders several ways across forms. A phone country selector may
+        # list "United Kingdom" where the profile holds the ISO code "GB", and a city
+        # field may want "Birmingham" where the profile holds "Birmingham, United
+        # Kingdom". Both were present and correct and both counted as unanswered,
+        # which blocked approval on every Verkada and Neuralink job.
+        #
+        # Each alternate is still matched EXACTLY and must still resolve to exactly one
+        # option, so this widens recognition without ever letting a near miss through.
+        # Anything unrecognised still returns None and still blocks.
+        for alternate in _alternates(str(desired)):
+            spelling = normalize_text(alternate)
+            if spelling == wanted:
+                continue
+            found = [o for o in field.options if normalize_text(o) == spelling]
+            if len(found) == 1:
+                candidates = found
+                break
     if not candidates and wanted in {"yes", "no"}:
         candidates = [
             option
