@@ -415,6 +415,22 @@ class EveryFileTheRunProducesIsKept(unittest.TestCase):
             self.assertIn(produced, line,
                           f"{produced} is written every run and never committed")
 
+    def test_the_deploy_follows_the_run_that_changes_the_data(self):
+        # A push made with GITHUB_TOKEN starts no workflows, by design. So the
+        # deploy's path filters — dashboard.py, docs/**, tracker.csv — never
+        # fire for the daily commit, which is the only commit that changes any
+        # of them most days. The site went 26 days serving an August build
+        # while the tracker updated every morning underneath it.
+        pages = (Path(__file__).resolve().parent.parent
+                 / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
+        watch = (Path(__file__).resolve().parent.parent
+                 / ".github" / "workflows" / "watch.yml").read_text(encoding="utf-8")
+        self.assertIn("workflow_run:", pages,
+                      "the deploy still waits for a push that will never come")
+        name = watch.splitlines()[0].removeprefix("name:").strip()
+        self.assertIn(f'"{name}"', pages,
+                      "the deploy names a workflow that is not the daily watch")
+
     def test_the_run_still_builds_the_page_it_commits(self):
         self.assertIn("python dashboard.py", self.workflow())
 
