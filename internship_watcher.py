@@ -547,6 +547,35 @@ ROBOTICS_WATCHLIST = [
     ("Rapyuta Robotics", "Warehouse robotics roles",     "Japan / India",       "https://www.rapyuta-robotics.com/careers/"),
 ]
 
+# Funded research programmes live in a data file rather than in this source,
+# because every field in one is a claim checked against the programme's own
+# page on a particular day — a deadline especially — and a claim with an
+# evidence URL beside it belongs somewhere a person can read and correct it.
+RESEARCH_PROGRAMMES_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "data", "research_programmes.json")
+
+
+def load_research_programmes(path=None):
+    """Programmes we can state a deadline for, and nothing else.
+
+    A programme with no date is worse than absent: it reads as covered while
+    leaving the reader to find out for themselves when it closes. So anything
+    without a deadline is dropped here rather than shown as rolling.
+    """
+    try:
+        with open(path or RESEARCH_PROGRAMMES_FILE, encoding="utf-8") as handle:
+            listed = json.load(handle)
+    except (OSError, ValueError):
+        return []
+    if not isinstance(listed, list):
+        return []
+    return [
+        entry for entry in listed
+        if isinstance(entry, dict) and entry.get("name") and entry.get("url")
+        and entry.get("deadline")
+    ]
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # UK SPRING WEEKS & TERM-TIME PROGRAMS
 # Applications open ~Sept–Nov 2026; programs run Spring/Easter 2027
@@ -1725,7 +1754,9 @@ def gather(existing=None):
     board_discovery.save(discovered)
 
     def add_static(company, role, loc, url, tier, source, status,
-                   deadline="", category=""):
+                   deadline="", category="", term="", record_kind="watchlist",
+                   role_type="watchlist", eligibility="review required",
+                   sponsorship="unknown", description=""):
         rid = make_id(company, role, loc)
         if rid in merged:
             return
@@ -1734,14 +1765,14 @@ def gather(existing=None):
             id=rid, company=company, role=role, location=loc,
             region=region_of(loc), work_mode=work_mode_of(loc),
             url=safe_url(url),
-            term="Watchlist" if status == "watchlist" else "Spring Week 2027",
-            deadline=deadline, level="Unknown", role_type="watchlist",
-            citizenship="unknown", sponsorship="unknown",
-            eligibility="review required", sources=[source], flags=[],
+            term=term or ("Watchlist" if status == "watchlist" else "Spring Week 2027"),
+            deadline=deadline, level="Unknown", role_type=role_type,
+            citizenship="unknown", sponsorship=sponsorship,
+            eligibility=eligibility, sources=[source], flags=[],
             elite_tier=tier, category=category or category_of(company, role),
             focus_tags=focus_tags(company, role), robotics_focus=focus,
             company_type=company_type, equity_signal=equity,
-            record_kind="watchlist", source_status=status, description="",
+            record_kind=record_kind, source_status=status, description=description,
         )
 
     for company, role, loc, url, tier in ELITE_WATCHLIST:
@@ -1755,6 +1786,34 @@ def gather(existing=None):
     for company, role, loc, url, deadline, tier in SPRING_WEEKS:
         add_static(company, role, loc, url, tier, "spring_weeks", "planned",
                    deadline=deadline)
+
+    # Funded research programmes. They are not postings and never appear on a
+    # job board: a programme opens on a fixed date, closes on a fixed date, and
+    # is gone for a year. That is precisely why nothing here could represent
+    # them — the tracker held twelve deadlines across three thousand rows, all
+    # of them finance spring weeks — and why missing one costs a year rather
+    # than a week.
+    for programme in load_research_programmes():
+        add_static(
+            programme.get("host", "") or programme.get("name", ""),
+            programme.get("name", ""),
+            programme.get("location", "") or programme.get("country", ""),
+            programme.get("url", ""),
+            "elite",
+            "research_programme",
+            "open",
+            deadline=programme.get("deadline", ""),
+            category=("Robotics & Embodied AI"
+                      if programme.get("robotics_fit") == "direct" else "Research"),
+            term=programme.get("runs", "") or "Summer 2027",
+            record_kind="programme",
+            role_type="research programme",
+            # These are checked one at a time against the programme's own page,
+            # so the eligibility line is a finding rather than a guess.
+            eligibility=programme.get("eligibility_note", "") or "review required",
+            sponsorship=programme.get("visa", "") or "unknown",
+            description=programme.get("why", ""),
+        )
 
     return merged, health, failed, counts
 
