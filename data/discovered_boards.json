@@ -560,6 +560,14 @@
       "name": "Cybernetic Labs",
       "roles": 0
     },
+    "neura-robotics-gmbh": {
+      "candidate": true,
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Neura Robotics",
+      "roles": 0
+    },
     "nexxen": {
       "first_seen": "2026-09-21",
       "last_seen": "2026-09-21",
@@ -961,6 +969,14 @@
       "name": "Appian",
       "roles": 0
     },
+    "appliedintuition": {
+      "candidate": true,
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Applied Intuition",
+      "roles": 0
+    },
     "aquaticcapitalmanagement": {
       "first_seen": "2026-09-21",
       "last_seen": "2026-09-21",
@@ -1360,6 +1376,14 @@
       "name": "InterSystems",
       "roles": 0
     },
+    "intrinsicrobotics": {
+      "candidate": true,
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Intrinsic",
+      "roles": 0
+    },
     "jobsatphamily": {
       "first_seen": "2026-09-21",
       "last_seen": "2026-09-21",
@@ -1617,6 +1641,14 @@
       "last_seen": "2026-09-21",
       "misses": 0,
       "name": "SK Hynix Memory Solution",
+      "roles": 0
+    },
+    "skydio": {
+      "candidate": true,
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Skydio",
       "roles": 0
     },
     "sonyinteractiveentertainmentglobal": {

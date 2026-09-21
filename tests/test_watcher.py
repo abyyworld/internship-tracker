@@ -1,3 +1,4 @@
+from pathlib import Path
 import ssl
 import unittest
 
@@ -386,6 +387,36 @@ class SecurityTests(unittest.TestCase):
     def test_tls_verification_is_enabled(self):
         self.assertEqual(watcher.SSL_CTX.verify_mode, ssl.CERT_REQUIRED)
         self.assertTrue(watcher.SSL_CTX.check_hostname)
+
+
+class EveryFileTheRunProducesIsKept(unittest.TestCase):
+    """Work done and thrown away looks exactly like work not done.
+
+    The daily job recomputes per-source health and the discovered board list
+    on every run and writes both to data/. Neither was in the workflow's
+    `git add` line, so both died with the runner: the reliability figure the
+    dashboard publishes was frozen at a hand-committed snapshot from six weeks
+    earlier, reporting 152 sources and 991 rows against a tracker holding
+    3,302. The same omission would have silently disabled board discovery
+    entirely — it would have rediscovered the same addresses every morning and
+    forgotten them every night.
+    """
+
+    def workflow(self):
+        return (Path(__file__).resolve().parent.parent
+                / ".github" / "workflows" / "watch.yml").read_text(encoding="utf-8")
+
+    def test_the_daily_commit_includes_what_the_run_learned(self):
+        staged = [line for line in self.workflow().splitlines()
+                  if line.strip().startswith("git add ")]
+        self.assertTrue(staged, "the workflow no longer stages anything")
+        line = staged[0]
+        for produced in ("tracker.csv", "digests", "docs/index.html", "data"):
+            self.assertIn(produced, line,
+                          f"{produced} is written every run and never committed")
+
+    def test_the_run_still_builds_the_page_it_commits(self):
+        self.assertIn("python dashboard.py", self.workflow())
 
 
 if __name__ == "__main__":
