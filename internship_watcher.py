@@ -28,6 +28,7 @@ import csv, html, json, os, re, ssl, sys, urllib.request
 
 import board_discovery
 import board_harvest
+import uk_listings
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from urllib.error import HTTPError, URLError
@@ -1838,6 +1839,37 @@ def gather(existing=None):
             eligibility=programme.get("eligibility_note", "") or "review required",
             sponsorship=programme.get("visa", "") or "unknown",
             description=programme.get("why", ""),
+        )
+
+    # UK schemes that publish a closing date. The ATS APIs above mostly serve
+    # US startups and none of them carries one, because a rolling posting has
+    # no closing date — which is why this tracker held twelve deadlines across
+    # four thousand rows and could not represent the lane its reader is most
+    # free to apply to.
+    for listing in uk_listings.load():
+        closes = listing.get("deadline", "")
+        facts = " · ".join(part for part in (
+            listing.get("salary", ""), listing.get("duration", ""),
+            f"starts {listing['starts']}" if listing.get("starts") else "",
+            f"listed on {listing['source']}" if listing.get("source") else "",
+        ) if part)
+        add_static(
+            listing.get("company", ""), listing.get("role", ""),
+            listing.get("location", "") or "UK",
+            listing.get("url", ""),
+            tier_of(listing.get("company", "")),
+            "uk_listings",
+            # A date already past is not a live posting, and showing it as one
+            # would waste the reader's time twice: once reading it and once
+            # finding out.
+            "open" if closes >= TODAY else "closed",
+            deadline=closes,
+            term=listing.get("starts", "") or "Summer 2027",
+            record_kind="posting", role_type="internship",
+            sponsorship=listing.get("sponsors_visa", "") or "unknown",
+            eligibility=("eligible" if listing.get("sponsors_visa") == "yes"
+                         else "review required"),
+            description=facts,
         )
 
     return merged, health, failed, counts
