@@ -27,6 +27,7 @@ Needs: Python 3.8+ stdlib only.
 import csv, html, json, os, re, ssl, sys, urllib.request
 
 import board_discovery
+import board_harvest
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from urllib.error import HTTPError, URLError
@@ -1678,7 +1679,7 @@ def gather(existing=None):
     def collect(boards, parser, provider):
         ok = bad = 0
         results = {}
-        with ThreadPoolExecutor(max_workers=min(12, len(boards) or 1)) as pool:
+        with ThreadPoolExecutor(max_workers=min(32, len(boards) or 1)) as pool:
             futures = {
                 pool.submit(parser, slug, name, term): (slug, name)
                 for slug, name, term in boards
@@ -1732,6 +1733,30 @@ def gather(existing=None):
     sightings += [(rec.get("url", ""), rec.get("company", ""))
                   for rec in (existing or {}).values()]
     learned = board_discovery.harvest(sightings, discovered, TODAY, known=curated)
+
+    # And the boards no posting here will ever name. Greenhouse, Lever and
+    # Ashby each serve a company's jobs from a URL containing that company's
+    # board name, and Common Crawl indexes every URL it has crawled — so "every
+    # board the web knows about" is a public query rather than a list somebody
+    # maintains. Capped per run, best-attested first: what is left over is
+    # still there tomorrow, and a board polled for the first time today is
+    # worth less than one the crawl saw on a thousand pages.
+    if os.environ.get("HARVEST_BOARDS", "1") not in {"0", "", "no"}:
+        crawl = board_harvest.latest_crawl(board_harvest.fetch)
+        if crawl:
+            found = board_harvest.harvest(crawl, board_harvest.fetch)
+            already = curated | {
+                (provider, slug)
+                for provider, boards in discovered.items()
+                for slug in boards
+            }
+            picked = board_harvest.add_to(discovered, found, TODAY,
+                                          known=already, cap=1000)
+            print(f"  {'crawl harvest':<18} {crawl}: "
+                  f"{sum(len(c) for c in found.values())} boards named, "
+                  f"{len(picked)} new")
+        else:
+            print(f"  {'crawl harvest':<18} no crawl index reachable; skipped")
     gained = sum(len(board_discovery.boards_for(p, discovered))
                  for p in board_discovery.POLLABLE)
     print(f"  {'board discovery':<18} {len(curated)} curated + {gained} discovered "
