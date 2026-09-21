@@ -1,0 +1,5049 @@
+{
+  "Ashby": {
+    "adaptivesecurity": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Adaptive Security",
+      "roles": 0
+    },
+    "afterquery": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "AfterQuery",
+      "roles": 0
+    },
+    "aiprise": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "AiPrise",
+      "roles": 0
+    },
+    "allen-control-systems": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Allen Control Systems",
+      "roles": 0
+    },
+    "antares": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Antares Nuclear",
+      "roles": 0
+    },
+    "anthelioncap": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Anthelion Capital",
+      "roles": 0
+    },
+    "apex-technology-inc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Apex Technology, Inc.",
+      "roles": 0
+    },
+    "aptura": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Aptura",
+      "roles": 0
+    },
+    "arch.co": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Arch",
+      "roles": 0
+    },
+    "backbone": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Backbone Systems",
+      "roles": 0
+    },
+    "barnes": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Barnes & Thornburg",
+      "roles": 0
+    },
+    "base-power": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Base Power",
+      "roles": 0
+    },
+    "binance.us": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Binance",
+      "roles": 0
+    },
+    "blissway": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Blissway",
+      "roles": 0
+    },
+    "bloxd": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Bloxd",
+      "roles": 0
+    },
+    "brainbaselabs": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Brainbase Labs",
+      "roles": 0
+    },
+    "brainco": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Brain Co.",
+      "roles": 0
+    },
+    "bridger": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Bridger",
+      "roles": 0
+    },
+    "capy": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Capy",
+      "roles": 0
+    },
+    "centerfield": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Centerfield",
+      "roles": 0
+    },
+    "chainlink-labs": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Chainlink Labs",
+      "roles": 0
+    },
+    "chartahealth": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Charta Health",
+      "roles": 0
+    },
+    "checkout.com": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Checkout.com",
+      "roles": 0
+    },
+    "circleback": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Circleback",
+      "roles": 0
+    },
+    "clera": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Clera",
+      "roles": 0
+    },
+    "collective": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Collective",
+      "roles": 0
+    },
+    "color-health": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Color",
+      "roles": 0
+    },
+    "commure": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Commure",
+      "roles": 0
+    },
+    "composio": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Composio",
+      "roles": 0
+    },
+    "confido": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Confido",
+      "roles": 0
+    },
+    "corvus-robotics": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Corvus Robotics",
+      "roles": 0
+    },
+    "crusoe": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Crusoe",
+      "roles": 0
+    },
+    "ctgt": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "CTGT",
+      "roles": 0
+    },
+    "cylake-inc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cylake",
+      "roles": 0
+    },
+    "cyvl": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cyvl",
+      "roles": 0
+    },
+    "datologyai": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "DatologyAI",
+      "roles": 0
+    },
+    "decagon": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Decagon",
+      "roles": 0
+    },
+    "deepgram": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Deepgram",
+      "roles": 0
+    },
+    "deliveroo": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Deliveroo",
+      "roles": 0
+    },
+    "ellipsislabs": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Ellipsis Labs",
+      "roles": 0
+    },
+    "espa": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Espa AI",
+      "roles": 0
+    },
+    "ether.fi": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Ether.fi",
+      "roles": 0
+    },
+    "evenup": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "EvenUp",
+      "roles": 0
+    },
+    "exa": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Exa",
+      "roles": 0
+    },
+    "faros-ai": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Faros AI",
+      "roles": 0
+    },
+    "firetiger": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Firetiger",
+      "roles": 0
+    },
+    "flashpoint.io": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Flashpoint",
+      "roles": 0
+    },
+    "flowengineering": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Flow Engineering",
+      "roles": 0
+    },
+    "gen-digital": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Gen Digital",
+      "roles": 0
+    },
+    "gigaml": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Giga AI",
+      "roles": 0
+    },
+    "h3x-technologies": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "H3X Technologies",
+      "roles": 0
+    },
+    "hadrian-automation": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Hadrian",
+      "roles": 0
+    },
+    "handshake": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Handshake",
+      "roles": 0
+    },
+    "healf": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Healf",
+      "roles": 0
+    },
+    "heliux": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Heliux",
+      "roles": 0
+    },
+    "hipp": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Hipp Health",
+      "roles": 0
+    },
+    "hiverge": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Hiverge",
+      "roles": 0
+    },
+    "homebase": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Homebase",
+      "roles": 0
+    },
+    "hypercubic": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Hypercubic",
+      "roles": 0
+    },
+    "ibotta": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "ibotta",
+      "roles": 0
+    },
+    "icon": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Icon",
+      "roles": 0
+    },
+    "incident": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "incident.io",
+      "roles": 0
+    },
+    "inductive-automation-llc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Inductive Automation",
+      "roles": 0
+    },
+    "julius": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Julius AI",
+      "roles": 0
+    },
+    "kastle": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Kastle",
+      "roles": 0
+    },
+    "kineticsystems": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Kinetic Systems",
+      "roles": 0
+    },
+    "koahlabs": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Koah",
+      "roles": 0
+    },
+    "kos.ai": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "kos.ai",
+      "roles": 0
+    },
+    "kustomer": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Kustomer",
+      "roles": 0
+    },
+    "lightfield": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Lightfield",
+      "roles": 0
+    },
+    "mach": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Mach Industries",
+      "roles": 0
+    },
+    "maxima": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Maxima",
+      "roles": 0
+    },
+    "maximor": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Maximor AI",
+      "roles": 0
+    },
+    "megazone": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "MegazoneCloud",
+      "roles": 0
+    },
+    "melius": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Melius",
+      "roles": 0
+    },
+    "meow": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Meow",
+      "roles": 0
+    },
+    "meshy": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Meshy",
+      "roles": 0
+    },
+    "mistral.ai": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Mistral AI",
+      "roles": 0
+    },
+    "n1": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "N1",
+      "roles": 0
+    },
+    "netic": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cybernetic Labs",
+      "roles": 0
+    },
+    "nexxen": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Nexxen",
+      "roles": 0
+    },
+    "nooks": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Nooks",
+      "roles": 0
+    },
+    "northwoodspace": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Northwood Space",
+      "roles": 0
+    },
+    "observable-space": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Observable Space",
+      "roles": 0
+    },
+    "oneapp": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "ONE Finance",
+      "roles": 0
+    },
+    "opengov": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "OpenGov",
+      "roles": 0
+    },
+    "parallel": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Parallel Web Systems",
+      "roles": 0
+    },
+    "pariveda": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Pariveda Solutions",
+      "roles": 0
+    },
+    "people-culture-talent": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "People Culture Talent",
+      "roles": 0
+    },
+    "persona": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Persona",
+      "roles": 0
+    },
+    "persona.ai": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Persona AI",
+      "roles": 0
+    },
+    "pointone": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "PointOne",
+      "roles": 0
+    },
+    "poshmark": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Poshmark",
+      "roles": 0
+    },
+    "primer": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Primer",
+      "roles": 0
+    },
+    "pylon-labs": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Pylon",
+      "roles": 0
+    },
+    "quadrillion-labs": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Quadrillion",
+      "roles": 0
+    },
+    "quora": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Quora",
+      "roles": 0
+    },
+    "radiant-industries": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Radiant",
+      "roles": 0
+    },
+    "realmalliance": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Realm",
+      "roles": 0
+    },
+    "remarcable-inc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Remarcable",
+      "roles": 0
+    },
+    "retell-ai": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Retell AI",
+      "roles": 0
+    },
+    "revel": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Revel",
+      "roles": 0
+    },
+    "reviserobotics": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Revise Robotics",
+      "roles": 0
+    },
+    "rivianvw.tech": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Rivian and Volkswagen Group Technologies",
+      "roles": 0
+    },
+    "rollout": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Rollout",
+      "roles": 0
+    },
+    "runsybil-jobs": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "RunSybil",
+      "roles": 0
+    },
+    "sentilink": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "SentiLink",
+      "roles": 0
+    },
+    "sentry": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Sentry",
+      "roles": 0
+    },
+    "siftstack": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "SIFT",
+      "roles": 0
+    },
+    "skydio": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Skydio",
+      "roles": 0
+    },
+    "solace": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Solace Health",
+      "roles": 0
+    },
+    "solink": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Solink",
+      "roles": 0
+    },
+    "spacial": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Spacial AI",
+      "roles": 0
+    },
+    "stradahq": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Strada",
+      "roles": 0
+    },
+    "superhuman": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Superhuman",
+      "roles": 0
+    },
+    "talos-trading": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Talos",
+      "roles": 0
+    },
+    "telus-digital": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "TELUS Digital",
+      "roles": 0
+    },
+    "the-exploration-company": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Exploration Company",
+      "roles": 0
+    },
+    "titan-msp": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Titan",
+      "roles": 0
+    },
+    "traba": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Traba",
+      "roles": 0
+    },
+    "tracebit": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Tracebit",
+      "roles": 0
+    },
+    "trainline": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Trainline",
+      "roles": 0
+    },
+    "trulioo": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Trulioo",
+      "roles": 0
+    },
+    "uniswap": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Uniswap",
+      "roles": 0
+    },
+    "valon": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Valon",
+      "roles": 0
+    },
+    "varick-agents": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Varick Agents",
+      "roles": 0
+    },
+    "voleon": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Voleon Group",
+      "roles": 0
+    },
+    "whatnot": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "WhatNot",
+      "roles": 0
+    },
+    "withpace": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Pace",
+      "roles": 0
+    },
+    "zip": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Zip",
+      "roles": 0
+    }
+  },
+  "Greenhouse": {
+    "affirm": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Affirm",
+      "roles": 0
+    },
+    "alarmcom": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Alarm.com",
+      "roles": 0
+    },
+    "allcareers": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cortica",
+      "roles": 0
+    },
+    "altaresourcetechnologiesinc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Alta Resource Technologies",
+      "roles": 0
+    },
+    "amarok": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "AMAROK Security",
+      "roles": 0
+    },
+    "aperaaiinc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Apera AI",
+      "roles": 0
+    },
+    "appian": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Appian",
+      "roles": 0
+    },
+    "aquaticcapitalmanagement": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Aquatic Capital Management",
+      "roles": 0
+    },
+    "artefactus": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Artefact",
+      "roles": 0
+    },
+    "asteraearlycareer2026": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Astera Labs",
+      "roles": 0
+    },
+    "axon": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Axon",
+      "roles": 0
+    },
+    "axontalentcommunity": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "RenderATL",
+      "roles": 0
+    },
+    "axq": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "AXQ Capital",
+      "roles": 0
+    },
+    "babelstreet": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Babel Street",
+      "roles": 0
+    },
+    "blenheimchalcot": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Blenheim Chalcot",
+      "roles": 0
+    },
+    "bti36021": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "BTI360",
+      "roles": 0
+    },
+    "captivation": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Captivation",
+      "roles": 0
+    },
+    "carbonchain": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "CarbonChain",
+      "roles": 0
+    },
+    "chaosindustries": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "CHAOS Industries",
+      "roles": 0
+    },
+    "chicagotradingcampus": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Chicago Trading Company",
+      "roles": 0
+    },
+    "clarityinnovates": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Clarity Innovations",
+      "roles": 0
+    },
+    "compeerfinancial": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Compeer Financial",
+      "roles": 0
+    },
+    "covar": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "CoVar",
+      "roles": 0
+    },
+    "cssmerge": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Atoms",
+      "roles": 0
+    },
+    "ctccampusboard": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Chicago Trading Company",
+      "roles": 0
+    },
+    "customcomputerspecialists": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Custom Computer Specialists",
+      "roles": 0
+    },
+    "d3": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "D3",
+      "roles": 0
+    },
+    "darkwolfsolutions": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Dark Wolf Solutions",
+      "roles": 0
+    },
+    "devtechnology": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Dev Technology Group",
+      "roles": 0
+    },
+    "doordashcanada": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "\ud83d\udd25 DoorDash",
+      "roles": 0
+    },
+    "doordashusa": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "\ud83d\udd25 DoorDash",
+      "roles": 0
+    },
+    "drweng": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "DRW",
+      "roles": 0
+    },
+    "duolingounirecruitment": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "\ud83d\udd25 Duolingo",
+      "roles": 0
+    },
+    "dvtrading": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "DV Trading",
+      "roles": 0
+    },
+    "eikontherapeutics": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Eikon Therapeutics",
+      "roles": 0
+    },
+    "elwoodtechnologies": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Elwood Technologies",
+      "roles": 0
+    },
+    "emergingtalent": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Maven Securities",
+      "roles": 0
+    },
+    "eulerity": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Eulerity",
+      "roles": 0
+    },
+    "eventsandinterns": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "GoDaddy",
+      "roles": 0
+    },
+    "everlaw": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Everlaw",
+      "roles": 0
+    },
+    "evolver": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Evolver",
+      "roles": 0
+    },
+    "fiveringsllc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Five Rings Capital",
+      "roles": 0
+    },
+    "flowtraders": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Flow Traders",
+      "roles": 0
+    },
+    "fourhands": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Four Hands",
+      "roles": 0
+    },
+    "freedomconsulting": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Freedom Technology Solutions Group",
+      "roles": 0
+    },
+    "freeformfuturecorp": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Freeform",
+      "roles": 0
+    },
+    "fschumacherco": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "F. Schumacher & Co.",
+      "roles": 0
+    },
+    "gallup": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Gallup",
+      "roles": 0
+    },
+    "gardacp": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Garda Capital Partners",
+      "roles": 0
+    },
+    "generalmatter": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "General Matter",
+      "roles": 0
+    },
+    "genevatrading": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Geneva Trading",
+      "roles": 0
+    },
+    "getbuilt": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Built Technologies",
+      "roles": 0
+    },
+    "glossgenius": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "GlossGenius",
+      "roles": 0
+    },
+    "headlandstechnologiesllc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Headlands Tech Holdings",
+      "roles": 0
+    },
+    "hpiq": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "HP IQ",
+      "roles": 0
+    },
+    "hudl": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Hudl",
+      "roles": 0
+    },
+    "hyannisportresearch": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "HPR (Hyannis Port Research)",
+      "roles": 0
+    },
+    "idmeuniversityrecruiting": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "ID.me",
+      "roles": 0
+    },
+    "iherb": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "iHerb",
+      "roles": 0
+    },
+    "instabase": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Instabase",
+      "roles": 0
+    },
+    "instalilyai": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "InstaLILY",
+      "roles": 0
+    },
+    "instead": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Instead",
+      "roles": 0
+    },
+    "internshiplist2000": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Geotab",
+      "roles": 0
+    },
+    "intersystems": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "InterSystems",
+      "roles": 0
+    },
+    "jobsatphamily": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Phamily",
+      "roles": 0
+    },
+    "k2spacecorporation": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "K2 Space",
+      "roles": 0
+    },
+    "katalyst": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Katalyst Space Technologies",
+      "roles": 0
+    },
+    "kikoff": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Kikoff",
+      "roles": 0
+    },
+    "klaviyocampus": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Klaviyo",
+      "roles": 0
+    },
+    "later": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Later",
+      "roles": 0
+    },
+    "lexingtonmedical": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Lexington Medical",
+      "roles": 0
+    },
+    "lilasciences": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Lila Sciences",
+      "roles": 0
+    },
+    "livescore9": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "LiveScore Group",
+      "roles": 0
+    },
+    "mavensecuritiesholdingltd": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Maven Securities",
+      "roles": 0
+    },
+    "metoxinternationalinc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "MetOx International",
+      "roles": 0
+    },
+    "mitratech": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Mitratech",
+      "roles": 0
+    },
+    "mthreerecruitingportal": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "mthree",
+      "roles": 0
+    },
+    "mwinternshipprogram": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Marshall Wace",
+      "roles": 0
+    },
+    "newsbreak": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "NewsBreak",
+      "roles": 0
+    },
+    "offerup": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "OfferUp",
+      "roles": 0
+    },
+    "okx": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "OKX",
+      "roles": 0
+    },
+    "oldmissioncapital": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Old Mission",
+      "roles": 0
+    },
+    "optiverprivate": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Optiver",
+      "roles": 0
+    },
+    "pacificfusion": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Pacific Fusion",
+      "roles": 0
+    },
+    "pdtpartners": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "PDT Partners",
+      "roles": 0
+    },
+    "perpay": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Perpay",
+      "roles": 0
+    },
+    "podium81": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Podium",
+      "roles": 0
+    },
+    "point72": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Point72",
+      "roles": 0
+    },
+    "radixuniversity": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Radix Trading",
+      "roles": 0
+    },
+    "relaypro": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Relay",
+      "roles": 0
+    },
+    "rfsmart": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "RF-SMART",
+      "roles": 0
+    },
+    "rocketlab": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Rocket Lab USA",
+      "roles": 0
+    },
+    "rothesaygraduates": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Rothesay",
+      "roles": 0
+    },
+    "sage49": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Sage",
+      "roles": 0
+    },
+    "schonfeld": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Schonfeld",
+      "roles": 0
+    },
+    "scm": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Stevens Capital Management",
+      "roles": 0
+    },
+    "sharkninjaoperatingllc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "SharkNinja",
+      "roles": 0
+    },
+    "sigmacomputing": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Sigma Computing",
+      "roles": 0
+    },
+    "simplisafe": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "SimpliSafe",
+      "roles": 0
+    },
+    "singlestore": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "SingleStore",
+      "roles": 0
+    },
+    "skhynixmemorysolutionsamericainc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "SK Hynix Memory Solution",
+      "roles": 0
+    },
+    "sonyinteractiveentertainmentglobal": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "PlayStation",
+      "roles": 0
+    },
+    "tanium": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Tanium",
+      "roles": 0
+    },
+    "taxreliefadvocates": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Tax Relief Advocates",
+      "roles": 0
+    },
+    "tebra": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Tebra",
+      "roles": 0
+    },
+    "tenstorrentuniversity": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Tenstorrent",
+      "roles": 0
+    },
+    "testnisc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "National Information Solutions Cooperative",
+      "roles": 0
+    },
+    "themjcos": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The MJ Companies",
+      "roles": 0
+    },
+    "thenuclearcompany": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Nuclear Company",
+      "roles": 0
+    },
+    "thetradedesk": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Trade Desk",
+      "roles": 0
+    },
+    "transmarketgroup": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "TransMarket Group",
+      "roles": 0
+    },
+    "tribalscale": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "TribalScale",
+      "roles": 0
+    },
+    "trueanomalyinc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "True Anomaly",
+      "roles": 0
+    },
+    "twitch": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Twitch",
+      "roles": 0
+    },
+    "twosixtechnologies": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Two Six Technologies",
+      "roles": 0
+    },
+    "uareai": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Uare.ai",
+      "roles": 0
+    },
+    "viamrobotics": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Viam",
+      "roles": 0
+    },
+    "visiersolutionsinc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Visier Solutions",
+      "roles": 0
+    },
+    "voloridgeinvestmentmanagement": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Voloridge Investment Management",
+      "roles": 0
+    },
+    "walleyecapital-external-students": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Walleye Capital",
+      "roles": 0
+    },
+    "whitewatermidstream": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "WhiteWater Midstream",
+      "roles": 0
+    },
+    "wonderschool": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Wonderschool",
+      "roles": 0
+    },
+    "workshop": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Workshop",
+      "roles": 0
+    },
+    "xantium": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Xantium",
+      "roles": 0
+    },
+    "xpengmotors": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "XPENG Motors",
+      "roles": 0
+    },
+    "zone5technologies": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Zone 5 Technologies",
+      "roles": 0
+    }
+  },
+  "Lever": {
+    "belvederetrading": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Belvedere Trading",
+      "roles": 0
+    },
+    "cesiumastro": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "CesiumAstro",
+      "roles": 0
+    },
+    "datalabusa": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Datalab USA",
+      "roles": 0
+    },
+    "diversified-automation": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Diversified Automation",
+      "roles": 0
+    },
+    "evr": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Elk Valley Resources",
+      "roles": 0
+    },
+    "evrealty-us": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "EV Realty",
+      "roles": 0
+    },
+    "fluxergy-2": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Fluxergy",
+      "roles": 0
+    },
+    "genbio": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "GenBio AI",
+      "roles": 0
+    },
+    "hatchit": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Hatch IT",
+      "roles": 0
+    },
+    "hermeus": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Hermeus",
+      "roles": 0
+    },
+    "hottopic": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Hot Topic",
+      "roles": 0
+    },
+    "ifm-us": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Institute of Foundation Models",
+      "roles": 0
+    },
+    "immuta": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Immuta",
+      "roles": 0
+    },
+    "meds": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Meds",
+      "roles": 0
+    },
+    "neighbor": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Neighbor",
+      "roles": 0
+    },
+    "pingwind": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "PingWind",
+      "roles": 0
+    },
+    "planettechnologies": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Planet Technologies",
+      "roles": 0
+    },
+    "plus-2": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "PlusAI",
+      "roles": 0
+    },
+    "protective": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Protective Life",
+      "roles": 0
+    },
+    "sep": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "SEP",
+      "roles": 0
+    },
+    "sophos": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Sophos",
+      "roles": 0
+    },
+    "standtogether": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Stand Together",
+      "roles": 0
+    },
+    "steerbridge": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "SteerBridge",
+      "roles": 0
+    },
+    "weride": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "WeRide",
+      "roles": 0
+    },
+    "wyetechllc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Wyetech",
+      "roles": 0
+    },
+    "xcimer": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Xcimer Energy",
+      "roles": 0
+    }
+  },
+  "SmartRecruiters": {
+    "9to9softwaresolutionsllc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "9to9 Software Solutions",
+      "roles": 0
+    },
+    "abbvie": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "AbbVie",
+      "roles": 0
+    },
+    "agtechnologies1": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "AG Technologies",
+      "roles": 0
+    },
+    "averydennison": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Avery Dennison",
+      "roles": 0
+    },
+    "boschgroup": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Bosch Home Comfort",
+      "roles": 0
+    },
+    "gdmsi": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "General Dynamics UK",
+      "roles": 0
+    },
+    "infinitequant": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "InfiniteQuant",
+      "roles": 0
+    },
+    "insilicologix": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Insilico Logix",
+      "roles": 0
+    },
+    "jobsbridge1": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Jobsbridge",
+      "roles": 0
+    },
+    "krgtechnologyinc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "KRG Technologies",
+      "roles": 0
+    },
+    "llnl": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Lawrence Livermore National Laboratory (LLNL)",
+      "roles": 0
+    },
+    "nationalsoftwaremanagement1": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "National Software Management",
+      "roles": 0
+    },
+    "nextcenturycorporation": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "CACI",
+      "roles": 0
+    },
+    "northstarstaffingsolutions1": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "North Star Staffing Solutions",
+      "roles": 0
+    },
+    "pilotcompany": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Pilot Company",
+      "roles": 0
+    },
+    "rrsgroup": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "RRS Group",
+      "roles": 0
+    },
+    "skyward1": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Skyward",
+      "roles": 0
+    },
+    "smarteragent": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Smarter Agent",
+      "roles": 0
+    },
+    "socotec": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "SOCOTEC Global",
+      "roles": 0
+    },
+    "solidigm": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Solidigm",
+      "roles": 0
+    },
+    "sqexpetsllc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Software Quality Experts",
+      "roles": 0
+    },
+    "syngentagroup": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Syngenta Group",
+      "roles": 0
+    },
+    "thewonderfulcompany": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Wonderful Company",
+      "roles": 0
+    },
+    "ttp1": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "TTP",
+      "roles": 0
+    },
+    "wabtec": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Wabtec",
+      "roles": 0
+    },
+    "wavestone1": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Wavestone",
+      "roles": 0
+    },
+    "wellmarkinc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Wellmark",
+      "roles": 0
+    },
+    "westerndigital": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Western Digital",
+      "roles": 0
+    }
+  },
+  "Workable": {
+    "al-warren-oil-company-inc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Al Warren Oil Company",
+      "roles": 0
+    },
+    "arondite": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Arondite",
+      "roles": 0
+    },
+    "capula-investment-management-ltd": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Capula",
+      "roles": 0
+    },
+    "cogna": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cogna",
+      "roles": 0
+    },
+    "dcthomson": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "DC Thomson",
+      "roles": 0
+    },
+    "enfos-inc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "ENFOS",
+      "roles": 0
+    },
+    "fuse-integration": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Fuse Integration",
+      "roles": 0
+    },
+    "generation-west-virginia-1": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Generation West Virginia",
+      "roles": 0
+    },
+    "homey": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Homey",
+      "roles": 0
+    },
+    "hyperlight": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "HyperLight",
+      "roles": 0
+    },
+    "interimage": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "InterImage",
+      "roles": 0
+    },
+    "pony-dot-ai": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "pony.ai",
+      "roles": 0
+    },
+    "quadric-dot-i-o-inc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Quadric",
+      "roles": 0
+    },
+    "raveaerospace": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "RAVE Aerospace",
+      "roles": 0
+    },
+    "rokt": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Rokt",
+      "roles": 0
+    },
+    "saalex": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Saalex",
+      "roles": 0
+    },
+    "texas-sports-academy-main": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Texas Sports Academy",
+      "roles": 0
+    },
+    "tmeic-corporation-americas": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "TMEIC Corporation Americas",
+      "roles": 0
+    },
+    "tp-link-usa-corp": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "TP-Link Systems",
+      "roles": 0
+    },
+    "twgai": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "TWG Global",
+      "roles": 0
+    },
+    "wallstreetquants": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "WallStreetQuants",
+      "roles": 0
+    }
+  },
+  "Workday": {
+    "abb": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "ABB",
+      "roles": 0
+    },
+    "abinbev": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Anheuser-Busch",
+      "roles": 0
+    },
+    "accenture": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Avanade",
+      "roles": 0
+    },
+    "acrisure": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Acrisure",
+      "roles": 0
+    },
+    "adobe": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "\ud83d\udd25 Adobe",
+      "roles": 0
+    },
+    "adtran": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Adtran",
+      "roles": 0
+    },
+    "aero": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Aerospace Corporation",
+      "roles": 0
+    },
+    "aes": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "AES",
+      "roles": 0
+    },
+    "aig": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "AIG",
+      "roles": 0
+    },
+    "airproducts": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Air Products",
+      "roles": 0
+    },
+    "aksteel": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cleveland-Cliffs",
+      "roles": 0
+    },
+    "alation": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Alation",
+      "roles": 0
+    },
+    "albemarle": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Ketjen",
+      "roles": 0
+    },
+    "alliedsolutions": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Allied Solutions",
+      "roles": 0
+    },
+    "altasciences": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Altasciences",
+      "roles": 0
+    },
+    "amat": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Applied Materials",
+      "roles": 0
+    },
+    "ambarella": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Ambarella",
+      "roles": 0
+    },
+    "ameriprise": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Ameriprise Financial",
+      "roles": 0
+    },
+    "amfam": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "American Family Insurance Group",
+      "roles": 0
+    },
+    "amgen": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Amgen",
+      "roles": 0
+    },
+    "ancestry": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Ancestry",
+      "roles": 0
+    },
+    "aoins": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Auto-Owners Insurance",
+      "roles": 0
+    },
+    "archgroup": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Arch Capital Group",
+      "roles": 0
+    },
+    "arrowstreetcapital": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Arrowstreet Capital",
+      "roles": 0
+    },
+    "aspentech": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "AspenTech",
+      "roles": 0
+    },
+    "athene": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Athene",
+      "roles": 0
+    },
+    "autodesk": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Autodesk",
+      "roles": 0
+    },
+    "autostore": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Autostore",
+      "roles": 0
+    },
+    "avav": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "AeroVironment",
+      "roles": 0
+    },
+    "avisbudget": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Avis Budget Group",
+      "roles": 0
+    },
+    "axiomspace": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Axiom Space",
+      "roles": 0
+    },
+    "bah": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Booz Allen",
+      "roles": 0
+    },
+    "baird": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Baird",
+      "roles": 0
+    },
+    "bakerhughes": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Baker Hughes",
+      "roles": 0
+    },
+    "barclays": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Barclays",
+      "roles": 0
+    },
+    "barr": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Barr",
+      "roles": 0
+    },
+    "barrywehmiller": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Barry-Wehmiller",
+      "roles": 0
+    },
+    "basspro": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Bass Pro Shops",
+      "roles": 0
+    },
+    "bb": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Blackberry",
+      "roles": 0
+    },
+    "bcbsks": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Blue Cross and Blue Shield of Kansas",
+      "roles": 0
+    },
+    "bci": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "British Columbia Investment",
+      "roles": 0
+    },
+    "bdo": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "BDO Canada",
+      "roles": 0
+    },
+    "belron": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Safelite",
+      "roles": 0
+    },
+    "blackrock": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "BlackRock",
+      "roles": 0
+    },
+    "blackstone": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Blackstone",
+      "roles": 0
+    },
+    "blueorigin": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Blue Origin",
+      "roles": 0
+    },
+    "bmo": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Bank of Montreal",
+      "roles": 0
+    },
+    "boeing": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Boeing Company",
+      "roles": 0
+    },
+    "boystown": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Boys Town",
+      "roles": 0
+    },
+    "bpinternational": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "BP",
+      "roles": 0
+    },
+    "brunswick": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Brunswick",
+      "roles": 0
+    },
+    "caci": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "CACI",
+      "roles": 0
+    },
+    "cadence": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cadence Design Systems",
+      "roles": 0
+    },
+    "cae": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "CAE",
+      "roles": 0
+    },
+    "cai": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "CAI",
+      "roles": 0
+    },
+    "campbellsoup": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Campbell's Company",
+      "roles": 0
+    },
+    "canadiantirecorporation": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Canadian Tire",
+      "roles": 0
+    },
+    "capitalhealth": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Capital Health",
+      "roles": 0
+    },
+    "capitalone": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Capital One",
+      "roles": 0
+    },
+    "cardinalhealth": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cardinal Health",
+      "roles": 0
+    },
+    "cat": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Solar Turbines",
+      "roles": 0
+    },
+    "centene": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Centene",
+      "roles": 0
+    },
+    "centific": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Centific",
+      "roles": 0
+    },
+    "ceritypartners": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cerity Partners",
+      "roles": 0
+    },
+    "cgg": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Viridien",
+      "roles": 0
+    },
+    "chamberlain": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Chamberlain Group",
+      "roles": 0
+    },
+    "charlottenc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "City of Charlotte",
+      "roles": 0
+    },
+    "chartermfg": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Charter Manufacturing",
+      "roles": 0
+    },
+    "chrobinson": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "C.H. Robinson",
+      "roles": 0
+    },
+    "churchdwight": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Church & Dwight",
+      "roles": 0
+    },
+    "cibc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "CIBC",
+      "roles": 0
+    },
+    "ciena": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Ciena",
+      "roles": 0
+    },
+    "cigna": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cigna Group",
+      "roles": 0
+    },
+    "cisco": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cisco",
+      "roles": 0
+    },
+    "citi": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Citi",
+      "roles": 0
+    },
+    "clarios": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Clarios",
+      "roles": 0
+    },
+    "clorox": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Clorox",
+      "roles": 0
+    },
+    "clr": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Continental Resources",
+      "roles": 0
+    },
+    "cmegroup": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "CME Group",
+      "roles": 0
+    },
+    "cmu": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Carnegie Mellon University",
+      "roles": 0
+    },
+    "cnoinc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "CNO Financial Group",
+      "roles": 0
+    },
+    "cohesity": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cohesity",
+      "roles": 0
+    },
+    "comcast": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Comcast",
+      "roles": 0
+    },
+    "conocophillips": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "ConocoPhillips",
+      "roles": 0
+    },
+    "copart": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Copart",
+      "roles": 0
+    },
+    "coreandmain": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Core & Main",
+      "roles": 0
+    },
+    "corteva": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Corteva",
+      "roles": 0
+    },
+    "costar": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "CoStar Group",
+      "roles": 0
+    },
+    "countryfinancial": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "COUNTRY Financial",
+      "roles": 0
+    },
+    "cox": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cox Automotive",
+      "roles": 0
+    },
+    "crowdstrike": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "\ud83d\udd25 Crowdstrike",
+      "roles": 0
+    },
+    "cubic": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cubic",
+      "roles": 0
+    },
+    "cvshealth": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "CVS Health",
+      "roles": 0
+    },
+    "danaher": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Danaher Corporation",
+      "roles": 0
+    },
+    "deezee": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Dee Zee",
+      "roles": 0
+    },
+    "dexcom": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Dexcom",
+      "roles": 0
+    },
+    "dfwairport": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Dallas Fort Worth International Airport",
+      "roles": 0
+    },
+    "dickssportinggoods": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Dick's Sporting Goods",
+      "roles": 0
+    },
+    "dimensional": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Dimensional Fund Advisors",
+      "roles": 0
+    },
+    "directv": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "DIRECTV",
+      "roles": 0
+    },
+    "disney": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Walt Disney Company",
+      "roles": 0
+    },
+    "dmainc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "DuCharme, McMillen & Associates",
+      "roles": 0
+    },
+    "dowjones": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Dow Jones",
+      "roles": 0
+    },
+    "draftkings": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "DraftKings",
+      "roles": 0
+    },
+    "drivetime": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "DriveTime",
+      "roles": 0
+    },
+    "ebi": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Ensign-Bickford Industries",
+      "roles": 0
+    },
+    "ecolab": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Ecolab",
+      "roles": 0
+    },
+    "elanco": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Elanco",
+      "roles": 0
+    },
+    "emcins": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "EMC Insurance",
+      "roles": 0
+    },
+    "equifax": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Equifax",
+      "roles": 0
+    },
+    "ercot": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Ercot",
+      "roles": 0
+    },
+    "evergreenix": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Everfox",
+      "roles": 0
+    },
+    "expedia": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Expedia Group",
+      "roles": 0
+    },
+    "factset": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "FactSet",
+      "roles": 0
+    },
+    "fanniemae": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Fannie Mae",
+      "roles": 0
+    },
+    "fifththird": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Fifth Third Bank",
+      "roles": 0
+    },
+    "finastra": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Finastra",
+      "roles": 0
+    },
+    "firstnational": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "FNBO",
+      "roles": 0
+    },
+    "fis": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Fidelity National Information Services",
+      "roles": 0
+    },
+    "flextronics": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Flex",
+      "roles": 0
+    },
+    "flir": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Teledyne Technologies Incorporated",
+      "roles": 0
+    },
+    "flsmidth": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "FLSmidth",
+      "roles": 0
+    },
+    "fmr": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Fidelity Investments",
+      "roles": 0
+    },
+    "fnbcorp": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "First National Bank",
+      "roles": 0
+    },
+    "freddiemac": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Freddie Mac",
+      "roles": 0
+    },
+    "fticonsulting": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "FTI Consulting",
+      "roles": 0
+    },
+    "gaig": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Great American Insurance Company",
+      "roles": 0
+    },
+    "gdit": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "General Dynamics Information Technology",
+      "roles": 0
+    },
+    "geaerospace": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "GE Aerospace",
+      "roles": 0
+    },
+    "gehc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "GE Healthcare",
+      "roles": 0
+    },
+    "geico": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Geico",
+      "roles": 0
+    },
+    "generac": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Generac",
+      "roles": 0
+    },
+    "generalmotors": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "General Motors",
+      "roles": 0
+    },
+    "gentex": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Gentex Corporation",
+      "roles": 0
+    },
+    "gevernova": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "GE Vernova",
+      "roles": 0
+    },
+    "gfs": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Gordon Food Service",
+      "roles": 0
+    },
+    "gladstone": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Gladstone Institutes",
+      "roles": 0
+    },
+    "globalfoundries": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "GlobalFoundries",
+      "roles": 0
+    },
+    "globalhr": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "RTX",
+      "roles": 0
+    },
+    "gnw": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Genworth Financial",
+      "roles": 0
+    },
+    "greenheckgroup": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Greenheck Group",
+      "roles": 0
+    },
+    "gresearch": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "G-Research",
+      "roles": 0
+    },
+    "guardianlife": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Guardian Life",
+      "roles": 0
+    },
+    "guidehouse": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Guidehouse",
+      "roles": 0
+    },
+    "haier": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "GE Appliances",
+      "roles": 0
+    },
+    "harriscomputer": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Harris Computer",
+      "roles": 0
+    },
+    "hcmportal": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "United Parcel Service (UPS)",
+      "roles": 0
+    },
+    "hdsupply": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "HD Supply",
+      "roles": 0
+    },
+    "hitachi": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Hitachi",
+      "roles": 0
+    },
+    "hmhw": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "HMH",
+      "roles": 0
+    },
+    "hntb": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "HNTB",
+      "roles": 0
+    },
+    "homedepot": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Home Depot",
+      "roles": 0
+    },
+    "hp": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Hewlett Packard",
+      "roles": 0
+    },
+    "hq": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Securian Financial Group",
+      "roles": 0
+    },
+    "humana": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Humana",
+      "roles": 0
+    },
+    "huntington": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Huntington Bancshares",
+      "roles": 0
+    },
+    "hyperiongrp": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Howden",
+      "roles": 0
+    },
+    "hyvee": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Hy-Vee",
+      "roles": 0
+    },
+    "iatinsurancegroup": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "IAT Insurance Group",
+      "roles": 0
+    },
+    "iberdrola": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Iberdrola Group",
+      "roles": 0
+    },
+    "icf": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "ICF International",
+      "roles": 0
+    },
+    "illumina": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Illumina",
+      "roles": 0
+    },
+    "ing": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "ING",
+      "roles": 0
+    },
+    "insulet": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Insulet",
+      "roles": 0
+    },
+    "integritymarketing": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Integrity",
+      "roles": 0
+    },
+    "intel": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Intel Corporation",
+      "roles": 0
+    },
+    "investpsp": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "PSP Investments",
+      "roles": 0
+    },
+    "jabil": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Jabil",
+      "roles": 0
+    },
+    "jainglobal": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Jain Global",
+      "roles": 0
+    },
+    "jci": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Johnson Controls",
+      "roles": 0
+    },
+    "jj": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Johnson & Johnson",
+      "roles": 0
+    },
+    "kbr": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "KBR",
+      "roles": 0
+    },
+    "keybank": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "KeyBank",
+      "roles": 0
+    },
+    "kla": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "KLA Corporation",
+      "roles": 0
+    },
+    "labcorp": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "LabCorp",
+      "roles": 0
+    },
+    "landolakes": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Land O'Lakes",
+      "roles": 0
+    },
+    "leidos": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Leidos",
+      "roles": 0
+    },
+    "lennar": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Lennar Corporation",
+      "roles": 0
+    },
+    "liveoakbancshares": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Live Oak Bank",
+      "roles": 0
+    },
+    "liveramp": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "LiveRamp",
+      "roles": 0
+    },
+    "lowes": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Lowe's",
+      "roles": 0
+    },
+    "lplfinancial": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "LPL Financial Holdings",
+      "roles": 0
+    },
+    "lseg": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "LSEG",
+      "roles": 0
+    },
+    "manulife": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Manulife Financial",
+      "roles": 0
+    },
+    "maritz": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Maritz",
+      "roles": 0
+    },
+    "marvell": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Marvell",
+      "roles": 0
+    },
+    "mastercard": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Mastercard",
+      "roles": 0
+    },
+    "mckesson": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "McKesson",
+      "roles": 0
+    },
+    "medimpact": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "MedImpact",
+      "roles": 0
+    },
+    "medline": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Medline",
+      "roles": 0
+    },
+    "medtronic": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Medtronic",
+      "roles": 0
+    },
+    "meijer": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Meijer",
+      "roles": 0
+    },
+    "mgpru": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "M&G",
+      "roles": 0
+    },
+    "michelinhr": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Michelin",
+      "roles": 0
+    },
+    "micron": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Micron Technology",
+      "roles": 0
+    },
+    "mimecast": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Mimecast",
+      "roles": 0
+    },
+    "mksinst": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "MKS Instruments",
+      "roles": 0
+    },
+    "mmc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Marsh & McLennan",
+      "roles": 0
+    },
+    "modernatx": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Moderna",
+      "roles": 0
+    },
+    "moffitt": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Moffitt Cancer Center",
+      "roles": 0
+    },
+    "momentive": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Momentive",
+      "roles": 0
+    },
+    "moog": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Moog",
+      "roles": 0
+    },
+    "motorolasolutions": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Motorola",
+      "roles": 0
+    },
+    "mpc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Marathon Petroleum",
+      "roles": 0
+    },
+    "msd": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Merck",
+      "roles": 0
+    },
+    "myview": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Loblaw Companies",
+      "roles": 0
+    },
+    "nasdaq": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Nasdaq",
+      "roles": 0
+    },
+    "nationwide": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Nationwide",
+      "roles": 0
+    },
+    "ncr": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "NCR Voyix",
+      "roles": 0
+    },
+    "nebraskablue": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "BlueCross BlueShield of Nebraska",
+      "roles": 0
+    },
+    "nelnet": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Nelnet",
+      "roles": 0
+    },
+    "newrez": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Newrez",
+      "roles": 0
+    },
+    "ngc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Northrop Grumman",
+      "roles": 0
+    },
+    "nidec": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Nidec",
+      "roles": 0
+    },
+    "nike": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Nike",
+      "roles": 0
+    },
+    "nio": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Nio",
+      "roles": 0
+    },
+    "nisource": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "NiSource",
+      "roles": 0
+    },
+    "njm": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "NJM Insurance Group",
+      "roles": 0
+    },
+    "nordstrom": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Nordstrom",
+      "roles": 0
+    },
+    "northwesternmutual": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Northwestern Mutual",
+      "roles": 0
+    },
+    "nrel": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "National Laboratory of the Rockies",
+      "roles": 0
+    },
+    "nrf": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Norton Rose Fulbright",
+      "roles": 0
+    },
+    "ntrs": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Northern Trust",
+      "roles": 0
+    },
+    "ntst": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Netsmart",
+      "roles": 0
+    },
+    "nvidia": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "\ud83d\udd25 NVIDIA",
+      "roles": 0
+    },
+    "nwis": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Nightwing Intelligence Solutions",
+      "roles": 0
+    },
+    "nxp": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "NXP Semiconductors",
+      "roles": 0
+    },
+    "oshkoshcorporation": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Oshkosh",
+      "roles": 0
+    },
+    "osv-amerisure": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Amerisure",
+      "roles": 0
+    },
+    "osv-cci": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Castleton Commodities International",
+      "roles": 0
+    },
+    "otppb": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Ontario Teachers' Pension Plan",
+      "roles": 0
+    },
+    "ovintiv": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Ovintiv",
+      "roles": 0
+    },
+    "pae": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Amentum",
+      "roles": 0
+    },
+    "paloaltonetworks": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Palo Alto Networks",
+      "roles": 0
+    },
+    "parsons": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Parsons",
+      "roles": 0
+    },
+    "peak6group": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "PEAK6",
+      "roles": 0
+    },
+    "pg": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Procter & Gamble",
+      "roles": 0
+    },
+    "philips": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Philips",
+      "roles": 0
+    },
+    "pimco": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "PIMCO",
+      "roles": 0
+    },
+    "plastipak": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Plastipak",
+      "roles": 0
+    },
+    "poet": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "POET",
+      "roles": 0
+    },
+    "polaris": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Polaris",
+      "roles": 0
+    },
+    "pros": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "PROS Holdings, Inc.",
+      "roles": 0
+    },
+    "pru": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Prudential Financial",
+      "roles": 0
+    },
+    "psu": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Pennsylvania State University",
+      "roles": 0
+    },
+    "ptc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "PTC",
+      "roles": 0
+    },
+    "pwc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "PricewaterhouseCoopers (PwC)",
+      "roles": 0
+    },
+    "q2ebanking": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Q2",
+      "roles": 0
+    },
+    "qtsdatacenters": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "QTS",
+      "roles": 0
+    },
+    "qualifacts": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Qualifacts",
+      "roles": 0
+    },
+    "quickenloans": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Rocket Companies",
+      "roles": 0
+    },
+    "rakuten": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Rakuten International",
+      "roles": 0
+    },
+    "raymondjames": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Raymond James Financial",
+      "roles": 0
+    },
+    "rb": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Federal Reserve System",
+      "roles": 0
+    },
+    "rbc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Royal Bank of Canada",
+      "roles": 0
+    },
+    "rbi": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "RBI",
+      "roles": 0
+    },
+    "regions": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Regions Bank",
+      "roles": 0
+    },
+    "relx": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "RELX",
+      "roles": 0
+    },
+    "remitly": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Remitly",
+      "roles": 0
+    },
+    "repsol": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Repsol",
+      "roles": 0
+    },
+    "rfcuny": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "RFCUNY",
+      "roles": 0
+    },
+    "rjet": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Republic Airways",
+      "roles": 0
+    },
+    "roberthalf": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Robert Half",
+      "roles": 0
+    },
+    "rochester": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "University of Rochester",
+      "roles": 0
+    },
+    "rockwellautomation": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Rockwell Automation",
+      "roles": 0
+    },
+    "rollsroyce": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Rolls-Royce",
+      "roles": 0
+    },
+    "rsm": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "RSM",
+      "roles": 0
+    },
+    "ryancompanies": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Ryan Companies",
+      "roles": 0
+    },
+    "saabusa": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Saab",
+      "roles": 0
+    },
+    "salesforce": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "\ud83d\udd25 Salesforce",
+      "roles": 0
+    },
+    "sallie-mae": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Sallie Mae",
+      "roles": 0
+    },
+    "sbdinc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Stanley Black & Decker",
+      "roles": 0
+    },
+    "selinc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Schweitzer Engineering Laboratories",
+      "roles": 0
+    },
+    "sensata": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Sensata",
+      "roles": 0
+    },
+    "silabs": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Silicon Laboratories",
+      "roles": 0
+    },
+    "slihrms": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "AtkinsR\u00e9alis",
+      "roles": 0
+    },
+    "smithnephew": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Smith+Nephew",
+      "roles": 0
+    },
+    "smucker": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "J.M. Smucker",
+      "roles": 0
+    },
+    "snapfinance": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Snap Finance",
+      "roles": 0
+    },
+    "snc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Sierra Nevada Corporation",
+      "roles": 0
+    },
+    "sonyglobal": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Sony",
+      "roles": 0
+    },
+    "spgi": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "S&P Global",
+      "roles": 0
+    },
+    "sralab": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Shirley Ryan AbilityLab",
+      "roles": 0
+    },
+    "standoutforgood": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Altar'd State",
+      "roles": 0
+    },
+    "starfish": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Torch Technologies",
+      "roles": 0
+    },
+    "statestreet": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "State Street",
+      "roles": 0
+    },
+    "stryker": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Stryker",
+      "roles": 0
+    },
+    "sunlife": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Sun Life",
+      "roles": 0
+    },
+    "symbotic": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Symbotic",
+      "roles": 0
+    },
+    "synchronyfinancial": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Synchrony Financial",
+      "roles": 0
+    },
+    "synnex": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Hyve Solutions",
+      "roles": 0
+    },
+    "talentmanagementsolution": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Perseus Group",
+      "roles": 0
+    },
+    "target": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Target",
+      "roles": 0
+    },
+    "tcenergy": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "TC Energy",
+      "roles": 0
+    },
+    "td": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "TD Bank",
+      "roles": 0
+    },
+    "tel": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Tokyo Electron",
+      "roles": 0
+    },
+    "tencent": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Tencent",
+      "roles": 0
+    },
+    "thehartford": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Hartford",
+      "roles": 0
+    },
+    "theocc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "OCC",
+      "roles": 0
+    },
+    "thermofisher": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Thermo Fisher Scientific",
+      "roles": 0
+    },
+    "thrivent": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Thrivent",
+      "roles": 0
+    },
+    "tjx": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "TJX",
+      "roles": 0
+    },
+    "toyota": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Toyota",
+      "roles": 0
+    },
+    "travelers": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Travelers",
+      "roles": 0
+    },
+    "trimble": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Trimble",
+      "roles": 0
+    },
+    "troweprice": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "T. Rowe Price",
+      "roles": 0
+    },
+    "truist": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Truist Bank",
+      "roles": 0
+    },
+    "tsc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "TSC",
+      "roles": 0
+    },
+    "ttc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Toro Company",
+      "roles": 0
+    },
+    "tti": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Techtronic Industries (TTI)",
+      "roles": 0
+    },
+    "tysonfoods": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Tyson Foods",
+      "roles": 0
+    },
+    "uasys": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "University of Arkansas",
+      "roles": 0
+    },
+    "ucar": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "University Corporation for Atmospheric Research",
+      "roles": 0
+    },
+    "uline": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Uline",
+      "roles": 0
+    },
+    "umd": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "University of Maryland - College Park",
+      "roles": 0
+    },
+    "upenn": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "University of Pennsylvania",
+      "roles": 0
+    },
+    "usaa": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "USAA",
+      "roles": 0
+    },
+    "usbank": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "U.S. Bank",
+      "roles": 0
+    },
+    "usc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "University of Southern California",
+      "roles": 0
+    },
+    "utaustin": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "University of Texas at Austin",
+      "roles": 0
+    },
+    "valeo": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Valeo",
+      "roles": 0
+    },
+    "vanguard": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Vanguard",
+      "roles": 0
+    },
+    "verdantas": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Verdantas",
+      "roles": 0
+    },
+    "verizon": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Verizon Communications",
+      "roles": 0
+    },
+    "vermeer": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Vermeer",
+      "roles": 0
+    },
+    "visa": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "\ud83d\udd25 Visa",
+      "roles": 0
+    },
+    "walmart": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Walmart",
+      "roles": 0
+    },
+    "wattswater": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Watts Water",
+      "roles": 0
+    },
+    "waystar": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Waystar",
+      "roles": 0
+    },
+    "wd1": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Wells Fargo",
+      "roles": 0
+    },
+    "wd3": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Magna",
+      "roles": 0
+    },
+    "wd5": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Western Alliance",
+      "roles": 0
+    },
+    "wellington": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Wellington Management",
+      "roles": 0
+    },
+    "wexinc": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Wex",
+      "roles": 0
+    },
+    "williams": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Williams",
+      "roles": 0
+    },
+    "xcelenergy": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Xcel Energy",
+      "roles": 0
+    },
+    "zebra": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Zebra Technologies",
+      "roles": 0
+    }
+  },
+  "iCIMS": {
+    "analystcareers-analysisgroup": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Analysis Group",
+      "roles": 0
+    },
+    "campus-globalcareers-atlassian": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "\ud83d\udd25 Atlassian",
+      "roles": 0
+    },
+    "career-schwab": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Charles Schwab",
+      "roles": 0
+    },
+    "careers-affiniuscapital": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Affinius Capital",
+      "roles": 0
+    },
+    "careers-aluminumdynamics": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Steel Dynamics",
+      "roles": 0
+    },
+    "careers-americansystems": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "AMERICAN SYSTEMS",
+      "roles": 0
+    },
+    "careers-americas": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "\ud83d\udd25 Atlassian",
+      "roles": 0
+    },
+    "careers-apogeeusa": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Apogee Engineering",
+      "roles": 0
+    },
+    "careers-berkley": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "W.R. Berkley",
+      "roles": 0
+    },
+    "careers-berrydunn": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "BerryDunn",
+      "roles": 0
+    },
+    "careers-beyondsoft": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Beyondsoft",
+      "roles": 0
+    },
+    "careers-blackhawknetwork": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Blackhawk Network Holdings",
+      "roles": 0
+    },
+    "careers-bluehawk": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Bluehawk",
+      "roles": 0
+    },
+    "careers-bruno": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Bruno Independent Living Aids",
+      "roles": 0
+    },
+    "careers-canada-secure": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "SECURE",
+      "roles": 0
+    },
+    "careers-cfins": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Crum & Forster Insurance",
+      "roles": 0
+    },
+    "careers-cotiviti": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Cotiviti",
+      "roles": 0
+    },
+    "careers-daktronics": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Daktronics",
+      "roles": 0
+    },
+    "careers-empiricalfoods": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Empirical Foods",
+      "roles": 0
+    },
+    "careers-empowerai": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Empower AI",
+      "roles": 0
+    },
+    "careers-gdeb": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "General Dynamics",
+      "roles": 0
+    },
+    "careers-gdms": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "General Dynamics Mission Systems",
+      "roles": 0
+    },
+    "careers-hexagonpositioning": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Hexagon AB",
+      "roles": 0
+    },
+    "careers-i3-corps": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Integration Innovation (i3)",
+      "roles": 0
+    },
+    "careers-kimley-horn": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Kimley-Horn",
+      "roles": 0
+    },
+    "careers-knowledgeservices": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Knowledge Services",
+      "roles": 0
+    },
+    "careers-lmi": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "LMI",
+      "roles": 0
+    },
+    "careers-magaero": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "MAG Aerospace",
+      "roles": 0
+    },
+    "careers-mercuryinsurance": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Mercury Insurance",
+      "roles": 0
+    },
+    "careers-peraton": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Peraton",
+      "roles": 0
+    },
+    "careers-rambus": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Rambus",
+      "roles": 0
+    },
+    "careers-rovisys": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "RoviSys",
+      "roles": 0
+    },
+    "careers-sargentlundy": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Sargent & Lundy",
+      "roles": 0
+    },
+    "careers-sig": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Susquehanna International Group (SIG)",
+      "roles": 0
+    },
+    "careers-springswindowfashions": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Springs Window Fashions",
+      "roles": 0
+    },
+    "careers-sri": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "SRI International",
+      "roles": 0
+    },
+    "careers-steampunk": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Steampunk",
+      "roles": 0
+    },
+    "careers-steeldynamics": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Steel Dynamics",
+      "roles": 0
+    },
+    "careers-tatitlek": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Tatitlek Corporation",
+      "roles": 0
+    },
+    "careers-tighebond": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Tighe & Bond",
+      "roles": 0
+    },
+    "careers-uwcu": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "UW Credit Union",
+      "roles": 0
+    },
+    "careers-westernsouthern": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Western & Southern Financial Group",
+      "roles": 0
+    },
+    "careers-wipfli": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Wipfli",
+      "roles": 0
+    },
+    "careersus-shure": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Shure",
+      "roles": 0
+    },
+    "external-careers-friedkin": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "The Friedkin Group",
+      "roles": 0
+    },
+    "externalhourly-highgate": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Highgate",
+      "roles": 0
+    },
+    "homeoffice-na-urbn": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "URBN",
+      "roles": 0
+    },
+    "jobs-woodcons": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "WOOD Consulting Services",
+      "roles": 0
+    },
+    "us-erac": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Enterprise Holdings",
+      "roles": 0
+    },
+    "uscareeropenings-alliancelaundry": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Alliance Laundry Systems",
+      "roles": 0
+    },
+    "uscareers-lennox": {
+      "first_seen": "2026-09-21",
+      "last_seen": "2026-09-21",
+      "misses": 0,
+      "name": "Lennox International",
+      "roles": 0
+    }
+  }
+}
