@@ -25,6 +25,8 @@ Needs: Python 3.8+ stdlib only.
 """
 
 import csv, html, json, os, re, ssl, sys, urllib.request
+
+import board_discovery
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from urllib.error import HTTPError, URLError
@@ -544,6 +546,35 @@ ROBOTICS_WATCHLIST = [
     ("Reach Robotics",   "Underwater robotics roles",    "Australia",           "https://reachrobotics.com/careers/"),
     ("Rapyuta Robotics", "Warehouse robotics roles",     "Japan / India",       "https://www.rapyuta-robotics.com/careers/"),
 ]
+
+# Funded research programmes live in a data file rather than in this source,
+# because every field in one is a claim checked against the programme's own
+# page on a particular day — a deadline especially — and a claim with an
+# evidence URL beside it belongs somewhere a person can read and correct it.
+RESEARCH_PROGRAMMES_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "data", "research_programmes.json")
+
+
+def load_research_programmes(path=None):
+    """Programmes we can state a deadline for, and nothing else.
+
+    A programme with no date is worse than absent: it reads as covered while
+    leaving the reader to find out for themselves when it closes. So anything
+    without a deadline is dropped here rather than shown as rolling.
+    """
+    try:
+        with open(path or RESEARCH_PROGRAMMES_FILE, encoding="utf-8") as handle:
+            listed = json.load(handle)
+    except (OSError, ValueError):
+        return []
+    if not isinstance(listed, list):
+        return []
+    return [
+        entry for entry in listed
+        if isinstance(entry, dict) and entry.get("name") and entry.get("url")
+        and entry.get("deadline")
+    ]
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # UK SPRING WEEKS & TERM-TIME PROGRAMS
@@ -1479,6 +1510,7 @@ def gather(existing=None):
     # compared against what it used to return rather than only against zero.
     counts: dict[str, int] = {}
     old_counts = previous_source_counts(existing or {})
+    discovered = board_discovery.load()
 
     def refresh(rec):
         text = f"{rec['role']} {rec.get('description', '')}"
@@ -1663,6 +1695,7 @@ def gather(existing=None):
             if rows is None:
                 bad += 1
                 mark_bad(source, f"{provider}/{name}", err)
+                board_discovery.record(discovered, provider, slug, None, TODAY)
                 continue
             # A board that answers cleanly with nothing, having reliably
             # carried roles before, has changed under us. The GitHub sources
@@ -1676,6 +1709,7 @@ def gather(existing=None):
             ok += 1
             health[source] = "ok"
             counts[source] = len(rows)
+            board_discovery.record(discovered, provider, slug, len(rows), TODAY)
             for r in rows:
                 add(r, source)
         count = sum(
@@ -1684,12 +1718,45 @@ def gather(existing=None):
         )
         print(f"  {provider:<18} {ok}/{ok + bad} boards OK, {count} roles")
 
-    collect(GREENHOUSE_BOARDS, parse_greenhouse, "Greenhouse")
-    collect(ASHBY_BOARDS, parse_ashby, "Ashby")
-    collect(LEVER_BOARDS, parse_lever, "Lever")
+    # The source list discovers itself. Every posting read so far — the ones
+    # just collected from the community repos, and every row already in the
+    # tracker — names the board it came from in its own URL, and that board
+    # will carry the next fifty postings. Reading the job and discarding the
+    # address was the difference between a hundred and fifty boards and four
+    # hundred.
+    curated = {("Greenhouse", s.lower()) for s, _, _ in GREENHOUSE_BOARDS}
+    curated |= {("Ashby", s.lower()) for s, _, _ in ASHBY_BOARDS}
+    curated |= {("Lever", s.lower()) for s, _, _ in LEVER_BOARDS}
+    sightings = [(rec.get("url", ""), rec.get("company", ""))
+                 for rec in merged.values()]
+    sightings += [(rec.get("url", ""), rec.get("company", ""))
+                  for rec in (existing or {}).values()]
+    learned = board_discovery.harvest(sightings, discovered, TODAY, known=curated)
+    gained = sum(len(board_discovery.boards_for(p, discovered))
+                 for p in board_discovery.POLLABLE)
+    print(f"  {'board discovery':<18} {len(curated)} curated + {gained} discovered "
+          f"({learned} new today)")
+
+    def with_discovered(boards, provider):
+        seen = {slug.lower() for slug, _, _ in boards}
+        return list(boards) + board_discovery.boards_for(provider, discovered,
+                                                         exclude=seen)
+
+    collect(with_discovered(GREENHOUSE_BOARDS, "Greenhouse"), parse_greenhouse, "Greenhouse")
+    collect(with_discovered(ASHBY_BOARDS, "Ashby"), parse_ashby, "Ashby")
+    collect(with_discovered(LEVER_BOARDS, "Lever"), parse_lever, "Lever")
+
+    # A board that has stopped answering for five runs has gone, not hiccuped.
+    forgotten = board_discovery.prune(discovered)
+    if forgotten:
+        print(f"  {'boards forgotten':<18} {len(forgotten)} stopped answering: "
+              + ", ".join(forgotten[:6]) + ("…" if len(forgotten) > 6 else ""))
+    board_discovery.save(discovered)
 
     def add_static(company, role, loc, url, tier, source, status,
-                   deadline="", category=""):
+                   deadline="", category="", term="", record_kind="watchlist",
+                   role_type="watchlist", eligibility="review required",
+                   sponsorship="unknown", description=""):
         rid = make_id(company, role, loc)
         if rid in merged:
             return
@@ -1698,14 +1765,14 @@ def gather(existing=None):
             id=rid, company=company, role=role, location=loc,
             region=region_of(loc), work_mode=work_mode_of(loc),
             url=safe_url(url),
-            term="Watchlist" if status == "watchlist" else "Spring Week 2027",
-            deadline=deadline, level="Unknown", role_type="watchlist",
-            citizenship="unknown", sponsorship="unknown",
-            eligibility="review required", sources=[source], flags=[],
+            term=term or ("Watchlist" if status == "watchlist" else "Spring Week 2027"),
+            deadline=deadline, level="Unknown", role_type=role_type,
+            citizenship="unknown", sponsorship=sponsorship,
+            eligibility=eligibility, sources=[source], flags=[],
             elite_tier=tier, category=category or category_of(company, role),
             focus_tags=focus_tags(company, role), robotics_focus=focus,
             company_type=company_type, equity_signal=equity,
-            record_kind="watchlist", source_status=status, description="",
+            record_kind=record_kind, source_status=status, description=description,
         )
 
     for company, role, loc, url, tier in ELITE_WATCHLIST:
@@ -1719,6 +1786,34 @@ def gather(existing=None):
     for company, role, loc, url, deadline, tier in SPRING_WEEKS:
         add_static(company, role, loc, url, tier, "spring_weeks", "planned",
                    deadline=deadline)
+
+    # Funded research programmes. They are not postings and never appear on a
+    # job board: a programme opens on a fixed date, closes on a fixed date, and
+    # is gone for a year. That is precisely why nothing here could represent
+    # them — the tracker held twelve deadlines across three thousand rows, all
+    # of them finance spring weeks — and why missing one costs a year rather
+    # than a week.
+    for programme in load_research_programmes():
+        add_static(
+            programme.get("host", "") or programme.get("name", ""),
+            programme.get("name", ""),
+            programme.get("location", "") or programme.get("country", ""),
+            programme.get("url", ""),
+            "elite",
+            "research_programme",
+            "open",
+            deadline=programme.get("deadline", ""),
+            category=("Robotics & Embodied AI"
+                      if programme.get("robotics_fit") == "direct" else "Research"),
+            term=programme.get("runs", "") or "Summer 2027",
+            record_kind="programme",
+            role_type="research programme",
+            # These are checked one at a time against the programme's own page,
+            # so the eligibility line is a finding rather than a guess.
+            eligibility=programme.get("eligibility_note", "") or "review required",
+            sponsorship=programme.get("visa", "") or "unknown",
+            description=programme.get("why", ""),
+        )
 
     return merged, health, failed, counts
 

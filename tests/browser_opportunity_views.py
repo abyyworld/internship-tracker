@@ -104,8 +104,14 @@ def main() -> int:
               page.locator(".card").first.inner_text()[:80])
         # The labels are set in small caps by the stylesheet, so what comes back
         # from the browser is upper case.
+        # Only one is open at a time now, so the US-only figures mean opening a
+        # US one rather than scanning the whole list for them.
+        american = page.locator('.row:has-text("United States")').first
+        american.click()
+        page.wait_for_timeout(300)
         check("a US institution carries the figures that answer “why here”",
-              "earnings after 10y" in page.inner_text(".cards").lower(), "no scorecard facts")
+              "earnings after 10y" in page.inner_text("#detail").lower(),
+              page.inner_text("#detail")[:120])
         check("and the way to find who takes students is on the card",
               page.locator("a:has-text('Faculty directory')").count() > 0)
         page.click('.lens[data-lens="research"]')
@@ -136,9 +142,16 @@ def main() -> int:
         print("\n[6] keeping things, and finding them again")
         page.click('.lens[data-lens="roles"]')
         page.wait_for_timeout(300)
-        page.locator(".card .save").first.click()
+        page.locator(".row .save").first.click()
         page.wait_for_timeout(200)
-        check("the star fills in", page.locator(".save.on").count() == 1)
+        # It is drawn twice now — on the row and on the open posting — and the
+        # two must agree, or keeping something from the list would look as
+        # though it had not taken.
+        check("the star fills in on the row", page.locator(".row .save.on").count() == 1,
+              str(page.locator(".row .save.on").count()))
+        check("and on the posting open beside it",
+              page.locator("#detail .save.on").count() == 1,
+              str(page.locator("#detail .save.on").count()))
         check("and the header counts it", page.inner_text("#savedCount") == "1",
               page.inner_text("#savedCount"))
         page.click("#savedBtn")
@@ -166,6 +179,53 @@ def main() -> int:
         page.click("#clearAll")
         page.wait_for_timeout(400)
         check("clearing puts everything back", total() > uk, f"{total()} then {uk}")
+
+        print("\n[8b] the list is for choosing and the pane is for reading")
+        page.click('.lens[data-lens="roles"]')
+        page.wait_for_timeout(400)
+        # Something is always open: an empty pane beside a full list reads as
+        # broken rather than as waiting.
+        check("the first result opens by itself",
+              page.locator("#detail .card").count() == 1,
+              str(page.locator("#detail .card").count()))
+        first = page.locator(".row").first.inner_text()
+        page.locator(".row").nth(3).click()
+        page.wait_for_timeout(250)
+        opened = page.inner_text("#detail")
+        check("clicking another one opens it instead",
+              opened != "" and page.locator(".row.on").count() == 1,
+              str(page.locator(".row.on").count()))
+        check("and the list it was chosen from is still there",
+              page.locator(".row").count() > 5, str(page.locator(".row").count()))
+        check("the whole posting is in the pane, not a link away",
+              "Edit CV for this job" in opened, opened[:120])
+        # A list beside a pane is only worth having if you can move through it
+        # without the mouse.
+        page.keyboard.press("ArrowDown")
+        page.wait_for_timeout(250)
+        check("the arrow keys move to the next one",
+              page.inner_text("#detail") != opened, "the pane did not change")
+        page.keyboard.press("ArrowUp")
+        page.wait_for_timeout(250)
+        check("and back again", page.inner_text("#detail") == opened)
+
+        print("\n[8c] what is closing, and being able to ask for it")
+        chips = page.inner_text("#deadlineChips")
+        check("every closing filter says how much it would leave",
+              chips.count("(") >= 4, chips.replace("\n", " | "))
+        rolling = page.locator("#deadlineChips .chip", has_text="Rolling")
+        rolling.click()
+        page.wait_for_timeout(400)
+        check("asking for the rolling ones narrows to them",
+              page.locator(".row").count() > 0, str(page.locator(".row").count()))
+        rolling.click()
+        page.wait_for_timeout(300)
+        # The honest state of the data: the tracker holds almost no real
+        # deadlines, which is exactly why the funded research programmes could
+        # not be represented here at all.
+        dated = page.locator("#deadlineChips .chip", has_text="Has a deadline").inner_text()
+        check("and the count for dated ones is whatever is true, not hidden",
+              "(" in dated, dated)
 
         print("\n[9] the studio agrees about the theme")
         page.goto(f"http://127.0.0.1:{port}/studio.html", wait_until="networkidle")

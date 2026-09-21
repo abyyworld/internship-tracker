@@ -55,7 +55,13 @@ jobs:
         run: |
           git config user.name "internship-watcher[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md tracker.csv manual_checks.md digests docs/index.html
+          # data/ holds what the run learned as much as what it found: the
+          # per-source health history the dashboard publishes as its
+          # reliability figure, and the board addresses discovery picked up.
+          # Left out of this line, both are computed every run and thrown away
+          # with the runner — which is why the published health figure was
+          # frozen at a hand-committed snapshot from six weeks earlier.
+          git add README.md tracker.csv manual_checks.md digests docs/index.html data
           if git diff --cached --quiet; then
             echo "No tracker changes"
           else

@@ -112,7 +112,10 @@ def load_jobs() -> list[dict[str, object]]:
         rows = [
             row
             for row in csv.DictReader(handle)
-            if row.get("record_kind", "posting") == "posting"
+            # A funded research programme is not a job posting, but it is an
+            # opportunity with a date, and the page it feeds is a matcher
+            # rather than a job board.
+            if row.get("record_kind", "posting") in {"posting", "programme"}
             and row.get("source_status") == "open"
         ]
     # Academic postings rarely name a supervisor, so match the institution once
