@@ -130,10 +130,38 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Postman**: HTTP Error 404: Not Found
 - **Greenhouse/Skydio**: HTTP Error 404: Not Found
 - **Ashby/Snyk**: HTTP Error 404: Not Found
+- **Ashby/Atomicsemi**: HTTP Error 404: Not Found
+- **Ashby/Auditboard**: HTTP Error 404: Not Found
+- **Ashby/Axionray**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
+- **Ashby/Collegevine.Com**: HTTP Error 404: Not Found
+- **Ashby/Commure Athelas**: HTTP Error 404: Not Found
+- **Ashby/Conscious Talent**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
+- **Ashby/Flux Computing**: HTTP Error 404: Not Found
+- **Ashby/Jerry**: HTTP Error 404: Not Found
+- **Ashby/Kittl**: HTTP Error 404: Not Found
+- **Ashby/Lilt**: HTTP Error 404: Not Found
+- **Ashby/Lime**: HTTP Error 404: Not Found
+- **Ashby/Lindushealth**: HTTP Error 404: Not Found
+- **Ashby/Luma Ai**: HTTP Error 404: Not Found
+- **Ashby/Lynk**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
+- **Ashby/Newfront**: HTTP Error 404: Not Found
+- **Ashby/Openphilanthropy**: HTTP Error 404: Not Found
+- **Ashby/Outliant**: HTTP Error 404: Not Found
+- **Ashby/Pacificfusion**: HTTP Error 404: Not Found
+- **Ashby/Pear**: HTTP Error 404: Not Found
+- **Ashby/Projectgrowth**: HTTP Error 404: Not Found
+- **Ashby/Real**: HTTP Error 404: Not Found
+- **Ashby/Righthandtalent**: HTTP Error 404: Not Found
+- **Ashby/Statsig**: HTTP Error 404: Not Found
+- **Ashby/Subconscious**: HTTP Error 404: Not Found
+- **Ashby/Superduper**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
+- **Ashby/Tandem**: HTTP Error 404: Not Found
+- **Ashby/Terradot**: HTTP Error 404: Not Found
+- **Ashby/Vinci4D**: HTTP Error 404: Not Found
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
 - **Lever/FieldAI**: degraded: parsed zero roles unexpectedly
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
