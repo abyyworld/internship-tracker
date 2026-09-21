@@ -90,6 +90,37 @@ class DashboardTests(unittest.TestCase):
         self.assertFalse(dashboard.ats_supported("https://example.com/job"))
         self.assertEqual(dashboard.safe_url("javascript:alert(1)"), "")
 
+    def test_the_page_reads_one_beside_the_list_it_was_chosen_from(self):
+        # Reading a posting used to mean leaving the page, and what you were
+        # comparing it against went with you.
+        from dashboard_page import TEMPLATE
+
+        self.assertIn('id="detail"', TEMPLATE)
+        self.assertIn('id="detailBody"', TEMPLATE)
+        self.assertIn("function rowHtml(row)", TEMPLATE)
+        self.assertIn("function showDetail(id)", TEMPLATE)
+        # Three panes on a wide screen, and a sheet over the list when there is
+        # not room for three.
+        self.assertRegex(TEMPLATE, r"\.frame\{[^}]*grid-template-columns:230px minmax\(0,1fr\) minmax")
+        self.assertIn("@media (max-width:1180px)", TEMPLATE)
+        # And movable without a mouse, or a list beside a pane is not worth it.
+        self.assertIn('event.key === "ArrowDown"', TEMPLATE)
+
+    def test_a_deadline_can_be_seen_and_asked_for(self):
+        from dashboard_page import TEMPLATE
+
+        self.assertIn('id="deadlineChips"', TEMPLATE)
+        self.assertIn("function daysLeft(item)", TEMPLATE)
+        self.assertIn("function matchesClosing(item, picks)", TEMPLATE)
+        self.assertIn("closingPicks", TEMPLATE)
+        for label in ("Closing this week", "Closing this month", "Has a deadline"):
+            self.assertIn(label, TEMPLATE)
+        # Counted against everything else already chosen, so the number says
+        # what pressing it would leave rather than what it would leave from
+        # nothing.
+        self.assertIn("function closingCounts()", TEMPLATE)
+        self.assertIn('["Closes"', TEMPLATE.replace(" ", "").replace('["Closes",', '["Closes"'))
+
     def test_running_the_script_is_what_publishes_the_page(self):
         """Both workflows publish by running `python dashboard.py`.
 

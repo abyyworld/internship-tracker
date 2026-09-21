@@ -119,12 +119,54 @@ nav.lenses{background:var(--raise);border-bottom:1px solid var(--line);
 .lens.on i{color:var(--accent)}
 
 /* ── Frame ───────────────────────────────────────────────────────────────── */
-.frame{display:grid;grid-template-columns:250px 1fr;gap:22px;padding:20px 0 60px;align-items:start}
+/* Three panes: what narrows it, what matches, and the one being read. The
+   third is the point — reading a posting used to mean leaving the page, and
+   what you were comparing it against went with you. */
+.frame{display:grid;grid-template-columns:230px minmax(0,1fr) minmax(0,1.1fr);
+  gap:20px;padding:20px 0 60px;align-items:start}
+@media (max-width:1180px){
+  /* Not enough width for three. The detail becomes a sheet over the list. */
+  .frame{grid-template-columns:230px minmax(0,1fr)}
+  .detailpane{position:fixed;inset:auto 0 0 0;top:0;z-index:60;border-radius:0;
+    max-height:100%;overflow:auto;box-shadow:0 -8px 40px rgba(0,0,0,.28)}
+  .detailpane:not(.open){display:none}
+  #detailClose{display:inline-flex}
+}
 @media (max-width:900px){
   .frame{grid-template-columns:1fr}
   aside.facets{position:static;max-height:none}
   aside.facets:not(.open) .facetbody{display:none}
 }
+.detailpane{position:sticky;top:110px;max-height:calc(100vh - 130px);overflow:auto;
+  background:var(--raise);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow)}
+.detailpane .card{border:0;box-shadow:none;background:transparent}
+.detailempty{padding:34px 22px;color:var(--muted);font-size:14px;line-height:1.6}
+.detailempty b{display:block;color:var(--ink);font-size:15px;margin-bottom:6px}
+#detailClose{display:none;position:sticky;top:0;float:right;margin:10px 10px 0 0;
+  align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;
+  border:1px solid var(--line);background:var(--raise);color:var(--muted);cursor:pointer}
+
+/* A row in the list. Compact on purpose: the list is for choosing between
+   things, and the pane is for reading one. */
+.row{display:flex;gap:11px;align-items:flex-start;width:100%;text-align:left;
+  background:var(--raise);border:1px solid var(--line);border-radius:var(--radius);
+  padding:12px 13px;cursor:pointer;transition:border-color .12s, box-shadow .12s;
+  font:inherit;color:inherit}
+.row:hover{border-color:var(--line-2);box-shadow:var(--shadow-lift)}
+.row.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.row .mono{width:34px;height:34px;flex:0 0 34px;border-radius:9px;font-size:12px}
+.rowmain{min-width:0;flex:1}
+.rowtitle{font-size:14.5px;font-weight:700;line-height:1.3;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.roworg{color:var(--muted);font-size:12.5px;margin-top:2px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.rowmeta{color:var(--faint);font-size:11.5px;margin-top:4px;display:flex;gap:6px;
+  flex-wrap:wrap;align-items:center}
+.rowmeta .pill{background:var(--sunk);border:1px solid var(--line);border-radius:999px;
+  padding:1px 7px;color:var(--ink-2)}
+.rowmeta .pill.new{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.rowmeta .pill.due{background:var(--warn-soft);border-color:transparent;color:var(--warn)}
 aside.facets{position:sticky;top:110px;background:var(--raise);border:1px solid var(--line);
   border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
 .facethead{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -212,6 +254,7 @@ select.control:focus,input.control:focus{border-color:var(--accent);outline:none
 .stat span{color:var(--muted);font-size:12.5px}
 footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:13px}
 .hidden{display:none !important}
+.chip.none{opacity:.45}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 </style>
 </head>
@@ -261,6 +304,10 @@ footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);f
       <div class="facet" id="facetTerm">
         <label for="term">When it starts</label>
         <select class="control" id="term"><option value="">Any term</option></select>
+      </div>
+      <div class="facet" id="facetDeadline">
+        <label>Closing</label>
+        <div class="chips" id="deadlineChips"></div>
       </div>
       <div class="facet" id="facetLevel">
         <label for="level">Your level</label>
@@ -321,9 +368,14 @@ footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);f
         </select>
       </div>
     </div>
-    <div class="cards" id="cards"></div>
+    <div class="cards" id="cards" role="listbox" aria-label="Results"></div>
     <button class="more hidden" id="more" type="button">Show more</button>
   </main>
+
+  <section class="detailpane" id="detail" aria-live="polite" aria-label="The one you are reading">
+    <button id="detailClose" type="button" aria-label="Close">✕</button>
+    <div id="detailBody"></div>
+  </section>
 </div>
 
 <footer>
@@ -634,6 +686,124 @@ function supervisorHtml(job) {
     <a href="${esc(uni.directory)}" target="_blank" rel="noopener">department directory</a></div>`;
 }
 
+// What the list shows. The rich card moved to the pane beside it, so a row is
+// only what you need to choose between two of them: who, what, where, and
+// whether it is about to close.
+let selected = null;     // the id being read
+let onScreen = [];       // the rows currently listed, for the keyboard
+
+function rowHtml(row) {
+  const item = row.item;
+  const kept = saved.has(item.id);
+  const job = item.job || {};
+  const title = plain(item.kind === "venture" ? item.venture.name
+                    : item.kind === "funding" ? item.scheme.name
+                    : item.kind === "university" ? item.uni.name
+                    : job.role);
+  const org = plain(item.kind === "venture" ? (item.venture.organisation || "")
+                  : item.kind === "funding" ? (item.scheme.funder || "")
+                  : item.kind === "university" ? (item.uni.country || "")
+                  : job.company);
+  const bits = [];
+  if (item.place) bits.push(`<span>${esc(item.place)}</span>`);
+  if (job.work_mode && job.work_mode !== "unspecified") bits.push(`<span>${esc(job.work_mode)}</span>`);
+  if (job.term && !["Unknown", "Ambiguous", ""].includes(job.term)) {
+    bits.push(`<span class="pill">${esc(job.term)}</span>`);
+  }
+  if (job.new) bits.push(`<span class="pill new">new</span>`);
+  const due = closingIn(job.deadline || (item.scheme || {}).cycle || "");
+  if (due) bits.push(`<span class="pill due">${esc(due)}</span>`);
+  return `<div class="row${item.id === selected ? " on" : ""}" tabindex="0"
+    role="option" aria-selected="${item.id === selected}" data-pick="${esc(item.id)}">
+    <span class="mono">${esc(mono(org || title))}</span>
+    <span class="rowmain">
+      <span class="rowtitle">${esc(title)}</span>
+      <span class="roworg">${esc(org)}</span>
+      <span class="rowmeta">${bits.join("")}</span>
+    </span>
+    <button class="save${kept ? " on" : ""}" type="button" data-keep="${esc(item.id)}"
+      title="${kept ? "Kept" : "Keep this"}">${kept ? "\u2605" : "\u2606"}</button>
+  </div>`;
+}
+
+// "closes in 9 days" is the only fact on a row that can expire while you read
+// it, so it is the only one given its own colour.
+// A deadline is the one fact on this page that can pass while you are reading
+// it, and until now the tracker held 12 of them across 3,302 rows — every one
+// a finance spring week. Every funded research programme is deadline-driven,
+// which is why none of them could be represented here at all.
+const CLOSING = [
+  ["week",    "Closing this week",  days => days !== null && days >= 0 && days <= 7],
+  ["month",   "Closing this month", days => days !== null && days >= 0 && days <= 31],
+  ["dated",   "Has a deadline",     days => days !== null && days >= 0],
+  ["rolling", "Rolling — no date",  days => days === null],
+];
+
+function daysLeft(item) {
+  const job = item.job || {};
+  const raw = job.deadline || (item.programme || {}).deadline || "";
+  const when = Date.parse(raw);
+  if (!raw || Number.isNaN(when)) return null;
+  return Math.round((when - Date.now()) / 86400000);
+}
+
+function matchesClosing(item, picks) {
+  if (!picks.size) return true;
+  const days = daysLeft(item);
+  return [...picks].some(key => {
+    const rule = CLOSING.find(entry => entry[0] === key);
+    return rule ? rule[2](days) : true;
+  });
+}
+
+function closingIn(deadline) {
+  const when = Date.parse(deadline);
+  if (!when || Number.isNaN(when)) return "";
+  const days = Math.round((when - Date.now()) / 86400000);
+  if (days < 0) return "closed";
+  if (days === 0) return "closes today";
+  if (days <= 21) return `closes in ${days} day${days === 1 ? "" : "s"}`;
+  return "";
+}
+
+function showDetail(id) {
+  selected = id || null;
+  const body = $("detailBody");
+  const row = onScreen.find(candidate => candidate.item.id === selected);
+  if (!row) {
+    body.innerHTML = `<div class="detailempty"><b>Nothing open yet.</b>
+      Pick anything on the left and it opens here — the whole posting, what it
+      asks for, and why it was matched to you — without losing the list you are
+      comparing it against.</div>`;
+    $("detail").classList.remove("open");
+    return;
+  }
+  body.innerHTML = cardHtml(row.item, row.why, row.reason);
+  $("detail").classList.add("open");
+  for (const button of body.querySelectorAll("[data-keep]")) {
+    button.onclick = () => keep(button.dataset.keep);
+  }
+  for (const node of $("cards").querySelectorAll(".row")) {
+    const on = node.dataset.pick === selected;
+    node.classList.toggle("on", on);
+    node.setAttribute("aria-selected", on ? "true" : "false");
+  }
+  try { history.replaceState(null, "", `#${encodeURIComponent(selected)}`); }
+  catch (error) { /* a file:// page cannot */ }
+}
+
+// Up and down move through the list without touching the mouse, which is the
+// whole reason for a list beside a pane.
+function step(by) {
+  if (!onScreen.length) return;
+  const at = onScreen.findIndex(row => row.item.id === selected);
+  const next = onScreen[Math.min(onScreen.length - 1, Math.max(0, (at < 0 ? 0 : at + by)))];
+  if (!next) return;
+  showDetail(next.item.id);
+  const node = $("cards").querySelector(`.row[data-pick="${CSS.escape(next.item.id)}"]`);
+  if (node) node.scrollIntoView({block: "nearest"});
+}
+
 function cardHtml(item, why, reason) {
   const kept = saved.has(item.id);
   const star = `<button class="save${kept ? " on" : ""}" data-keep="${esc(item.id)}"
@@ -659,6 +829,8 @@ function cardHtml(item, why, reason) {
       <div class="tags">${tags}</div>
       ${factsHtml([["Where", item.place],
                    ["Term", job.term && !["Unknown", "Ambiguous"].includes(job.term) ? job.term : ""],
+                   ["Closes", job.deadline ? `${job.deadline}${closingIn(job.deadline)
+                       ? ` — ${closingIn(job.deadline)}` : ""}` : ""],
                    ["Level", job.level && job.level !== "Unknown" ? job.level : ""],
                    ["How", job.work_mode && job.work_mode !== "unspecified" ? job.work_mode : ""]])}
       ${whyHtml(item, why, reason)}
@@ -728,13 +900,36 @@ let lens = "match";
 let query = readQuery("");
 let kindPicks = new Set();
 let fieldPicks = new Set();
+let closingPicks = new Set();
 let fundPicks = new Set();
 let venturePicks = new Set();
 let shown = 25;
 let ranked = null;          // what the model said, when it was asked
 
+function closingCounts() {
+  const others = new Set(closingPicks);
+  closingPicks.clear();
+  const base = pool();
+  closingPicks.clear();
+  for (const key of others) closingPicks.add(key);
+  const counts = new Map();
+  for (const [key, , rule] of CLOSING) {
+    counts.set(key, base.reduce((total, item) => total + (rule(daysLeft(item)) ? 1 : 0), 0));
+  }
+  return counts;
+}
+
+function renderClosingChips() {
+  chipRow("deadlineChips", CLOSING.map(([value, label]) => [value, label]),
+          closingPicks, closingCounts());
+}
+
 function facetsFor(lens) {
   const showsJobs = ["match", "roles", "research"].includes(lens);
+  // Counted here rather than once at load, so each number says what pressing
+  // it would leave given everything else already chosen.
+  renderClosingChips();
+  $("facetDeadline").classList.toggle("hidden", !showsJobs && lens !== "funding");
   $("facetUni").classList.toggle("hidden", lens !== "universities");
   $("facetFunding").classList.toggle("hidden", lens !== "funding");
   $("facetVenture").classList.toggle("hidden", lens !== "ventures");
@@ -778,6 +973,7 @@ function pool() {
   if (fieldPicks.size) {
     list = list.filter(item => fieldPicks.has(item.field) || !["role", "research"].includes(item.kind));
   }
+  if (closingPicks.size) list = list.filter(item => matchesClosing(item, closingPicks));
   if ($("fNew").checked) list = list.filter(item => item.fresh);
   if ($("fRemote").checked) list = list.filter(item => item.remote);
   if ($("fAcademic").checked) list = list.filter(item => item.academic || item.kind === "university");
@@ -853,7 +1049,8 @@ function render() {
   }
   const cards = $("cards");
   const page = list.slice(0, shown);
-  cards.innerHTML = page.map(row => cardHtml(row.item, row.why, row.reason)).join("")
+  onScreen = page;
+  cards.innerHTML = page.map(row => rowHtml(row)).join("")
     || `<div class="empty"><b>Nothing here answers that yet.</b>
         ${query.raw ? "Try fewer words, or a different lens — funding and universities are "
                     + "listed separately from jobs." : "Clear a filter or two."}</div>`;
@@ -871,8 +1068,20 @@ function render() {
     ? `ranked by ${ranked.model}`
     : (query.raw ? `for “${query.raw}”${loosened ? ` — ${loosened}` : ""}` : "");
   for (const button of cards.querySelectorAll("[data-keep]")) {
-    button.onclick = () => keep(button.dataset.keep);
+    button.onclick = event => { event.stopPropagation(); keep(button.dataset.keep); };
   }
+  for (const node of cards.querySelectorAll(".row")) {
+    node.onclick = () => showDetail(node.dataset.pick);
+    node.onkeydown = event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        showDetail(node.dataset.pick);
+      }
+    };
+  }
+  // Something is always open: an empty pane beside a full list reads as broken.
+  const stillListed = page.some(row => row.item.id === selected);
+  showDetail(stillListed ? selected : (page[0] && page[0].item.id));
   for (const button of cards.querySelectorAll("[data-uni]")) {
     button.onclick = () => {
       $("ask").value = button.dataset.uni;
@@ -1023,14 +1232,16 @@ function fillSelect(id, pairs, pretty = value => value) {
   }
 }
 
-function chipRow(id, values, picks) {
+function chipRow(id, values, picks, counts = null) {
   const box = $(id);
   box.replaceChildren();
   for (const [value, label] of values) {
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "chip" + (picks.has(value) ? " on" : "");
-    chip.textContent = label;
+    const count = counts ? counts.get(value) : undefined;
+    chip.textContent = count === undefined ? label : `${label} (${count})`;
+    if (count === 0) chip.classList.add("none");
     chip.onclick = () => {
       if (picks.has(value)) picks.delete(value); else picks.add(value);
       chip.classList.toggle("on");
@@ -1136,6 +1347,19 @@ for (const id of ["fNew", "fRemote", "fAcademic", "fOfficial", "fSaved", "fOpen"
   $(id).onchange = () => { shown = 25; render(); };
 }
 $("more").onclick = () => { shown += 25; render(); };
+$("detailClose").onclick = () => $("detail").classList.remove("open");
+
+// The list is for moving through, so it answers the keys people already use to
+// move through lists. Not while they are typing a query, obviously.
+document.addEventListener("keydown", event => {
+  const target = event.target || {};
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName || "")
+    || target.isContentEditable;
+  if (typing || event.metaKey || event.ctrlKey || event.altKey) return;
+  if (event.key === "ArrowDown" || event.key === "j") { event.preventDefault(); step(1); }
+  else if (event.key === "ArrowUp" || event.key === "k") { event.preventDefault(); step(-1); }
+  else if (event.key === "Escape") $("detail").classList.remove("open");
+});
 $("clearAll").onclick = () => {
   $("ask").value = "";
   query = readQuery("");
@@ -1150,6 +1374,8 @@ $("clearAll").onclick = () => {
   for (const id of ["fOpen", "fNoEquity", "fVRemote"]) $(id).checked = false;
   chipRow("fieldChips", countBy(jobs, item => item.field).slice(0, 10).map(([value]) => [value, value]), fieldPicks);
   chipRow("kindChips", Object.entries(KIND_LABEL).map(([value, label]) => [value, label]), kindPicks);
+  closingPicks.clear();
+  renderClosingChips();
   ranked = null;
   shown = 25;
   render();
