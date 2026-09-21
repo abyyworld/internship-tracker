@@ -1,14 +1,14 @@
 # 🎯 Universal Academic & Career Tracker — Internships · Research · PhD · New Grad
 
 <p align="center">
-  <a href="https://abyyworld.github.io/internship-tracker/"><img alt="Open the tracker — 2838 open postings" src="https://img.shields.io/badge/Open%20the%20tracker-2838%20open%20postings-1f6feb?style=for-the-badge&labelColor=0d1117"></a>
+  <a href="https://abyyworld.github.io/internship-tracker/"><img alt="Open the tracker — 3251 open postings" src="https://img.shields.io/badge/Open%20the%20tracker-3251%20open%20postings-1f6feb?style=for-the-badge&labelColor=0d1117"></a>
   <a href="https://abyyworld.github.io/internship-tracker/studio.html"><img alt="Tailor my CV — in the browser" src="https://img.shields.io/badge/Tailor%20my%20CV-in%20the%20browser-2ea043?style=for-the-badge&labelColor=0d1117"></a>
 </p>
 
 <p align="center"><b><a href="https://abyyworld.github.io/internship-tracker/">https://abyyworld.github.io/internship-tracker/</a></b><br>
 Search and filter every posting, then tailor your CV for one — in the browser, on a phone, with nothing to install.</p>
 
-> Last verified run: **2026-09-21** · **2838 verified-open postings** · **60 research / PhD / postdoc positions**
+> Last verified run: **2026-09-21** · **3251 verified-open postings** · **108 research / PhD / postdoc positions**
 
 This tracker watches community internship boards and official Greenhouse, Ashby, and Lever feeds. Career hubs and forecast programmes are kept separate from real postings. Unknown work-authorisation or sponsorship data means **review required**, never assumed eligible.
 
@@ -49,22 +49,22 @@ Pressing **Generate suggestions** sends the selected job description and master 
 
 | Metric | Count |
 |--|--:|
-| Verified-open postings | 2838 |
-| Roles discovered today | 388 |
-| New verified postings | 388 |
-| Research / PhD / postdoc positions | 60 |
+| Verified-open postings | 3251 |
+| Roles discovered today | 805 |
+| New verified postings | 805 |
+| Research / PhD / postdoc positions | 108 |
 | Elite tier | 246 |
 | High tier | 281 |
-| Eligibility still needs review | 2838 |
+| Eligibility still needs review | 3251 |
 | Deadlines within 10 days | 0 |
 
-**By category:** Software Engineering 1478 · Quant / Finance 289 · Data 246 · Robotics & Embodied AI 214 · AI / ML 200 · Hardware / EE 136 · Security 121 · Systems & Infra 95 · Computational Science 59
+**By category:** Software Engineering 1832 · Quant / Finance 293 · Data 262 · Robotics & Embodied AI 215 · AI / ML 206 · Hardware / EE 143 · Security 130 · Systems & Infra 108 · Computational Science 61 · HCI / XR 1
 
-**By region:** US 2333 · Canada 137 · UK 127 · Unknown 68 · US / Austria 21 · Singapore 19 · New Zealand 12 · Netherlands 11 · Hong Kong 11 · Remote 8 · France 6 · US / UK 6 · Switzerland 5 · US / Canada 5 · China 5 · Serbia 5 · Ireland 5 · US / Netherlands 4 · Brazil 4 · Poland 4 · US / Australia 4 · UK / Australia 4 · South Korea 3 · Germany 3 · US / Italy 3 · UAE 2 · Austria 2 · UK / Ireland 2 · Australia 2 · China / Hong Kong 2 · US / Global 2 · Singapore / China / Hong Kong / Australia 2 · US / UAE 2 · France / Japan / Hong Kong 1 · US / France 1 · Taiwan 1 · Singapore / China / Hong Kong 1 · US / France / Singapore / Hong Kong 1 · India 1 · Spain 1 · US / Canada / UK 1 · US / Europe 1
+**By region:** US 2629 · Canada 147 · UK 130 · Unknown 95 · Singapore 21 · US / Austria 21 · Remote 20 · Netherlands 14 · New Zealand 14 · Hong Kong 13 · France 11 · Brazil 9 · Germany 8 · US / Australia 8 · South Korea 7 · China 7 · India 7 · Taiwan 6 · US / UK 6 · Mexico 5 · Switzerland 5 · US / Canada 5 · Serbia 5 · Ireland 5 · Spain 4 · US / Netherlands 4 · Poland 4 · UK / Australia 4 · Global 3 · Singapore / China / Hong Kong 3 · US / Italy 3 · UAE 2 · France / Switzerland / UAE 2 · Singapore / Hong Kong 2 · Austria 2 · UK / Ireland 2 · Australia 2 · China / Hong Kong 2 · US / Global 2 · Singapore / China / Hong Kong / Australia 2 · US / UAE 2 · France / Japan / Hong Kong 1 · US / France 1 · Portugal 1 · UK / France 1 · France / Switzerland 1 · US / France / Singapore / Hong Kong 1 · US / Canada / UK 1 · US / Europe 1
 
-**By degree evidence:** Unknown 2274 · Undergraduate eligible 229 · Advanced/unknown 220 · PhD 82 · Masters 33
+**By degree evidence:** Unknown 2679 · Undergraduate eligible 234 · Advanced/unknown 220 · PhD 84 · Masters 34
 
-## Newly opened (388)
+## Newly opened (805)
 
 | Company | Role | Category | Region | Term | Eligibility |
 |--|--|--|--|--|--|
@@ -89,11 +89,26 @@ Pressing **Generate suggestions** sends the selected job description and master 
 | **Point72** | [Quantitative Researcher - Intern](https://boards.greenhouse.io/point72/jobs/7297657002?gh_jid=7297657002) | Quant / Finance | France / Japan / Hong Kong | None | review required |
 | **Point72** | [Quantitative Software Developer Intern](https://boards.greenhouse.io/point72/jobs/7297666002?gh_jid=7297666002) | Quant / Finance | US / France | None | review required |
 | **Figma** | [PhD Intern, Data Science \(2027\)](https://boards.greenhouse.io/figma/jobs/6200626004?gh_jid=6200626004) | Software Engineering | US | 2027 | review required |
+| **10Alabs** | [Engineering Fellowship](https://job-boards.greenhouse.io/10alabs/jobs/4203095009) | Software Engineering | US | None | review required |
+| **10Alabs** | [Red Teaming Fellowship](https://job-boards.greenhouse.io/10alabs/jobs/4273684009) | Software Engineering | US | None | review required |
+| **Accenturefederalservices** | [Summer Analyst \(Technology &amp; AI Exploration\)](https://boards.greenhouse.io/accenturefederalservices/jobs/4711204006?gh_jid=4711204006) | Software Engineering | US | Summer | review required |
 | **Acima** | [Software Engineer Intern](https://upbound.wd501.myworkdayjobs.com/Acima/job/Draper-UT/Software-Engineer-Intern_R-100759-1?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Ambiguous | review required |
+| **Aclu** | [Fall 2027 National Security Fellowship, National Security Project](https://job-boards.greenhouse.io/aclu/jobs/8766173002) | Security | US | Fall 2027 | review required |
+| **Aclu** | [William J. Brennan Fellowship, Speech, Privacy &amp; Technology Project](https://job-boards.greenhouse.io/aclu/jobs/8614216002) | Software Engineering | US | None | review required |
+| **Adamsclinical** | [Clinical Research Assistant](https://job-boards.greenhouse.io/adamsclinical/jobs/4403543009) | Software Engineering | US | None | review required |
+| **Adamsclinical** | [Clinical Research Assistant](https://job-boards.greenhouse.io/adamsclinical/jobs/4386527009) | Software Engineering | US | None | review required |
+| **Adamsclinical** | [Clinical Research Assistant](https://job-boards.greenhouse.io/adamsclinical/jobs/4362120009) | Software Engineering | US | None | review required |
+| **Aegworldwide** | [Fall Intern, Global Partnerships – Data &amp; Research](https://job-boards.greenhouse.io/aegworldwide/jobs/8811721002) | Software Engineering | US | Fall | review required |
 | **AfterQuery** | [AI/ML Research Intern](https://jobs.ashbyhq.com/afterquery/00cd591f-6894-4259-83b6-36c999351dde) | AI / ML | US | None | review required |
+| **Agoda** | [Associate Data Analyst \(New Graduate, Thai Speaking\) \(Marketing Analytics, Bangkok Based\)](https://job-boards.greenhouse.io/agoda/jobs/8194692) | Data | Unknown | None | review required |
 | **Allen Control Systems** | [Manufacturing Engineering Co-op / Intern, 2027](https://jobs.ashbyhq.com/allen-control-systems/e7cefcf6-7322-43ba-861e-22e76f8186bd) | Security | US | 2027 | review required |
 | **Allen Control Systems** | [Mechanical Engineering Intern, 2027](https://jobs.ashbyhq.com/allen-control-systems/ad41a645-7b94-407d-a579-003fba1b8e68) | Security | US | 2027 | review required |
 | **Allen Control Systems** | [Software Engineering Intern, 2027](https://jobs.ashbyhq.com/allen-control-systems/ed5c58a7-6a3c-474b-aa07-43ff2051cb5c) | Security | US | 2027 | review required |
+| **Altoslabs** | [Neuroscience Research Associate / Research Specialist](https://job-boards.greenhouse.io/altoslabs/jobs/6179150004) | Computational Science | US | None | review required |
+| **Americanpublichealthassociation** | [Climate, Health &amp; Equity Internship: 2026 fall term](https://job-boards.greenhouse.io/americanpublichealthassociation/jobs/4285701009) | Computational Science | US | Fall 2026 | review required |
+| **Amperesand** | [Product Software Intern](https://job-boards.greenhouse.io/amperesand/jobs/4381214009) | Software Engineering | US | None | review required |
+| **Amperesand** | [Software Engineering Intern](https://job-boards.greenhouse.io/amperesand/jobs/4392181009) | Software Engineering | Singapore | None | review required |
+| **Amperesand** | [Software Intern, Factory &amp; Ops](https://job-boards.greenhouse.io/amperesand/jobs/4409254009) | Software Engineering | US | None | review required |
 | **Anduril** | [Entry Level Systems Engineer, C2 Integration](https://boards.greenhouse.io/andurilindustries/jobs/5243880007?gh_jid=5243880007) | Robotics &amp; Embodied AI | US | Unknown | review required |
 | **Anduril** | [Entry Level Systems Engineer, C2 Networking](https://boards.greenhouse.io/andurilindustries/jobs/5241149007?gh_jid=5241149007) | Robotics &amp; Embodied AI | US | Unknown | review required |
 | **Anduril** | [New Grad Systems Engineer, C2 Integration](https://boards.greenhouse.io/andurilindustries/jobs/5241134007?gh_jid=5241134007) | Robotics &amp; Embodied AI | US | Unknown | review required |
@@ -111,31 +126,16 @@ Pressing **Generate suggestions** sends the selected job description and master 
 | **Apex Technology, Inc.** | [Mechanical Engineering Internship \(Fall 2026\)](https://jobs.ashbyhq.com/apex-technology-inc/31c57de3-6150-41c6-a632-ea193cf57218) | Software Engineering | US | Fall 2026 | review required |
 | **Apex Technology, Inc.** | [Software Engineering Internship, Test &amp; Automation \(Summer 2027\)](https://jobs.ashbyhq.com/apex-technology-inc/692bb497-59ba-44df-bacf-fffd2f7c6344) | Software Engineering | US | Summer 2027 | review required |
 | **Apex Technology, Inc.** | [Thermal Engineering Internship \(Spring or Summer 2027\)](https://jobs.ashbyhq.com/apex-technology-inc/56b018ce-915d-4ebd-9833-c8ebb160b09a) | Software Engineering | US | Spring 2027 | review required |
-| **Applied Materials** | [Software Engineer New Grad](https://amat.wd1.myworkdayjobs.com/External/job/GloucesterMA/XMLNAME-2027-Software-Engineer-New-College-Grad--Bachelor-s----Gloucester--MA_R2625914?utm_source=Simplify&ref=Simplify) | Software Engineering | US | 2027 | review required |
-| **Aptura** | [Investment Banking Intern \(AI Evaluation\)](https://jobs.ashbyhq.com/aptura/44d8b5f7-bbb9-434b-8374-7ea1a9426910) | AI / ML | UK | None | review required |
-| **Aquatic Capital Management** | [Quantitative Researcher, Early Career](https://job-boards.greenhouse.io/aquaticcapitalmanagement/jobs/8489150002) | Quant / Finance | US | None | review required |
-| **Aquatic Capital Management** | [Quantitative Researcher, PhD](https://job-boards.greenhouse.io/aquaticcapitalmanagement/jobs/8387685002) | Quant / Finance | US | None | review required |
-| **Astera Labs** | [Field Application Engineering Intern](https://job-boards.greenhouse.io/asteraearlycareer2026/jobs/4670791005) | Software Engineering | Taiwan | None | review required |
-| **Atoms** | [Mechanical Design Engineering Intern‬](https://job-boards.greenhouse.io/cssmerge/jobs/8695490002) | Software Engineering | US | None | review required |
-| **Atoms** | [Robotics Software Engineer Intern](https://job-boards.greenhouse.io/cssmerge/jobs/8695475002) | Robotics &amp; Embodied AI | US | None | review required |
-| **AutoZone** | [Data Science Intern](https://egud.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/155461?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Ambiguous | review required |
-| **AutoZone** | [Information Technology Intern](https://egud.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/job/155451?utm_source=Simplify&ref=Simplify) | Software Engineering | US | Ambiguous | review required |
-| **Barnes &amp; Thornburg** | [2027 BT RISE Internship - Information Security](https://jobs.ashbyhq.com/barnes/c77ef2c2-6aeb-4350-9fd4-842931c14177) | Security | Unknown | 2027 | review required |
-| **Base Power** | [Business Operations Intern, Commercial Ops &amp; Analytics](https://jobs.ashbyhq.com/base-power/0545cb76-f49c-4390-a1c5-2b7adb5e927a) | Data | US | None | review required |
-| **Base Power** | [Deployments Engineering Intern](https://jobs.ashbyhq.com/base-power/0f7fefdb-7218-40c6-893f-859b08fb3935) | Software Engineering | US | None | review required |
-| **Base Power** | [Finance - Analytics Intern](https://jobs.ashbyhq.com/base-power/eea685b7-23a1-4a86-b661-9aeb737c9866) | Quant / Finance | US | None | review required |
-| **Base Power** | [Firmware Engineering Intern](https://jobs.ashbyhq.com/base-power/a8ee9a66-e90b-42c2-a4a2-28d997c3e8c7) | Quant / Finance | US | None | review required |
-| **Base Power** | [Hardware Engineering Intern](https://jobs.ashbyhq.com/base-power/f22cee0e-55d9-42cd-806e-1c1fc7217770) | Computational Science | US | None | review required |
-| **Base Power** | [Hardware Sourcing Intern](https://jobs.ashbyhq.com/base-power/7ba325d9-4256-4567-83a4-8dd9c72a0d10) | Software Engineering | US | None | review required |
-| **Base Power** | [Hardware Technical Program Management Intern](https://jobs.ashbyhq.com/base-power/c6228333-5f84-4363-9a3a-fd1dfb8ad1a2) | Software Engineering | US | None | review required |
+| **Apexcompanies** | [Entry Level Scientist](https://job-boards.greenhouse.io/apexcompanies/jobs/5425066008) | Software Engineering | US | None | review required |
+| **Apexskincareers** | [Clinical Research Assistant/Phlebotomist](https://job-boards.greenhouse.io/apexskincareers/jobs/4393017009) | Software Engineering | Unknown | None | review required |
 
-_328 more are in [tracker.csv](tracker.csv)._
+_745 more are in [tracker.csv](tracker.csv)._
 
 ## Browse by category
 
 Every category is listed the same way. Live geography reflects what official feeds expose today; the worldwide career-hub and academic watchlists are kept separately in [manual_checks.md](manual_checks.md).
 
-### Software Engineering (1478 live)
+### Software Engineering (1832 live)
 
 | Company | Role | Region | Focus | Company signal | Equity signal |
 |--|--|--|--|--|--|
@@ -180,9 +180,9 @@ Every category is listed the same way. Live geography reflects what official fee
 | **Microsoft** | [Software Engineer Intern, Fullstack Product \(Web + Services\)](https://apply.careers.microsoft.com/careers?query=intern&start=0&location=untied+states&sort_by=relevance&filter_include_remote=1&filter_include_relocation=0&pid=1970393556922922&utm_source=github-vansh-ouckah) | US / Global |  | unknown | unknown |
 | **Optiver** | [High Performance Computing \(HPC\) Intern \(Summer 2027 - Chicago\)](https://job-boards.greenhouse.io/optiverprivate/jobs/8828011002) | US |  | unknown | unknown |
 
-_1438 more are in [tracker.csv](tracker.csv)._
+_1792 more are in [tracker.csv](tracker.csv)._
 
-### Quant / Finance (289 live)
+### Quant / Finance (293 live)
 
 | Company | Role | Region | Focus | Company signal | Equity signal |
 |--|--|--|--|--|--|
@@ -227,9 +227,9 @@ _1438 more are in [tracker.csv](tracker.csv)._
 | **Jane Street** | [Quantitative Researcher Intern](https://www.janestreet.com/join-jane-street/position/8498547002/?utm_source=github-vansh-ouckah) | US |  | unknown | unknown |
 | **Jane Street** | [Quantitative Trader Intern](https://www.janestreet.com/join-jane-street/position/8617344002/?utm_source=github-vansh-ouckah) | US |  | unknown | unknown |
 
-_249 more are in [tracker.csv](tracker.csv)._
+_253 more are in [tracker.csv](tracker.csv)._
 
-### Data (246 live)
+### Data (262 live)
 
 | Company | Role | Region | Focus | Company signal | Equity signal |
 |--|--|--|--|--|--|
@@ -246,6 +246,7 @@ _249 more are in [tracker.csv](tracker.csv)._
 | **🔥 Coinbase** | [People Analytics Intern](https://boards.greenhouse.io/embed/job_app?token=8175517&utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
 | **AMERICAN SYSTEMS** | [Data Engineer - Junior](https://careers-americansystems.icims.com/jobs/4391/job?mobile=true&needsRedirect=false&utm_source=Simplify&ref=Simplify) | US | data-eng | unknown | unknown |
 | **Affinius Capital** | [Data Scientist Intern](https://careers-affiniuscapital.icims.com/jobs/2284/summer-2027-data-scientist-intern/job) | US |  | unknown | unknown |
+| **Agoda** | [Associate Data Analyst \(New Graduate, Thai Speaking\) \(Marketing Analytics, Bangkok Based\)](https://job-boards.greenhouse.io/agoda/jobs/8194692) | Unknown |  | unknown | unknown |
 | **Allegheny County** | [Business Analytics Intern](https://alleghenycounty.bamboohr.com/careers/663/?utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
 | **Alliance Laundry Systems** | [Data &amp; Analytics Intern](https://uscareeropenings-alliancelaundry.icims.com/jobs/13162/job?mobile=true&needsRedirect=false&utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
 | **Allied Solutions** | [Sales Analytics Intern](https://alliedsolutions.wd501.myworkdayjobs.com/Allied_External/job/Carmel-IN/Sales-Analytics-Intern_R-011098?utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
@@ -266,17 +267,16 @@ _249 more are in [tracker.csv](tracker.csv)._
 | **Amgen** | [Data Scientist Intern - Amgen’s Technology &amp; Medical Organizations](https://amgen.wd1.myworkdayjobs.com/careers/job/United-States---Remote/Grad-Intern---Data-Scientist---Amgen-s-Technology---Medical-Organizations--Summer-2027-_R-255722?utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
 | **Aon** | [Data &amp; Analytics Associate - Early Careers](https://jobs.aon.com/jobs/105952?icims=1&utm_source=Simplify&ref=Simplify) | Canada |  | unknown | unknown |
 | **Arch Capital Group** | [Data and Analytics Intern](https://archgroup.wd1.myworkdayjobs.com/careers/job/Farmington-CT-United-States-of-America/Data-and-Analytics-Intern_R26_845?utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
+| **Artefact** | [Data Scientist Intern \(2024\)](https://job-boards.greenhouse.io/artefact/jobs/8564128002) | Unknown |  | unknown | unknown |
+| **Artefact** | [Intern Data Engineer](https://job-boards.greenhouse.io/artefact/jobs/4593319002) | China | data-eng | unknown | unknown |
+| **Artefactlinkedin** | [Intern Data Engineer Brazil](https://job-boards.greenhouse.io/artefactlinkedin/jobs/7306842002) | Brazil | data-eng | unknown | unknown |
+| **Artefactlinkedin** | [Intern Data Scientist Brazil](https://job-boards.greenhouse.io/artefactlinkedin/jobs/7322632002) | Brazil |  | unknown | unknown |
 | **Arthur J. Gallagher &amp; Co.** | [Data Analytics Intern](https://jobs.ajg.com/jobs/57701?icims=1&utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
 | **AtkinsRéalis** | [Data Scientist Intern - Summer 2027](https://slihrms.wd3.myworkdayjobs.com/careers/job/USAZTempe/Data-Scientist-Intern---Summer-2027_R-161183-1?utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
-| **Auto-Owners Insurance** | [Business Intelligence Developer Intern - Summer 2027](https://aoins.wd5.myworkdayjobs.com/AutoOwners/job/Lansing-MI/Business-Intelligence-Developer-Internship---Summer-2027_R_14417?utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
-| **Avis Budget Group** | [Data Analytics Intern](https://avisbudget.wd1.myworkdayjobs.com/abg_careers/job/379-Interpace-Pkwy-Parsippany-07054/Accelerate---Data-Analytics-Intern-Summer-2027_R0190389?utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
-| **BDO Canada** | [Business Analyst New Grad - Data &amp; Analytics](https://bdo.wd3.myworkdayjobs.com/BDO/job/Toronto---Bay-St/Business-Analyst---Data---Analytics---New-Grad--January-2027-_JR7065?utm_source=Simplify&ref=Simplify) | Canada |  | unknown | unknown |
-| **Baird** | [Capital Markets Compliance Data &amp; Analytics Intern](https://baird.wd1.myworkdayjobs.com/careers/job/WI-Milwaukee/Internship---Capital-Markets-Compliance-Data---Analytics--Year-Round-_R2026962-2?utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
-| **Baird** | [IT Data &amp; Analytics Intern](https://baird.wd1.myworkdayjobs.com/careers/job/WI-Milwaukee/Internship---IT-Data---Analytics--Year-Round-_R20261012-1?utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
 
-_206 more are in [tracker.csv](tracker.csv)._
+_222 more are in [tracker.csv](tracker.csv)._
 
-### Robotics & Embodied AI (214 live)
+### Robotics & Embodied AI (215 live)
 
 | Company | Role | Region | Focus | Company signal | Equity signal |
 |--|--|--|--|--|--|
@@ -321,9 +321,9 @@ _206 more are in [tracker.csv](tracker.csv)._
 | **Anduril** | [2026 Early Career Electrical Engineer](https://boards.greenhouse.io/andurilindustries/jobs/4802172007?gh_jid=4802172007) | US | autonomous systems | private-scaleup | private company; verify offer |
 | **Anduril** | [2026 Early Career Flight Test Engineer, Mission Autonomy](https://boards.greenhouse.io/andurilindustries/jobs/5185089007?gh_jid=5185089007) | US | autonomous systems | private-scaleup | private company; verify offer |
 
-_174 more are in [tracker.csv](tracker.csv)._
+_175 more are in [tracker.csv](tracker.csv)._
 
-### AI / ML (200 live)
+### AI / ML (206 live)
 
 | Company | Role | Region | Focus | Company signal | Equity signal |
 |--|--|--|--|--|--|
@@ -368,9 +368,9 @@ _174 more are in [tracker.csv](tracker.csv)._
 | **🔥 AMD** | [Machine Learning System Engineering Intern/Co-op 🎓](https://careers.amd.com/jobs/92342?icims=1&utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
 | **🔥 AMD** | [Machine Learning/Artificial Intelligence Intern/Co-op](https://careers.amd.com/jobs/91363?icims=1&utm_source=Simplify&ref=Simplify) | Canada |  | unknown | unknown |
 
-_160 more are in [tracker.csv](tracker.csv)._
+_166 more are in [tracker.csv](tracker.csv)._
 
-### Hardware / EE (136 live)
+### Hardware / EE (143 live)
 
 | Company | Role | Region | Focus | Company signal | Equity signal |
 |--|--|--|--|--|--|
@@ -415,9 +415,9 @@ _160 more are in [tracker.csv](tracker.csv)._
 | **Apex Technology, Inc.** | [Software Engineering Intern, Embedded Systems](https://jobs.ashbyhq.com/apex-technology-inc/5ec2dfa9-724d-4ce4-ab97-5067ec747f11?utm_source=github-vansh-ouckah) | US | hardware | unknown | unknown |
 | **Apex Technology, Inc.** | [Software Engineering Internship, Embedded Systems \(Spring or Summer 2027\)](https://jobs.ashbyhq.com/apex-technology-inc/4203604c-2330-4c89-8432-37af718a6bda/application?embed=true&utm_source=Simplify&ref=Simplify) | US | controls,hardware | unknown | posting mentions equity |
 
-_96 more are in [tracker.csv](tracker.csv)._
+_103 more are in [tracker.csv](tracker.csv)._
 
-### Security (121 live)
+### Security (130 live)
 
 | Company | Role | Region | Focus | Company signal | Equity signal |
 |--|--|--|--|--|--|
@@ -462,9 +462,9 @@ _96 more are in [tracker.csv](tracker.csv)._
 | **Palantir** | [Year at Palantir - Forward Deployed Software Engineer, Internship - Commercial](https://jobs.lever.co/palantir/75cc1c09-8ebd-44c8-b3bc-d122cd1fecb3) | US | autonomy,infra,security,research | unknown | unknown |
 | **Palantir** | [Year at Palantir - Forward Deployed Software Engineer, Internship - USG](https://jobs.lever.co/palantir/5c4c65c5-77da-4d36-856c-4ade87631019) | US | autonomy,infra,security,research | unknown | unknown |
 
-_81 more are in [tracker.csv](tracker.csv)._
+_90 more are in [tracker.csv](tracker.csv)._
 
-### Systems & Infra (95 live)
+### Systems & Infra (108 live)
 
 | Company | Role | Region | Focus | Company signal | Equity signal |
 |--|--|--|--|--|--|
@@ -497,6 +497,7 @@ _81 more are in [tracker.csv](tracker.csv)._
 | **Booz Allen** | [Systems Engineer Intern - University](https://bah.wd1.myworkdayjobs.com/bah_jobs/job/Rome-NY/University---2027-Summer-Games-Systems-Engineer-Intern---Rome--NY_R0248386?utm_source=Simplify&ref=Simplify) | US / Italy |  | unknown | unknown |
 | **Booz Allen** | [Systems Engineer Intern - University - 2027 Summer Games](https://bah.wd1.myworkdayjobs.com/bah_jobs/job/Annapolis-Junction-MD/University---2027-Summer-Games-Systems-Engineer-Intern---Annapolis-Junction--MD_R0248384?utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
 | **Brunswick** | [Systems Engineer Co-op - Software Engineering](https://brunswick.wd1.myworkdayjobs.com/en-US/search/job/Fond-du-Lac-WI/Mercury-Marine---Systems-Software-Engineering-Co-op_JR-051212?utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
+| **Cloudsek** | [DevOps Intern](https://job-boards.greenhouse.io/cloudsek/jobs/6149788004) | India | infra | unknown | unknown |
 | **Compeer Financial** | [Intern Infrastructure Engineering](https://job-boards.greenhouse.io/compeerfinancial/jobs/5422577008) | Unknown | infra | unknown | unknown |
 | **Composio** | [Fullstack Engineer, Product Team \(New Grad\)](https://jobs.ashbyhq.com/composio/01e0e7ad-44a2-44e8-9340-64ca70eff491/application?embed=true&utm_source=Simplify&ref=Simplify) | US | infra | unknown | unknown |
 | **Composio** | [Fullstack Engineering Internship, Product Team \(Fall 2026 &amp; Winter 2027\)](https://jobs.ashbyhq.com/composio/eea3c0be-8589-4e3d-a684-de29a9eada0d) | US | infra | unknown | unknown |
@@ -504,14 +505,13 @@ _81 more are in [tracker.csv](tracker.csv)._
 | **Cyvl** | [Data Operations Intern \(Summer 2027\)](https://jobs.ashbyhq.com/cyvl/f44bb1cf-7100-46f7-b3c2-6d2a566d4b0d/application?embed=true&utm_source=Simplify&ref=Simplify) | US | controls,infra | unknown | unknown |
 | **Decagon** | [Engineering Intern \(Summer 2027\)](https://jobs.ashbyhq.com/decagon/16529089-a048-4bc3-8456-3f197135e00b/application?embed=true&utm_source=Simplify&ref=Simplify) | US | data-eng,infra,distributed,funded | unknown | unknown |
 | **Dedalus Labs** | [Systems Engineer / Product Manager Intern \(Summer 2027\)](https://www.ycombinator.com/companies/dedalus-labs/jobs/YtbvXM8-systems-engineer-summer-2027-intern) | US |  | unknown | unknown |
+| **Defenseunicorns** | [SkillBridge Intern - Platform Engineer](https://job-boards.greenhouse.io/defenseunicorns/jobs/4661526007) | US |  | unknown | unknown |
 | **Dell Technologies** | [Hardware Engineering Intern - Infrastructure Solutions Group](https://iawmqy.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/careers/job/297770?utm_source=Simplify&ref=Simplify) | US | infra | unknown | unknown |
 | **Elk Valley Resources** | [January 2027 Electrical Engineering Co-op](https://jobs.lever.co/evr/2ac75d99-606b-4708-ad26-cd7c3d5b7889) | Canada | hardware,infra | unknown | unknown |
-| **Elk Valley Resources** | [January 2027 Environmental Performance Co-op](https://jobs.lever.co/evr/c87b6077-df95-44eb-9456-408f4e62d8a0) | Canada | infra | unknown | unknown |
-| **Elk Valley Resources** | [January 2027 Geotechnical/Geological Engineering Co-op](https://jobs.lever.co/evr/e8a7d435-ec4b-4257-831b-e89133ebc1a3) | Canada | controls,infra | unknown | unknown |
 
-_55 more are in [tracker.csv](tracker.csv)._
+_68 more are in [tracker.csv](tracker.csv)._
 
-### Computational Science (59 live)
+### Computational Science (61 live)
 
 | Company | Role | Region | Focus | Company signal | Equity signal |
 |--|--|--|--|--|--|
@@ -528,6 +528,8 @@ _55 more are in [tracker.csv](tracker.csv)._
 | **Palantir** | [Software Engineer, New Grad - Infrastructure](https://jobs.lever.co/palantir/9265acce-12cd-4179-8c50-55d15963532b) | UK | computer-vision,infra,research | unknown | unknown |
 | **Snowflake** | [Software Engineer Intern - Berlin \(2026\)](https://jobs.ashbyhq.com/snowflake/41e65c6c-a01e-4f40-af14-ae75d3b95e27) | Germany | hardware,data-eng,infra,distributed,research,phd-position | unknown | unknown |
 | **🔥 Tesla** | [Physics Engine Development Engineer Intern - Optimus](https://www.tesla.com/careers/search/job/282147?utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
+| **Altoslabs** | [Neuroscience Research Associate / Research Specialist](https://job-boards.greenhouse.io/altoslabs/jobs/6179150004) | US | research,neuroscience | unknown | unknown |
+| **Americanpublichealthassociation** | [Climate, Health &amp; Equity Internship: 2026 fall term](https://job-boards.greenhouse.io/americanpublichealthassociation/jobs/4285701009) | US | climate | unknown | unknown |
 | **Antares Nuclear** | [Mechanical Engineering Design Intern - Summer 2027](https://jobs.ashbyhq.com/antares/9accca59-103b-4f54-978a-d5bb46bd9c62) | US | hardware,research,climate,funded | unknown | unknown |
 | **Antares Nuclear** | [Multiphysics Software Intern - Summer 2027](https://jobs.ashbyhq.com/antares/922a527d-9826-446d-9aba-ffc611995830) | US | infra,research,climate,funded | unknown | unknown |
 | **Antares Nuclear** | [Nuclear Engineering Intern - Summer 2027](https://jobs.ashbyhq.com/antares/e92ae489-1b1a-4616-a9c8-7c2390698af8) | US | research,climate,funded | unknown | unknown |
@@ -553,10 +555,14 @@ _55 more are in [tracker.csv](tracker.csv)._
 | **Johns Hopkins Applied Physics Laboratory** | [Engineer/SW Developer/Analyst Intern - Maritime Force Engagement Control](https://careers.jhuapl.edu/jobs/59598?icims=1&utm_source=Simplify&ref=Simplify) | US | controls | unknown | unknown |
 | **Johns Hopkins Applied Physics Laboratory** | [Engineer/Scientist Intern - Health Systems and Human-Machine Systems](https://careers.jhuapl.edu/jobs/60054?icims=1&utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
 | **Johns Hopkins Applied Physics Laboratory** | [Mission Systems Engineering Intern](https://careers.jhuapl.edu/jobs/59883?icims=1&utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
-| **Johns Hopkins Applied Physics Laboratory** | [Sensor Systems Intern - Data Analytics](https://careers.jhuapl.edu/jobs/59958?icims=1&utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
-| **Johns Hopkins Applied Physics Laboratory** | [Sensor Systems/Data Analytics New Grad](https://careers.jhuapl.edu/jobs/59770?icims=1&utm_source=Simplify&ref=Simplify) | US |  | unknown | unknown |
 
-_19 more are in [tracker.csv](tracker.csv)._
+_21 more are in [tracker.csv](tracker.csv)._
+
+### HCI / XR (1 live)
+
+| Company | Role | Region | Focus | Company signal | Equity signal |
+|--|--|--|--|--|--|
+| **Catawiki** | [UX Research Intern - Tech](https://job-boards.greenhouse.io/catawiki/jobs/8129826) | Netherlands | research | unknown | unknown |
 
 ### Early-company / equity reality check
 

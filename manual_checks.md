@@ -126,6 +126,8 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
+- **Greenhouse/Nerdy**: HTTP Error 404: Not Found
+- **Greenhouse/Postman**: HTTP Error 404: Not Found
 - **Greenhouse/Skydio**: HTTP Error 404: Not Found
 - **Ashby/Snyk**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
@@ -135,4 +137,3 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
 - **Lever/FieldAI**: degraded: parsed zero roles unexpectedly
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
-- **Lever/Stand Together**: The read operation timed out
