@@ -1,4 +1,4 @@
-# Manual Check List — 2026-09-23
+# Manual Check List — 2026-09-24
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -118,35 +118,72 @@ Use the local cockpit or private autoapply database to record your decision; per
 Roles previously seen only in these sources remain stale; they are not marked closed.
 
 - **Greenhouse/Cloudflare**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/Graphcore**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
-- **Greenhouse/Applied Intuition**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
+- **Greenhouse/Cognitotherapeutics**: HTTP Error 404: Not Found
+- **Greenhouse/Exodus54**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
+- **Greenhouse/Hivewatch**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
 - **Greenhouse/Nerdy**: HTTP Error 404: Not Found
 - **Greenhouse/Postman**: HTTP Error 404: Not Found
-- **Greenhouse/Skydio**: HTTP Error 404: Not Found
 - **Ashby/Snyk**: HTTP Error 404: Not Found
+- **Ashby/91B38662 E5A9 4Bc3 Ade7 44E29D01D343**: HTTP Error 404: Not Found
+- **Ashby/Activeloop**: HTTP Error 404: Not Found
+- **Ashby/Adtucon**: HTTP Error 404: Not Found
+- **Ashby/Agora**: HTTP Error 404: Not Found
+- **Ashby/Aisle3**: HTTP Error 404: Not Found
+- **Ashby/Amper**: HTTP Error 404: Not Found
+- **Ashby/Archerfaris**: HTTP Error 404: Not Found
 - **Ashby/Atomicsemi**: HTTP Error 404: Not Found
 - **Ashby/Auditboard**: HTTP Error 404: Not Found
 - **Ashby/Axionray**: HTTP Error 404: Not Found
+- **Ashby/Buildwithfern**: HTTP Error 404: Not Found
+- **Ashby/Caldera**: HTTP Error 404: Not Found
+- **Ashby/Centralhq**: HTTP Error 404: Not Found
+- **Ashby/Certn**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
+- **Ashby/Claim Co**: HTTP Error 404: Not Found
 - **Ashby/Collegevine.Com**: HTTP Error 404: Not Found
+- **Ashby/Commonroom**: HTTP Error 404: Not Found
 - **Ashby/Commure Athelas**: HTTP Error 404: Not Found
+- **Ashby/Conductorone**: HTTP Error 404: Not Found
 - **Ashby/Conscious Talent**: HTTP Error 404: Not Found
+- **Ashby/Deltia**: HTTP Error 404: Not Found
+- **Ashby/Duckduckgo**: HTTP Error 404: Not Found
+- **Ashby/Elevate Labs**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
+- **Ashby/Exponential**: HTTP Error 404: Not Found
+- **Ashby/Finalroundai**: HTTP Error 404: Not Found
+- **Ashby/Firstbaseio**: HTTP Error 404: Not Found
 - **Ashby/Flux Computing**: HTTP Error 404: Not Found
+- **Ashby/Freeplay**: HTTP Error 404: Not Found
+- **Ashby/General Counsel Ai**: HTTP Error 404: Not Found
+- **Ashby/Genesis Therapeutics**: HTTP Error 404: Not Found
+- **Ashby/Get Ivy**: HTTP Error 404: Not Found
+- **Ashby/Healnow**: HTTP Error 404: Not Found
+- **Ashby/Himsandhers**: HTTP Error 404: Not Found
+- **Ashby/Inspiration Commerce Group**: HTTP Error 404: Not Found
 - **Ashby/Jerry**: HTTP Error 404: Not Found
+- **Ashby/K2Space**: HTTP Error 404: Not Found
+- **Ashby/Kikoff**: HTTP Error 404: Not Found
+- **Ashby/Kingdomsupercultures**: HTTP Error 404: Not Found
 - **Ashby/Kittl**: HTTP Error 404: Not Found
+- **Ashby/Kuru Labs**: HTTP Error 404: Not Found
 - **Ashby/Lilt**: HTTP Error 404: Not Found
 - **Ashby/Lime**: HTTP Error 404: Not Found
 - **Ashby/Lindushealth**: HTTP Error 404: Not Found
+- **Ashby/Lindy**: HTTP Error 404: Not Found
 - **Ashby/Luma Ai**: HTTP Error 404: Not Found
 - **Ashby/Lynk**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
+- **Ashby/Machinify**: HTTP Error 404: Not Found
+- **Ashby/Mako**: HTTP Error 404: Not Found
+- **Ashby/Meadowmemorials**: HTTP Error 404: Not Found
+- **Ashby/Monsters**: HTTP Error 404: Not Found
+- **Ashby/Moonshot Ai**: HTTP Error 404: Not Found
 - **Ashby/Newfront**: HTTP Error 404: Not Found
 - **Ashby/Openphilanthropy**: HTTP Error 404: Not Found
 - **Ashby/Outliant**: HTTP Error 404: Not Found
