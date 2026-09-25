@@ -1,4 +1,4 @@
-# Manual Check List — 2026-09-24
+# Manual Check List — 2026-09-25
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -121,14 +121,20 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
+- **Greenhouse/Broadwayventures**: The read operation timed out
+- **Greenhouse/Buyersedgeplatformrecruiting**: HTTP Error 404: Not Found
+- **Greenhouse/Careaccess**: The read operation timed out
+- **Greenhouse/Citytherapeutics**: The read operation timed out
+- **Greenhouse/Codalinc**: The read operation timed out
 - **Greenhouse/Cognitotherapeutics**: HTTP Error 404: Not Found
 - **Greenhouse/Exodus54**: HTTP Error 404: Not Found
+- **Greenhouse/Forgeglobal**: HTTP Error 404: Not Found
+- **Greenhouse/Galaxydigitalservices**: The read operation timed out
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/Hivewatch**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
-- **Greenhouse/Nerdy**: HTTP Error 404: Not Found
-- **Greenhouse/Postman**: HTTP Error 404: Not Found
+- **Greenhouse/Lexiconservices**: The read operation timed out
 - **Ashby/Snyk**: HTTP Error 404: Not Found
 - **Ashby/91B38662 E5A9 4Bc3 Ade7 44E29D01D343**: HTTP Error 404: Not Found
 - **Ashby/Activeloop**: HTTP Error 404: Not Found
@@ -147,6 +153,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
 - **Ashby/Claim Co**: HTTP Error 404: Not Found
 - **Ashby/Collegevine.Com**: HTTP Error 404: Not Found
+- **Ashby/Columntax**: HTTP Error 404: Not Found
 - **Ashby/Commonroom**: HTTP Error 404: Not Found
 - **Ashby/Commure Athelas**: HTTP Error 404: Not Found
 - **Ashby/Conductorone**: HTTP Error 404: Not Found
