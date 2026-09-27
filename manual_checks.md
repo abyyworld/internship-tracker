@@ -1,4 +1,4 @@
-# Manual Check List — 2026-09-26
+# Manual Check List — 2026-09-27
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -123,12 +123,16 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/Buyersedgeplatformrecruiting**: HTTP Error 404: Not Found
 - **Greenhouse/Cognitotherapeutics**: HTTP Error 404: Not Found
+- **Greenhouse/Consumeredge**: The read operation timed out
 - **Greenhouse/Exodus54**: HTTP Error 404: Not Found
 - **Greenhouse/Forgeglobal**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/Hivewatch**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
+- **Greenhouse/Janeasystems**: HTTP Error 404: Not Found
+- **Greenhouse/Meditelecare**: HTTP Error 404: Not Found
+- **Greenhouse/Nerdy**: HTTP Error 404: Not Found
 - **Greenhouse/Philo**: HTTP Error 404: Not Found
 - **Ashby/Snyk**: HTTP Error 404: Not Found
 - **Ashby/91B38662 E5A9 4Bc3 Ade7 44E29D01D343**: HTTP Error 404: Not Found
@@ -161,6 +165,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Firstbaseio**: HTTP Error 404: Not Found
 - **Ashby/Flux Computing**: HTTP Error 404: Not Found
 - **Ashby/Freeplay**: HTTP Error 404: Not Found
+- **Ashby/Furiosa Ai**: HTTP Error 404: Not Found
 - **Ashby/General Counsel Ai**: HTTP Error 404: Not Found
 - **Ashby/Genesis Therapeutics**: HTTP Error 404: Not Found
 - **Ashby/Get Ivy**: HTTP Error 404: Not Found
