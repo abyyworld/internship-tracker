@@ -1,4 +1,4 @@
-# Manual Check List — 2026-09-27
+# Manual Check List — 2026-09-28
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -117,23 +117,64 @@ Use the local cockpit or private autoapply database to record your decision; per
 ## Sources that failed this run
 Roles previously seen only in these sources remain stale; they are not marked closed.
 
+- **Greenhouse/Recursion Pharmaceuticals**: The read operation timed out
 - **Greenhouse/Cloudflare**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/DeepMind**: HTTP Error 404: Not Found
+- **Greenhouse/Brex**: The read operation timed out
+- **Greenhouse/Verkada**: The read operation timed out
+- **Greenhouse/DeepMind**: The read operation timed out
+- **Greenhouse/Anduril**: The read operation timed out
+- **Greenhouse/ARX Robotics**: The read operation timed out
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
+- **Greenhouse/Twilio**: The read operation timed out
+- **Greenhouse/0Verwatch**: The read operation timed out
+- **Greenhouse/2K**: The read operation timed out
+- **Greenhouse/42Northdental**: The read operation timed out
+- **Greenhouse/66Degrees**: The read operation timed out
+- **Greenhouse/Aechelontechnology**: The read operation timed out
+- **Greenhouse/Aegworldwide**: The read operation timed out
+- **Greenhouse/Ag1**: The read operation timed out
+- **Greenhouse/Agwestfarmcredit**: The read operation timed out
+- **Greenhouse/Aipn**: The read operation timed out
+- **Greenhouse/Aizerhealth**: The read operation timed out
+- **Greenhouse/Alamarbiosciences**: The read operation timed out
+- **Greenhouse/Alarm.com**: The read operation timed out
+- **Greenhouse/Alliancedefendingfreedom**: The read operation timed out
+- **Greenhouse/Alphasightsresumedrop**: The read operation timed out
+- **Greenhouse/AMAROK Security**: The read operation timed out
+- **Greenhouse/Americaninstitutesforresearch**: The read operation timed out
+- **Greenhouse/Appfire**: The read operation timed out
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
+- **Greenhouse/Assemblyai**: The read operation timed out
+- **Greenhouse/Asteralabs**: The read operation timed out
+- **Greenhouse/Atek**: The read operation timed out
+- **Greenhouse/Athinkingape**: The read operation timed out
+- **Greenhouse/Atlasxhm**: The read operation timed out
+- **Greenhouse/Atwellgroup**: The read operation timed out
+- **Greenhouse/Audaxprivatedebt**: The read operation timed out
+- **Greenhouse/RenderATL**: The read operation timed out
+- **Greenhouse/Babylist**: The read operation timed out
+- **Greenhouse/Blenheim Chalcot**: The read operation timed out
 - **Greenhouse/Buyersedgeplatformrecruiting**: HTTP Error 404: Not Found
+- **Greenhouse/Clearwayjobs**: The read operation timed out
 - **Greenhouse/Cognitotherapeutics**: HTTP Error 404: Not Found
-- **Greenhouse/Consumeredge**: The read operation timed out
 - **Greenhouse/Exodus54**: HTTP Error 404: Not Found
+- **Greenhouse/Farmersmutualhailinsurancecompany**: The read operation timed out
 - **Greenhouse/Forgeglobal**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
+- **Greenhouse/Grafanalabs**: The read operation timed out
+- **Greenhouse/Hellommc**: The read operation timed out
 - **Greenhouse/Hivewatch**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
 - **Greenhouse/Janeasystems**: HTTP Error 404: Not Found
 - **Greenhouse/Meditelecare**: HTTP Error 404: Not Found
 - **Greenhouse/Nerdy**: HTTP Error 404: Not Found
+- **Greenhouse/Outschool**: HTTP Error 404: Not Found
 - **Greenhouse/Philo**: HTTP Error 404: Not Found
+- **Greenhouse/Postman**: HTTP Error 404: Not Found
+- **Greenhouse/Tekmetric**: The read operation timed out
+- **Greenhouse/The MJ Companies**: The read operation timed out
+- **Greenhouse/Uare.ai**: The read operation timed out
 - **Ashby/Snyk**: HTTP Error 404: Not Found
 - **Ashby/91B38662 E5A9 4Bc3 Ade7 44E29D01D343**: HTTP Error 404: Not Found
 - **Ashby/Activeloop**: HTTP Error 404: Not Found
@@ -240,5 +281,4 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Xlabs**: HTTP Error 404: Not Found
 - **Ashby/Youdotcom**: HTTP Error 404: Not Found
 - **Ashby/Yutori**: HTTP Error 404: Not Found
-- **Lever/FieldAI**: degraded: parsed zero roles unexpectedly
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
