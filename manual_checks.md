@@ -1,4 +1,4 @@
-# Manual Check List — 2026-09-29
+# Manual Check List — 2026-09-30
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -117,35 +117,29 @@ Use the local cockpit or private autoapply database to record your decision; per
 ## Sources that failed this run
 Roles previously seen only in these sources remain stale; they are not marked closed.
 
-- **Greenhouse/Tenstorrent**: The read operation timed out
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
-- **Greenhouse/Ajboggs**: The read operation timed out
 - **Greenhouse/Amplitude**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
-- **Greenhouse/Buyersedgeplatformrecruiting**: HTTP Error 404: Not Found
-- **Greenhouse/Enterpret**: The read operation timed out
-- **Greenhouse/Forgeglobal**: HTTP Error 404: Not Found
-- **Greenhouse/Fortrobotics**: The read operation timed out
+- **Greenhouse/Calalumniassociation**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
 - **Greenhouse/Janeasystems**: HTTP Error 404: Not Found
+- **Greenhouse/Liveviewtechnologiesinc**: HTTP Error 404: Not Found
 - **Greenhouse/Meditelecare**: HTTP Error 404: Not Found
 - **Greenhouse/Nerdy**: HTTP Error 404: Not Found
 - **Greenhouse/Outschool**: HTTP Error 404: Not Found
 - **Greenhouse/Philo**: HTTP Error 404: Not Found
-- **Greenhouse/Planetscale**: The read operation timed out
 - **Greenhouse/Postman**: HTTP Error 404: Not Found
 - **Greenhouse/Pulse**: The read operation timed out
-- **Greenhouse/Takealotgroup**: The read operation timed out
+- **Greenhouse/Viking Global**: The read operation timed out
 - **Ashby/Snyk**: HTTP Error 404: Not Found
 - **Ashby/Atomicsemi**: HTTP Error 404: Not Found
 - **Ashby/Auditboard**: HTTP Error 404: Not Found
 - **Ashby/Axionray**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
 - **Ashby/Collegevine.Com**: HTTP Error 404: Not Found
-- **Ashby/Columntax**: HTTP Error 404: Not Found
 - **Ashby/Commure Athelas**: HTTP Error 404: Not Found
 - **Ashby/Conscious Talent**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
@@ -154,6 +148,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Hoxtonfarms**: HTTP Error 404: Not Found
 - **Ashby/Jerry**: HTTP Error 404: Not Found
 - **Ashby/Kittl**: HTTP Error 404: Not Found
+- **Ashby/Leapsome**: HTTP Error 404: Not Found
 - **Ashby/Lilt**: HTTP Error 404: Not Found
 - **Ashby/Lime**: HTTP Error 404: Not Found
 - **Ashby/Lindushealth**: HTTP Error 404: Not Found
