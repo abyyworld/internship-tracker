@@ -1,4 +1,4 @@
-# Manual Check List — 2026-09-30
+# Manual Check List — 2026-10-01
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -121,6 +121,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Amplitude**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
+- **Greenhouse/Auctane**: HTTP Error 404: Not Found
 - **Greenhouse/Calalumniassociation**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
@@ -130,78 +131,19 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Meditelecare**: HTTP Error 404: Not Found
 - **Greenhouse/Nerdy**: HTTP Error 404: Not Found
 - **Greenhouse/Outschool**: HTTP Error 404: Not Found
-- **Greenhouse/Philo**: HTTP Error 404: Not Found
 - **Greenhouse/Postman**: HTTP Error 404: Not Found
 - **Greenhouse/Pulse**: The read operation timed out
-- **Greenhouse/Viking Global**: The read operation timed out
-- **Ashby/Snyk**: HTTP Error 404: Not Found
-- **Ashby/Atomicsemi**: HTTP Error 404: Not Found
-- **Ashby/Auditboard**: HTTP Error 404: Not Found
-- **Ashby/Axionray**: HTTP Error 404: Not Found
+- **Greenhouse/Rewardsnetwork**: The read operation timed out
+- **Greenhouse/Rigup**: The read operation timed out
+- **Greenhouse/Santex**: The read operation timed out
+- **Greenhouse/Setsales**: The read operation timed out
+- **Greenhouse/Spotter**: The read operation timed out
+- **Greenhouse/Springhealth66**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
-- **Ashby/Collegevine.Com**: HTTP Error 404: Not Found
-- **Ashby/Commure Athelas**: HTTP Error 404: Not Found
-- **Ashby/Conscious Talent**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
-- **Ashby/Flux Computing**: HTTP Error 404: Not Found
 - **Ashby/Furiosa Ai**: HTTP Error 404: Not Found
-- **Ashby/Hoxtonfarms**: HTTP Error 404: Not Found
-- **Ashby/Jerry**: HTTP Error 404: Not Found
-- **Ashby/Kittl**: HTTP Error 404: Not Found
 - **Ashby/Leapsome**: HTTP Error 404: Not Found
-- **Ashby/Lilt**: HTTP Error 404: Not Found
-- **Ashby/Lime**: HTTP Error 404: Not Found
-- **Ashby/Lindushealth**: HTTP Error 404: Not Found
-- **Ashby/Luma Ai**: HTTP Error 404: Not Found
-- **Ashby/Lynk**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
-- **Ashby/Newfront**: HTTP Error 404: Not Found
-- **Ashby/Openphilanthropy**: HTTP Error 404: Not Found
-- **Ashby/Openstore**: HTTP Error 404: Not Found
-- **Ashby/Orbitalmaterials**: HTTP Error 404: Not Found
-- **Ashby/Outliant**: HTTP Error 404: Not Found
-- **Ashby/Pacificfusion**: HTTP Error 404: Not Found
-- **Ashby/Pear**: HTTP Error 404: Not Found
-- **Ashby/Personainc.Ai**: HTTP Error 404: Not Found
-- **Ashby/Phare R1 R37**: HTTP Error 404: Not Found
-- **Ashby/Platoapp**: HTTP Error 404: Not Found
-- **Ashby/Plume Network**: HTTP Error 404: Not Found
-- **Ashby/Pocus**: HTTP Error 404: Not Found
-- **Ashby/Preludesecurity**: HTTP Error 404: Not Found
-- **Ashby/Privy**: HTTP Error 404: Not Found
-- **Ashby/Projectgrowth**: HTTP Error 404: Not Found
-- **Ashby/Real**: HTTP Error 404: Not Found
-- **Ashby/Righthandtalent**: HTTP Error 404: Not Found
-- **Ashby/Risczero**: HTTP Error 404: Not Found
-- **Ashby/Robin Ai**: HTTP Error 404: Not Found
-- **Ashby/Sagefuture**: HTTP Error 404: Not Found
-- **Ashby/Scribd**: HTTP Error 404: Not Found
-- **Ashby/Secoda**: HTTP Error 404: Not Found
-- **Ashby/Softwareappsinc**: HTTP Error 404: Not Found
-- **Ashby/Soxton**: HTTP Error 404: Not Found
-- **Ashby/Spellbook.Legal**: HTTP Error 404: Not Found
-- **Ashby/Statsig**: HTTP Error 404: Not Found
-- **Ashby/Subconscious**: HTTP Error 404: Not Found
-- **Ashby/Superduper**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
-- **Ashby/Synthflow**: HTTP Error 404: Not Found
-- **Ashby/Tandem**: HTTP Error 404: Not Found
-- **Ashby/Terradot**: HTTP Error 404: Not Found
-- **Ashby/Tigereye**: HTTP Error 404: Not Found
-- **Ashby/Tiplink**: HTTP Error 404: Not Found
-- **Ashby/Tokenmetrics**: HTTP Error 404: Not Found
-- **Ashby/Vance**: HTTP Error 404: Not Found
-- **Ashby/Vellum**: HTTP Error 404: Not Found
-- **Ashby/Vibiz**: HTTP Error 404: Not Found
-- **Ashby/Vinci4D**: HTTP Error 404: Not Found
-- **Ashby/Visanahealth**: HTTP Error 404: Not Found
-- **Ashby/Waterplan**: HTTP Error 404: Not Found
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
-- **Ashby/Woebot Health**: HTTP Error 404: Not Found
-- **Ashby/Woflow**: HTTP Error 404: Not Found
-- **Ashby/Workshop Ventures**: HTTP Error 404: Not Found
-- **Ashby/Workshoplabs**: HTTP Error 404: Not Found
-- **Ashby/Xlabs**: HTTP Error 404: Not Found
-- **Ashby/Youdotcom**: HTTP Error 404: Not Found
-- **Ashby/Yutori**: HTTP Error 404: Not Found
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
