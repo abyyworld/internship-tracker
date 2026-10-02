@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-01
+# Manual Check List — 2026-10-02
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -117,33 +117,26 @@ Use the local cockpit or private autoapply database to record your decision; per
 ## Sources that failed this run
 Roles previously seen only in these sources remain stale; they are not marked closed.
 
+- **Greenhouse/Wayve**: HTTP Error 404: Not Found
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Amplitude**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
-- **Greenhouse/Auctane**: HTTP Error 404: Not Found
+- **Greenhouse/Buzzfeed**: HTTP Error 404: Not Found
 - **Greenhouse/Calalumniassociation**: HTTP Error 404: Not Found
+- **Greenhouse/Downtownmusic**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
-- **Greenhouse/Janeasystems**: HTTP Error 404: Not Found
 - **Greenhouse/Liveviewtechnologiesinc**: HTTP Error 404: Not Found
-- **Greenhouse/Meditelecare**: HTTP Error 404: Not Found
-- **Greenhouse/Nerdy**: HTTP Error 404: Not Found
 - **Greenhouse/Outschool**: HTTP Error 404: Not Found
 - **Greenhouse/Postman**: HTTP Error 404: Not Found
-- **Greenhouse/Pulse**: The read operation timed out
-- **Greenhouse/Rewardsnetwork**: The read operation timed out
-- **Greenhouse/Rigup**: The read operation timed out
-- **Greenhouse/Santex**: The read operation timed out
-- **Greenhouse/Setsales**: The read operation timed out
-- **Greenhouse/Spotter**: The read operation timed out
 - **Greenhouse/Springhealth66**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
-- **Ashby/Furiosa Ai**: HTTP Error 404: Not Found
 - **Ashby/Leapsome**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
+- **Ashby/Puzzle.Io**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
