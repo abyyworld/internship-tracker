@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-04
+# Manual Check List — 2026-10-05
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -134,14 +134,13 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
 - **Greenhouse/Janeasystems**: HTTP Error 404: Not Found
-- **Greenhouse/Liveviewtechnologiesinc**: HTTP Error 404: Not Found
 - **Greenhouse/Meditelecare**: HTTP Error 404: Not Found
 - **Greenhouse/Nerdy**: HTTP Error 404: Not Found
 - **Greenhouse/Outschool**: HTTP Error 404: Not Found
 - **Greenhouse/Philo**: HTTP Error 404: Not Found
+- **Greenhouse/Pomelocare**: HTTP Error 404: Not Found
 - **Greenhouse/Postman**: HTTP Error 404: Not Found
 - **Greenhouse/Springhealth66**: HTTP Error 404: Not Found
-- **Greenhouse/Svetness**: The read operation timed out
 - **Ashby/91B38662 E5A9 4Bc3 Ade7 44E29D01D343**: HTTP Error 404: Not Found
 - **Ashby/Activeloop**: HTTP Error 404: Not Found
 - **Ashby/Adtucon**: HTTP Error 404: Not Found
@@ -165,6 +164,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Commure Athelas**: HTTP Error 404: Not Found
 - **Ashby/Conductorone**: HTTP Error 404: Not Found
 - **Ashby/Conscious Talent**: HTTP Error 404: Not Found
+- **Ashby/Corgi**: HTTP Error 404: Not Found
 - **Ashby/Deltia**: HTTP Error 404: Not Found
 - **Ashby/Duckduckgo**: HTTP Error 404: Not Found
 - **Ashby/Elevate Labs**: HTTP Error 404: Not Found
@@ -187,7 +187,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Kingdomsupercultures**: HTTP Error 404: Not Found
 - **Ashby/Kittl**: HTTP Error 404: Not Found
 - **Ashby/Kuru Labs**: HTTP Error 404: Not Found
-- **Ashby/Leapsome**: HTTP Error 404: Not Found
 - **Ashby/Lilt**: HTTP Error 404: Not Found
 - **Ashby/Lime**: HTTP Error 404: Not Found
 - **Ashby/Lindushealth**: HTTP Error 404: Not Found
