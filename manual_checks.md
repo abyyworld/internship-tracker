@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-05
+# Manual Check List — 2026-10-06
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -124,6 +124,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/Buyersedgeplatformrecruiting**: HTTP Error 404: Not Found
 - **Greenhouse/Buzzfeed**: HTTP Error 404: Not Found
+- **Greenhouse/Calalumniassociation**: HTTP Error 404: Not Found
 - **Greenhouse/Cognitotherapeutics**: HTTP Error 404: Not Found
 - **Greenhouse/Downtownmusic**: HTTP Error 404: Not Found
 - **Greenhouse/Exodus54**: HTTP Error 404: Not Found
@@ -140,7 +141,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Philo**: HTTP Error 404: Not Found
 - **Greenhouse/Pomelocare**: HTTP Error 404: Not Found
 - **Greenhouse/Postman**: HTTP Error 404: Not Found
-- **Greenhouse/Springhealth66**: HTTP Error 404: Not Found
 - **Ashby/91B38662 E5A9 4Bc3 Ade7 44E29D01D343**: HTTP Error 404: Not Found
 - **Ashby/Activeloop**: HTTP Error 404: Not Found
 - **Ashby/Adtucon**: HTTP Error 404: Not Found
@@ -148,6 +148,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Aisle3**: HTTP Error 404: Not Found
 - **Ashby/Amigo**: HTTP Error 404: Not Found
 - **Ashby/Amper**: HTTP Error 404: Not Found
+- **Ashby/Arch**: HTTP Error 404: Not Found
 - **Ashby/Archerfaris**: HTTP Error 404: Not Found
 - **Ashby/Atomicsemi**: HTTP Error 404: Not Found
 - **Ashby/Auditboard**: HTTP Error 404: Not Found
@@ -187,6 +188,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Kingdomsupercultures**: HTTP Error 404: Not Found
 - **Ashby/Kittl**: HTTP Error 404: Not Found
 - **Ashby/Kuru Labs**: HTTP Error 404: Not Found
+- **Ashby/Leapsome**: HTTP Error 404: Not Found
 - **Ashby/Lilt**: HTTP Error 404: Not Found
 - **Ashby/Lime**: HTTP Error 404: Not Found
 - **Ashby/Lindushealth**: HTTP Error 404: Not Found
@@ -216,6 +218,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Projectgrowth**: HTTP Error 404: Not Found
 - **Ashby/Puzzle.Io**: HTTP Error 404: Not Found
 - **Ashby/Real**: HTTP Error 404: Not Found
+- **Ashby/Revel**: degraded: parsed zero roles unexpectedly
 - **Ashby/Righthandtalent**: HTTP Error 404: Not Found
 - **Ashby/Risczero**: HTTP Error 404: Not Found
 - **Ashby/Robin Ai**: HTTP Error 404: Not Found
@@ -249,4 +252,5 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Xlabs**: HTTP Error 404: Not Found
 - **Ashby/Youdotcom**: HTTP Error 404: Not Found
 - **Ashby/Yutori**: HTTP Error 404: Not Found
+- **Ashby/Zingage**: HTTP Error 404: Not Found
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
