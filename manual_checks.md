@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-06
+# Manual Check List — 2026-10-07
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -123,9 +123,9 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Actpowerservices**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/Buyersedgeplatformrecruiting**: HTTP Error 404: Not Found
-- **Greenhouse/Buzzfeed**: HTTP Error 404: Not Found
 - **Greenhouse/Calalumniassociation**: HTTP Error 404: Not Found
 - **Greenhouse/Cognitotherapeutics**: HTTP Error 404: Not Found
+- **Greenhouse/Ddome**: HTTP Error 404: Not Found
 - **Greenhouse/Downtownmusic**: HTTP Error 404: Not Found
 - **Greenhouse/Exodus54**: HTTP Error 404: Not Found
 - **Greenhouse/Forgeglobal**: HTTP Error 404: Not Found
@@ -135,6 +135,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
 - **Greenhouse/Janeasystems**: HTTP Error 404: Not Found
+- **Greenhouse/Liveviewtechnologiesinc**: HTTP Error 404: Not Found
 - **Greenhouse/Meditelecare**: HTTP Error 404: Not Found
 - **Greenhouse/Nerdy**: HTTP Error 404: Not Found
 - **Greenhouse/Outschool**: HTTP Error 404: Not Found
@@ -179,6 +180,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Genesis Therapeutics**: HTTP Error 404: Not Found
 - **Ashby/Get Ivy**: HTTP Error 404: Not Found
 - **Ashby/Healnow**: HTTP Error 404: Not Found
+- **Ashby/Hiive**: HTTP Error 404: Not Found
 - **Ashby/Himsandhers**: HTTP Error 404: Not Found
 - **Ashby/Hoxtonfarms**: HTTP Error 404: Not Found
 - **Ashby/Inspiration Commerce Group**: HTTP Error 404: Not Found
@@ -218,7 +220,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Projectgrowth**: HTTP Error 404: Not Found
 - **Ashby/Puzzle.Io**: HTTP Error 404: Not Found
 - **Ashby/Real**: HTTP Error 404: Not Found
-- **Ashby/Revel**: degraded: parsed zero roles unexpectedly
 - **Ashby/Righthandtalent**: HTTP Error 404: Not Found
 - **Ashby/Risczero**: HTTP Error 404: Not Found
 - **Ashby/Robin Ai**: HTTP Error 404: Not Found
