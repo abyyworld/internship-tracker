@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-07
+# Manual Check List — 2026-10-08
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -121,35 +121,27 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Actpowerservices**: HTTP Error 404: Not Found
+- **Greenhouse/Amplitude**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/Buyersedgeplatformrecruiting**: HTTP Error 404: Not Found
+- **Greenhouse/Buzzfeed**: HTTP Error 404: Not Found
 - **Greenhouse/Calalumniassociation**: HTTP Error 404: Not Found
-- **Greenhouse/Cognitotherapeutics**: HTTP Error 404: Not Found
-- **Greenhouse/Ddome**: HTTP Error 404: Not Found
 - **Greenhouse/Downtownmusic**: HTTP Error 404: Not Found
-- **Greenhouse/Exodus54**: HTTP Error 404: Not Found
-- **Greenhouse/Forgeglobal**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
-- **Greenhouse/Hightouch**: HTTP Error 404: Not Found
-- **Greenhouse/Hivewatch**: HTTP Error 404: Not Found
+- **Greenhouse/Guidepostmontessori**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
-- **Greenhouse/Janeasystems**: HTTP Error 404: Not Found
 - **Greenhouse/Liveviewtechnologiesinc**: HTTP Error 404: Not Found
-- **Greenhouse/Meditelecare**: HTTP Error 404: Not Found
-- **Greenhouse/Nerdy**: HTTP Error 404: Not Found
-- **Greenhouse/Outschool**: HTTP Error 404: Not Found
-- **Greenhouse/Philo**: HTTP Error 404: Not Found
 - **Greenhouse/Pomelocare**: HTTP Error 404: Not Found
-- **Greenhouse/Postman**: HTTP Error 404: Not Found
+- **Greenhouse/Radixark**: HTTP Error 404: Not Found
 - **Ashby/91B38662 E5A9 4Bc3 Ade7 44E29D01D343**: HTTP Error 404: Not Found
 - **Ashby/Activeloop**: HTTP Error 404: Not Found
 - **Ashby/Adtucon**: HTTP Error 404: Not Found
 - **Ashby/Agora**: HTTP Error 404: Not Found
 - **Ashby/Aisle3**: HTTP Error 404: Not Found
+- **Ashby/Alpic**: HTTP Error 404: Not Found
 - **Ashby/Amigo**: HTTP Error 404: Not Found
 - **Ashby/Amper**: HTTP Error 404: Not Found
-- **Ashby/Arch**: HTTP Error 404: Not Found
 - **Ashby/Archerfaris**: HTTP Error 404: Not Found
 - **Ashby/Atomicsemi**: HTTP Error 404: Not Found
 - **Ashby/Auditboard**: HTTP Error 404: Not Found
@@ -253,5 +245,4 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Xlabs**: HTTP Error 404: Not Found
 - **Ashby/Youdotcom**: HTTP Error 404: Not Found
 - **Ashby/Yutori**: HTTP Error 404: Not Found
-- **Ashby/Zingage**: HTTP Error 404: Not Found
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
