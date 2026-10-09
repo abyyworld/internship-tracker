@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-08
+# Manual Check List — 2026-10-09
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -122,6 +122,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Actpowerservices**: HTTP Error 404: Not Found
 - **Greenhouse/Amplitude**: HTTP Error 404: Not Found
+- **Greenhouse/Anchanto**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/Buyersedgeplatformrecruiting**: HTTP Error 404: Not Found
 - **Greenhouse/Buzzfeed**: HTTP Error 404: Not Found
