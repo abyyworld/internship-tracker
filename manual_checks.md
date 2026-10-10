@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-09
+# Manual Check List — 2026-10-10
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -119,7 +119,9 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 
 - **Greenhouse/Wayve**: HTTP Error 404: Not Found
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
+- **Greenhouse/Anduril**: The read operation timed out
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
+- **Greenhouse/7Shifts**: HTTP Error 404: Not Found
 - **Greenhouse/Actpowerservices**: HTTP Error 404: Not Found
 - **Greenhouse/Amplitude**: HTTP Error 404: Not Found
 - **Greenhouse/Anchanto**: HTTP Error 404: Not Found
@@ -129,12 +131,12 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Calalumniassociation**: HTTP Error 404: Not Found
 - **Greenhouse/Downtownmusic**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
-- **Greenhouse/Guidepostmontessori**: HTTP Error 404: Not Found
+- **Greenhouse/Hala**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
 - **Greenhouse/Liveviewtechnologiesinc**: HTTP Error 404: Not Found
-- **Greenhouse/Pomelocare**: HTTP Error 404: Not Found
 - **Greenhouse/Radixark**: HTTP Error 404: Not Found
+- **Greenhouse/Rdccareers**: HTTP Error 404: Not Found
 - **Ashby/91B38662 E5A9 4Bc3 Ade7 44E29D01D343**: HTTP Error 404: Not Found
 - **Ashby/Activeloop**: HTTP Error 404: Not Found
 - **Ashby/Adtucon**: HTTP Error 404: Not Found
@@ -159,7 +161,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Commure Athelas**: HTTP Error 404: Not Found
 - **Ashby/Conductorone**: HTTP Error 404: Not Found
 - **Ashby/Conscious Talent**: HTTP Error 404: Not Found
-- **Ashby/Corgi**: HTTP Error 404: Not Found
 - **Ashby/Deltia**: HTTP Error 404: Not Found
 - **Ashby/Duckduckgo**: HTTP Error 404: Not Found
 - **Ashby/Elevate Labs**: HTTP Error 404: Not Found
