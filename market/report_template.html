@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Internship Market, Measured</title>
+<meta name="description" content="How long early-career tech roles stay open, when firms post them, and whether you can tell which will close first — measured from daily snapshots of thousands of postings.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+/* Tokens follow the main dashboard (docs/index.html) so the two pages read as
+   one site, and share its saved theme. Series colours are the validated
+   categorical order: light on the white card, dark on the dark card. */
+:root{
+  --bg:#f7f8fa; --raise:#ffffff; --sunk:#eef1f5;
+  --ink:#0f1419; --ink-2:#39434e; --muted:#6b7684; --faint:#95a0ad;
+  --line:#e2e6ec; --line-2:#cfd6df; --grid:#eceff3;
+  --accent:#1a56db; --accent-soft:#e8eefc;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+  --s5:#e87ba4; --s6:#008300; --s7:#6250d6; --s8:#e34948;
+  --radius:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1117; --raise:#151b23; --sunk:#1c232c;
+    --ink:#e9eef5; --ink-2:#c2ccd8; --muted:#8b98a8; --faint:#6b7889;
+    --line:#242c37; --line-2:#333d4b; --grid:#1f2630;
+    --accent:#5b8cff; --accent-soft:#182742;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+    --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1117; --raise:#151b23; --sunk:#1c232c;
+  --ink:#e9eef5; --ink-2:#c2ccd8; --muted:#8b98a8; --faint:#6b7889;
+  --line:#242c37; --line-2:#333d4b; --grid:#1f2630;
+  --accent:#5b8cff; --accent-soft:#182742;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+  --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px 64px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 0;border-bottom:1px solid var(--line);margin-bottom:28px;font-size:14px}
+header.top a{text-decoration:none;font-weight:600}
+.iconbtn{border:1px solid var(--line-2);background:var(--raise);border-radius:8px;
+  padding:4px 10px;cursor:pointer;font:inherit;font-size:13px;color:var(--ink)}
+h1{font-size:clamp(28px,6vw,40px);line-height:1.15;margin:0 0 10px;letter-spacing:-.02em}
+h2{font-size:22px;margin:48px 0 6px;letter-spacing:-.01em}
+h3{font-size:16px;margin:24px 0 4px}
+p{margin:10px 0}
+.lede{font-size:18px;color:var(--ink-2);margin:0 0 22px}
+.byline{color:var(--muted);font-size:14px}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:22px 0}
+.tile{background:var(--raise);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.tile .label{font-size:13px;color:var(--ink-2)}
+.tile .value{font-size:30px;font-weight:650;line-height:1.2;margin-top:2px}
+.tile .note{font-size:12.5px;color:var(--muted)}
+.tile.hero .value{font-size:48px}
+.card{background:var(--raise);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 16px 10px;margin:16px 0}
+.card .title{font-weight:650;font-size:15px}
+.card .sub{font-size:13px;color:var(--muted);margin-bottom:6px}
+.controls{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px}
+.controls button{border:1px solid var(--line-2);background:var(--raise);color:var(--ink-2);
+  border-radius:999px;padding:4px 12px;font:inherit;font-size:13px;cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);
+  color:var(--ink);font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--ink-2);margin:6px 0 2px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:14px;height:2px;border-radius:1px}
+.legend i.box{width:10px;height:10px;border-radius:3px}
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart text{fill:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums}
+.chart .lbl{fill:var(--ink-2)}
+.chart .grid{stroke:var(--grid);stroke-width:1}
+.chart .axis{stroke:var(--line-2);stroke-width:1}
+.tip{position:absolute;pointer-events:none;background:var(--raise);border:1px solid var(--line-2);
+  border-radius:10px;padding:8px 10px;font-size:12.5px;line-height:1.45;
+  box-shadow:0 6px 20px rgba(0,0,0,.14);min-width:140px;max-width:260px;z-index:5;display:none}
+.tip .h{color:var(--muted);margin-bottom:3px}
+.tip .r{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.tip .r b{font-variant-numeric:tabular-nums;min-width:42px}
+.tip .r i{display:inline-block;width:12px;height:2px;border-radius:1px;flex:none}
+.tip .r span{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis}
+details{margin:6px 0 4px;font-size:13.5px}
+summary{cursor:pointer;color:var(--ink-2)}
+.tablewrap{overflow-x:auto;margin-top:6px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+th{color:var(--muted);font-weight:600}
+ul.find{padding-left:20px}
+ul.find li{margin:6px 0}
+.callout{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 14px;
+  border-radius:0 10px 10px 0;margin:16px 0}
+footer{margin-top:56px;border-top:1px solid var(--line);padding-top:16px;font-size:13px;color:var(--muted)}
+code{font-size:.92em;background:var(--sunk);padding:1px 5px;border-radius:5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <a href="./">← Radar</a>
+  <button class="iconbtn" id="themeBtn" type="button">Auto</button>
+</header>
+
+<h1>The internship market, measured</h1>
+<p class="lede" id="lede"></p>
+<p class="byline" id="byline"></p>
+
+<div class="tiles" id="tiles"></div>
+
+<div class="callout small" id="takeaway"></div>
+
+<h2>1. How long roles stay open</h2>
+<p id="km-intro"></p>
+<div class="card">
+  <div class="title">Share of roles still open, by days since first listed</div>
+  <div class="sub">Kaplan–Meier estimate; x-axis in days. Roles still open today count up to today and no further. Each curve stops when fewer than 50 of its roles are left to watch.</div>
+  <div class="controls" id="km-controls" role="group" aria-label="Split curves by"></div>
+  <div class="legend" id="km-legend"></div>
+  <div class="chart" id="km-chart"></div>
+  <p class="small muted" id="km-test"></p>
+  <details><summary>Table</summary><div class="tablewrap" id="km-table"></div></details>
+</div>
+
+<h3>What makes a role close faster</h3>
+<p id="cox-intro"></p>
+<div class="card">
+  <div class="title">Hazard ratio of closing, each factor holding the others fixed</div>
+  <div class="sub">Cox proportional-hazards model. Right of 1 closes faster than the reference; left closes slower. Lines are 95% intervals.</div>
+  <div class="chart" id="cox-chart"></div>
+  <p class="small muted" id="cox-note"></p>
+  <details><summary>Table</summary><div class="tablewrap" id="cox-table"></div></details>
+</div>
+
+<h2>2. When firms post</h2>
+<p id="timing-intro"></p>
+<div class="card">
+  <div class="title">New roles each week, by sector</div>
+  <div class="sub" id="timing-sub"></div>
+  <div class="legend" id="weekly-legend"></div>
+  <div class="chart" id="weekly-chart"></div>
+  <details><summary>Table</summary><div class="tablewrap" id="weekly-table"></div></details>
+</div>
+<div class="card">
+  <div class="title">Which sectors open first</div>
+  <div class="sub">The date by which each sector had posted half of its roles for 2027 starts.</div>
+  <div class="chart" id="half-chart"></div>
+  <details><summary>Table</summary><div class="tablewrap" id="half-table"></div></details>
+</div>
+<div class="card">
+  <div class="title">New roles by weekday posted</div>
+  <div class="sub">The tracker runs at 07:00 UTC, so a role first listed on Tuesday went up on Monday in the Americas.</div>
+  <div class="chart" id="weekday-chart"></div>
+  <details><summary>Table</summary><div class="tablewrap" id="weekday-table"></div></details>
+</div>
+
+<h2>3. Sponsorship</h2>
+<p id="spons-intro"></p>
+<div class="card">
+  <div class="title">What the postings say about visa sponsorship</div>
+  <div class="tablewrap" id="spons-table"></div>
+</div>
+
+<h2>4. Can you tell which roles close first?</h2>
+<p id="fc-intro"></p>
+<div class="card">
+  <div class="title" id="fc-title"></div>
+  <div class="sub" id="fc-sub"></div>
+  <div class="tablewrap" id="fc-table"></div>
+</div>
+<div class="card">
+  <div class="title" id="cal-title"></div>
+  <div class="sub">Test roles grouped by predicted chance; dot size is the number of roles. On the diagonal, the forecast means what it says.</div>
+  <div class="chart" id="cal-chart"></div>
+  <details><summary>Table</summary><div class="tablewrap" id="cal-table"></div></details>
+</div>
+<p id="fc-verdict"></p>
+
+<h2>How this was measured</h2>
+<div id="methods" class="small"></div>
+
+<footer id="foot"></footer>
+</div>
+
+<div class="tip" id="tip" role="status" aria-live="polite"></div>
+
+<script>
+const R = /*RESULTS*/null;
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+const SERIES = ["--s1","--s2","--s3","--s4","--s5","--s6","--s7","--s8"].map(v => `var(${v})`);
+const pct = x => x == null ? "—" : `${Math.round(x * 100)}%`;
+const num = x => x == null ? "—" : x.toLocaleString("en-GB");
+const days = x => x == null ? "not reached" : `${Math.round(x)} days`;
+const fmtDate = s => new Date(s + "T00:00:00Z").toLocaleDateString("en-GB",
+  {day: "numeric", month: "short", timeZone: "UTC"});
+
+/* ── theme: shared with the dashboard ─────────────────────────────────── */
+const THEMES = ["system", "light", "dark"], MARK = {system: "Auto", light: "Light", dark: "Dark"};
+let theme = "system";
+try { const t = localStorage.getItem("radar.theme"); if (THEMES.includes(t)) theme = t; } catch (e) {}
+function applyTheme() {
+  if (theme === "system") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", theme);
+  $("themeBtn").textContent = MARK[theme];
+}
+$("themeBtn").onclick = () => {
+  theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
+  try { localStorage.setItem("radar.theme", theme); } catch (e) {}
+  applyTheme();
+};
+applyTheme();
+
+/* ── small DOM helpers (labels are data: textContent only) ────────────── */
+function el(tag, attrs = {}, text) {
+  const n = tag in SVGTAGS ? document.createElementNS(NS, tag) : document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) if (v != null) n.setAttribute(k, v);
+  if (text != null) n.textContent = text;
+  return n;
+}
+const SVGTAGS = {svg:1, g:1, path:1, line:1, rect:1, circle:1, text:1, tspan:1};
+function setText(id, text) { $(id).textContent = text; }
+function table(id, head, rows, numeric = []) {
+  const t = el("table"), tr = el("tr");
+  head.forEach((h, i) => tr.append(el("th", {class: numeric.includes(i) ? "n" : null}, h)));
+  t.append(el("thead")); t.firstChild.append(tr);
+  const tb = el("tbody");
+  rows.forEach(r => {
+    const row = el("tr");
+    r.forEach((c, i) => row.append(el("td", {class: numeric.includes(i) ? "n" : null}, c)));
+    tb.append(row);
+  });
+  t.append(tb); $(id).replaceChildren(t);
+}
+function legend(id, items, box = false) {
+  $(id).replaceChildren(...items.map(([label, color]) => {
+    const s = el("span"); const i = el("i", {class: box ? "box" : null});
+    i.style.background = color; s.append(i, document.createTextNode(label)); return s;
+  }));
+}
+
+/* ── tooltip ──────────────────────────────────────────────────────────── */
+const tip = $("tip");
+function showTip(host, x, y, head, rows) {
+  tip.replaceChildren(el("div", {class: "h"}, head));
+  rows.forEach(([value, label, color]) => {
+    const r = el("div", {class: "r"});
+    const i = el("i"); if (color) i.style.background = color; else i.style.visibility = "hidden";
+    r.append(i, el("b", {}, value), el("span", {}, label)); tip.append(r);
+  });
+  tip.style.display = "block";
+  const box = host.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  let left = box.left + window.scrollX + x + 14;
+  if (left + w > window.scrollX + document.documentElement.clientWidth - 8) left = box.left + window.scrollX + x - w - 14;
+  tip.style.left = Math.max(8, left) + "px";
+  tip.style.top = (box.top + window.scrollY + Math.max(0, y - h / 2)) + "px";
+}
+const hideTip = () => { tip.style.display = "none"; };
+
+/* ── chart frame ──────────────────────────────────────────────────────── */
+function frame(host, height, m) {
+  const w = Math.max(280, host.clientWidth);
+  const svg = el("svg", {viewBox: `0 0 ${w} ${height}`, height, role: "img"});
+  host.replaceChildren(svg);
+  return {svg, w, h: height, m, iw: w - m.l - m.r, ih: height - m.t - m.b};
+}
+function yGrid(f, ticks, y, fmt) {
+  ticks.forEach(t => {
+    f.svg.append(el("line", {class: "grid", x1: f.m.l, x2: f.m.l + f.iw, y1: y(t), y2: y(t)}));
+    f.svg.append(el("text", {x: f.m.l - 6, y: y(t) + 4, "text-anchor": "end"}, fmt(t)));
+  });
+}
+const redraws = [];
+function chart(host, draw) {
+  const run = () => draw(host);
+  redraws.push(run);
+  run();
+}
+let resizeTimer;
+new ResizeObserver(() => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => redraws.forEach(f => f()), 80); })
+  .observe(document.querySelector(".wrap"));
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => redraws.forEach(f => f()));
+
+/* ── 1. survival curves ───────────────────────────────────────────────── */
+const KM_VIEWS = [
+  ["Overall", null], ["Sector", "by_category"], ["Role type", "by_role_group"],
+  ["Company size", "by_company_size"], ["Prestige tier", "by_tier"],
+  ["Where listed", "by_source_family"], ["Region", "by_region"],
+];
+let kmView = "by_category";
+function kmCurves() {
+  return kmView ? R.survival[kmView].curves : [R.survival.overall];
+}
+function drawKM(host) {
+  const curves = kmCurves();
+  const colors = curves.map((_, i) => SERIES[i]);
+  legend("km-legend", curves.length > 1 ? curves.map((c, i) => [c.label, colors[i]]) : []);
+  const f = frame(host, 300, {t: 10, r: 14, b: 30, l: 40});
+  const maxT = Math.max(...curves.map(c => c.points[c.points.length - 1].t));
+  const x = t => f.m.l + t / maxT * f.iw, y = s => f.m.t + (1 - s) * f.ih;
+  yGrid(f, [0, .25, .5, .75, 1], y, v => `${v * 100}%`);
+  for (let t = 0; t <= maxT; t += 10) {
+    f.svg.append(el("text", {x: x(t), y: f.h - 10, "text-anchor": "middle"}, `${t}`));
+  }
+  f.svg.append(el("line", {class: "axis", x1: f.m.l, x2: f.m.l + f.iw, y1: y(0), y2: y(0)}));
+  if (curves.length === 1) {   // a single curve gets its interval as a wash
+    const c = curves[0];
+    let d = `M${x(0)},${y(c.points[0].hi)}`;
+    c.points.forEach((p, i) => { if (i) d += `H${x(p.t)}`; d += `V${y(p.hi)}`; });
+    for (let i = c.points.length - 1; i >= 0; i--) { d += `V${y(c.points[i].lo)}`; if (i) d += `H${x(c.points[i - 1].t)}`; }
+    f.svg.append(el("path", {d: d + "Z", fill: colors[0], "fill-opacity": .1, stroke: "none"}));
+  }
+  curves.forEach((c, i) => {
+    let d = `M${x(0)},${y(1)}`;
+    c.points.forEach(p => { d += `H${x(p.t)}V${y(p.s)}`; });
+    f.svg.append(el("path", {d, fill: "none", stroke: colors[i], "stroke-width": 2,
+      "stroke-linejoin": "round", "stroke-linecap": "round"}));
+  });
+  const cross = el("line", {class: "axis", y1: f.m.t, y2: f.m.t + f.ih, visibility: "hidden"});
+  f.svg.append(cross);
+  const hit = el("rect", {x: f.m.l, y: f.m.t, width: f.iw, height: f.ih, fill: "transparent", tabindex: 0,
+    "aria-label": "Survival curves; use left and right arrows to read values"});
+  f.svg.append(hit);
+  let cur = 14;
+  const read = t => {
+    cur = Math.max(0, Math.min(maxT, t));
+    cross.setAttribute("x1", x(cur)); cross.setAttribute("x2", x(cur)); cross.setAttribute("visibility", "visible");
+    const rows = curves.map((c, i) => {
+      const p = c.points.filter(p => p.t <= cur).pop();
+      return p && cur <= c.points[c.points.length - 1].t ? [pct(p.s), c.label, colors[i]] : ["—", c.label, colors[i]];
+    }).sort((a, b) => (parseInt(b[0]) || 0) - (parseInt(a[0]) || 0));
+    showTip(host, x(cur), f.m.t + 20, `Still open after ${cur} days`, rows);
+  };
+  hit.addEventListener("pointermove", e => {
+    const b = f.svg.getBoundingClientRect(), px = (e.clientX - b.left) / b.width * f.w;
+    read(Math.round((px - f.m.l) / f.iw * maxT));
+  });
+  hit.addEventListener("pointerleave", () => { cross.setAttribute("visibility", "hidden"); hideTip(); });
+  hit.addEventListener("focus", () => read(cur));
+  hit.addEventListener("blur", () => { cross.setAttribute("visibility", "hidden"); hideTip(); });
+  hit.addEventListener("keydown", e => {
+    if (e.key === "ArrowRight") { read(cur + 1); e.preventDefault(); }
+    if (e.key === "ArrowLeft") { read(cur - 1); e.preventDefault(); }
+  });
+  const info = kmView ? R.survival[kmView] : null;
+  setText("km-test", info ? `Log-rank test across these groups: χ² ${info.logrank_chi2.toFixed(1)}, p ${fmtP(info.logrank_p)}.` : "");
+  table("km-table", ["Group", "Roles", "Closed", "Still open after 14 days", "after 30 days", "Median time open"],
+    curves.map(c => [c.label, num(c.n), num(c.events), pct(c.open_after_14), pct(c.open_after_30), days(c.median_days)]),
+    [1, 2, 3, 4]);
+}
+function fmtP(p) { return p < 0.001 ? "< 0.001" : `= ${p.toFixed(3)}`; }
+function kmControls() {
+  $("km-controls").replaceChildren(...KM_VIEWS.map(([label, key]) => {
+    const b = el("button", {type: "button", "aria-pressed": String(key === kmView)}, label);
+    b.onclick = () => { kmView = key; kmControls(); drawKM($("km-chart")); };
+    return b;
+  }));
+}
+
+/* ── Cox forest plot ──────────────────────────────────────────────────── */
+const COVARIATE_NAME = {category_group: "Sector", role_group: "Role type", region_group: "Region",
+  tier: "Prestige tier", company_size: "Company size", source_family: "Where listed"};
+function drawCox(host) {
+  const rows = R.cox.rows;
+  const rowH = 24, groups = [...new Set(rows.map(r => r.covariate))];
+  const height = 14 + (rows.length + groups.length) * rowH + 30;
+  const narrow = host.clientWidth < 520;
+  const f = frame(host, height, {t: 8, r: 16, b: 30, l: narrow ? 150 : 210});
+  const lo = Math.min(0.25, ...rows.map(r => r.lo)), hi = Math.max(4, ...rows.map(r => r.hi));
+  const x = v => f.m.l + (Math.log(v) - Math.log(lo)) / (Math.log(hi) - Math.log(lo)) * f.iw;
+  [0.25, 0.5, 1, 2, 4].filter(v => v >= lo && v <= hi).forEach(v => {
+    f.svg.append(el("line", {class: v === 1 ? "axis" : "grid", x1: x(v), x2: x(v), y1: f.m.t, y2: f.h - f.m.b}));
+    f.svg.append(el("text", {x: x(v), y: f.h - 10, "text-anchor": "middle"}, `${v}×`));
+  });
+  let yy = f.m.t + 4;
+  groups.forEach(g => {
+    const ref = rows.find(r => r.covariate === g).reference;
+    // the header row has no marks, so the reference can run on past the labels
+    const head = el("text", {x: 4, y: yy + 15});
+    head.append(el("tspan", {class: "lbl", "font-weight": 600}, COVARIATE_NAME[g] || g),
+                el("tspan", {dx: 8}, `vs ${ref}`));
+    f.svg.append(head);
+    yy += rowH;
+    rows.filter(r => r.covariate === g).forEach(r => {
+      const cy = yy + 11;
+      const label = narrow && r.level.length > 20 ? r.level.slice(0, 19) + "…" : r.level;
+      f.svg.append(el("text", {x: 14, y: cy + 4, class: "lbl"}, label));
+      const strong = r.p < 0.05;
+      f.svg.append(el("line", {x1: x(Math.max(lo, r.lo)), x2: x(Math.min(hi, r.hi)), y1: cy, y2: cy,
+        stroke: SERIES[0], "stroke-width": 2, "stroke-linecap": "round", opacity: strong ? 1 : .45}));
+      f.svg.append(el("circle", {cx: x(r.hr), cy, r: 4.5, fill: strong ? SERIES[0] : "var(--raise)",
+        stroke: SERIES[0], "stroke-width": 2}));
+      const hit = el("rect", {x: 0, y: yy, width: f.w, height: rowH, fill: "transparent", tabindex: 0});
+      const show = () => showTip(host, x(r.hr), cy, `${COVARIATE_NAME[g]}: ${r.level}`, [
+        [`${r.hr.toFixed(2)}×`, `hazard vs ${r.reference}`],
+        [`${r.lo.toFixed(2)}–${r.hi.toFixed(2)}`, "95% interval"],
+        [`p ${fmtP(r.p)}`, `${num(r.n)} roles`],
+      ]);
+      hit.addEventListener("pointerenter", show); hit.addEventListener("focus", show);
+      hit.addEventListener("pointerleave", hideTip); hit.addEventListener("blur", hideTip);
+      f.svg.append(hit);
+      yy += rowH;
+    });
+  });
+  f.svg.append(el("text", {x: x(lo) , y: f.h - 10, "text-anchor": "start", class: "lbl"}, narrow ? "" : "← slower"));
+  f.svg.append(el("text", {x: x(hi), y: f.h - 10, "text-anchor": "end", class: "lbl"}, narrow ? "" : "faster →"));
+}
+
+/* ── weekly stacked columns ───────────────────────────────────────────── */
+function drawWeekly(host) {
+  const T = R.timing, series = T.series.slice(0, 8);
+  legend("weekly-legend", series.map((s, i) => [s.label, SERIES[i]]), true);
+  const totals = T.weeks.map((_, w) => series.reduce((a, s) => a + s.values[w], 0));
+  const f = frame(host, 280, {t: 10, r: 8, b: 30, l: 40});
+  const max = niceMax(Math.max(...totals));
+  const y = v => f.m.t + f.ih - v / max * f.ih;
+  yGrid(f, ticks(max), y, v => num(v));
+  const band = f.iw / T.weeks.length, bw = Math.min(24, band * 0.7), hits = [];
+  T.weeks.forEach((wk, w) => {
+    const cx = f.m.l + band * (w + .5);
+    let acc = 0;
+    series.forEach((s, i) => {
+      const v = s.values[w]; if (!v) return;
+      const y0 = y(acc), y1 = y(acc + v); acc += v;
+      const top = acc === totals[w];
+      const hgt = Math.max(0, y0 - y1 - 2);
+      f.svg.append(el(top ? "path" : "rect", top ? {d: roundTop(cx - bw / 2, y1, bw, hgt, Math.min(4, hgt)), fill: SERIES[i]}
+        : {x: cx - bw / 2, y: y1, width: bw, height: hgt, fill: SERIES[i]}));
+    });
+    // the whole band is the hit target: thin segments are too small to aim at
+    const hit = el("rect", {x: cx - band / 2, y: f.m.t, width: band, height: f.ih, fill: "transparent", tabindex: 0,
+      "aria-label": `Week of ${fmtDate(wk)}: ${totals[w]} new roles`});
+    const show = () => {
+      hit.setAttribute("fill", "var(--ink)"); hit.setAttribute("fill-opacity", .06);
+      showTip(host, cx, y(totals[w]), `Week of ${fmtDate(wk)}`, [[num(totals[w]), "all sectors"],
+        ...series.map((s, i) => [num(s.values[w]), s.label, SERIES[i]]).reverse()]);
+    };
+    const hide = () => { hit.setAttribute("fill", "transparent"); hideTip(); };
+    hit.addEventListener("pointerenter", show); hit.addEventListener("pointerleave", hide);
+    hit.addEventListener("focus", show); hit.addEventListener("blur", hide);
+    hits.push(hit);
+    if (w % (band < 40 ? 2 : 1) === 0)
+      f.svg.append(el("text", {x: cx, y: f.h - 10, "text-anchor": "middle"}, fmtDate(wk)));
+  });
+  f.svg.append(el("line", {class: "axis", x1: f.m.l, x2: f.m.l + f.iw, y1: y(0), y2: y(0)}));
+  f.svg.append(...hits);
+  table("weekly-table", ["Week of", ...series.map(s => s.label), "Total"],
+    T.weeks.map((wk, w) => [fmtDate(wk), ...series.map(s => num(s.values[w])), num(totals[w])]),
+    series.map((_, i) => i + 1).concat(series.length + 1));
+}
+function roundTop(x, y, w, h, r) {
+  return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+}
+function niceStep(v) {   // 1, 2 or 5 × 10^k, giving four or five intervals
+  const raw = v / 4, p = Math.pow(10, Math.floor(Math.log10(raw)));
+  return [1, 2, 5, 10].map(m => m * p).find(s => s >= raw);
+}
+function niceMax(v) { const s = niceStep(v); return Math.ceil(v / s) * s; }
+function ticks(max) { const s = niceStep(max), out = []; for (let t = 0; t <= max + 1e-9; t += s) out.push(t); return out; }
+
+/* ── single-series bars (weekday) ─────────────────────────────────────── */
+function drawWeekday(host) {
+  const data = R.timing.weekday;
+  const f = frame(host, 220, {t: 18, r: 8, b: 30, l: 40});
+  const max = niceMax(Math.max(...data.map(d => d.roles)));
+  const y = v => f.m.t + f.ih - v / max * f.ih;
+  yGrid(f, ticks(max), y, v => num(v));
+  const band = f.iw / data.length, bw = Math.min(24, band * .6);
+  const total = data.reduce((a, d) => a + d.roles, 0);
+  data.forEach((d, i) => {
+    const cx = f.m.l + band * (i + .5), hgt = f.m.t + f.ih - y(d.roles);
+    const bar = el("path", {d: roundTop(cx - bw / 2, y(d.roles), bw, hgt, Math.min(4, hgt)), fill: SERIES[0], tabindex: 0});
+    const show = () => showTip(host, cx, y(d.roles), d.day, [[num(d.roles), "new roles"], [pct(d.roles / total), "of the week"]]);
+    bar.addEventListener("pointerenter", show); bar.addEventListener("pointerleave", hideTip);
+    bar.addEventListener("focus", show); bar.addEventListener("blur", hideTip);
+    f.svg.append(bar);
+    f.svg.append(el("text", {x: cx, y: f.h - 10, "text-anchor": "middle"}, d.day.slice(0, 3)));
+  });
+  f.svg.append(el("line", {class: "axis", x1: f.m.l, x2: f.m.l + f.iw, y1: y(0), y2: y(0)}));
+  table("weekday-table", ["Weekday posted", "New roles", "Share"], data.map(d => [d.day, num(d.roles), pct(d.roles / total)]), [1, 2]);
+}
+
+/* ── which sectors open first: dots on a date axis ───────────────────── */
+function drawHalf(host) {
+  const entries = Object.entries(R.timing.half_posted);
+  const rowH = 26;
+  const f = frame(host, entries.length * rowH + 40, {t: 8, r: 20, b: 30, l: host.clientWidth < 520 ? 130 : 180});
+  const t = s => new Date(s + "T00:00:00Z").getTime();
+  const all = entries.map(([, v]) => t(v.half_posted_by));
+  const lo = Math.min(...all) - 3 * 864e5, hi = Math.max(...all) + 3 * 864e5;
+  const x = v => f.m.l + (v - lo) / (hi - lo) * f.iw;
+  for (let d = new Date(lo); d.getTime() <= hi; d.setUTCDate(d.getUTCDate() + 7)) {
+    f.svg.append(el("line", {class: "grid", x1: x(d.getTime()), x2: x(d.getTime()), y1: f.m.t, y2: f.h - f.m.b}));
+    f.svg.append(el("text", {x: x(d.getTime()), y: f.h - 10, "text-anchor": "middle"}, fmtDate(d.toISOString().slice(0, 10))));
+  }
+  entries.forEach(([cat, v], i) => {
+    const cy = f.m.t + rowH * (i + .5);
+    f.svg.append(el("text", {x: f.m.l - 10, y: cy + 4, "text-anchor": "end", class: "lbl"}, cat));
+    f.svg.append(el("line", {class: "grid", x1: f.m.l, x2: x(t(v.half_posted_by)), y1: cy, y2: cy}));
+    const dot = el("circle", {cx: x(t(v.half_posted_by)), cy, r: 5, fill: SERIES[0], stroke: "var(--raise)", "stroke-width": 2, tabindex: 0});
+    const show = () => showTip(host, x(t(v.half_posted_by)), cy, cat, [[fmtDate(v.half_posted_by), "half posted by"], [num(v.n), "2027 roles"]]);
+    dot.addEventListener("pointerenter", show); dot.addEventListener("pointerleave", hideTip);
+    dot.addEventListener("focus", show); dot.addEventListener("blur", hideTip);
+    f.svg.append(dot);
+  });
+  table("half-table", ["Sector", "Half posted by", "2027 roles"], entries.map(([c, v]) => [c, fmtDate(v.half_posted_by), num(v.n)]), [2]);
+}
+
+/* ── calibration ──────────────────────────────────────────────────────── */
+function drawCal(host) {
+  const cal = R.forecast.calibration;
+  const top = Math.max(.5, ...cal.map(c => Math.max(c.predicted, c.observed))) + .05;
+  const size = Math.min(host.clientWidth, 420);
+  const f = frame(host, size * .8, {t: 10, r: 14, b: 34, l: 44});
+  const x = v => f.m.l + v / top * f.iw, y = v => f.m.t + f.ih - v / top * f.ih;
+  const tk = [0, .1, .2, .3, .4, .5].filter(v => v <= top);
+  yGrid(f, tk, y, v => pct(v));
+  tk.forEach(v => f.svg.append(el("text", {x: x(v), y: f.h - 16, "text-anchor": "middle"}, pct(v))));
+  f.svg.append(el("text", {x: f.m.l + f.iw, y: f.h - 2, "text-anchor": "end", class: "lbl"}, "predicted chance of closing"));
+  f.svg.append(el("line", {class: "axis", x1: x(0), y1: y(0), x2: x(top), y2: y(top)}));
+  cal.forEach(c => {
+    const r = Math.max(4, Math.min(10, Math.sqrt(c.n) / 2));
+    const dot = el("circle", {cx: x(c.predicted), cy: y(c.observed), r, fill: SERIES[0], stroke: "var(--raise)", "stroke-width": 2, tabindex: 0});
+    const show = () => showTip(host, x(c.predicted), y(c.observed), `${num(c.n)} test roles`,
+      [[pct(c.predicted), "predicted to close"], [pct(c.observed), "actually closed"]]);
+    dot.addEventListener("pointerenter", show); dot.addEventListener("pointerleave", hideTip);
+    dot.addEventListener("focus", show); dot.addEventListener("blur", hideTip);
+    f.svg.append(dot);
+  });
+  table("cal-table", ["Predicted", "Observed", "Test roles"], cal.map(c => [pct(c.predicted), pct(c.observed), num(c.n)]), [0, 1, 2]);
+}
+
+/* ── words, computed from the results so a rebuild never goes stale ───── */
+function prose() {
+  const M = R.meta, S = R.survival, O = S.overall, F = R.forecast, T = R.timing, C = R.cox;
+  setText("lede", `${num(M.snapshots)} daily snapshots of ${num(M.roles)} early-career tech roles — internships, new-grad and research posts — tracked from the day they appear to the day they disappear.`);
+  setText("byline", `${fmtDate(M.first_snapshot)} – ${fmtDate(M.last_snapshot)} ${M.last_snapshot.slice(0, 4)} · rebuilt ${M.built} from the tracker's own history`);
+  const tiles = [
+    ["hero", "Median time a role stays open", O.median_days == null ? `> ${O.points[O.points.length - 1].t}` : `${Math.round(O.median_days)}`, "days, from first listing"],
+    ["", "Gone within 2 weeks", pct(1 - O.open_after_14), "of roles"],
+    ["", "Gone within 30 days", pct(1 - O.open_after_30), "of roles"],
+    ["", "Roles with a known posting date", num(M.fresh_roles), `${num(M.fresh_closed)} seen closing`],
+  ];
+  $("tiles").replaceChildren(...tiles.map(([cls, label, value, note]) => {
+    const d = el("div", {class: `tile ${cls}`});
+    d.append(el("div", {class: "label"}, label), el("div", {class: "value"}, value), el("div", {class: "note"}, note));
+    return d;
+  }));
+
+  const cats = S.by_category.curves.filter(c => c.n >= 100 && c.label !== "Other");
+  const fastest = [...cats].sort((a, b) => a.open_after_30 - b.open_after_30)[0];
+  const slowest = [...cats].sort((a, b) => b.open_after_30 - a.open_after_30)[0];
+  const sizes = S.by_company_size.curves;
+  const best = F.metrics.find(m => m.model === F.best), base = F.metrics.find(m => m.model === "Base rate");
+  const gain = 1 - best.brier / base.brier;
+  const busiest = T.weeks.map((w, i) => [w, T.series.reduce((a, s) => a + s.values[i], 0)]).sort((a, b) => b[1] - a[1])[0];
+  const firstSector = Object.keys(T.half_posted)[0], lastSector = Object.keys(T.half_posted).slice(-1)[0];
+  $("takeaway").replaceChildren(el("b", {}, "If you remember one thing: "),
+    document.createTextNode(`apply in the first two weeks. About ${pct(1 - O.open_after_14)} of roles are gone by day 14 and ${pct(1 - O.open_after_30)} by day 30, and nothing on the advert reliably tells you which ones — ${gain < 0.01 ? "the best forecast here does no better than a flat guess" : `the best forecast here beats a flat guess by only ${Math.round(gain * 100)}%`}.`));
+
+  setText("km-intro", `Half of all roles were still open ${O.median_days == null ? `after ${O.points[O.points.length - 1].t} days` : `after ${Math.round(O.median_days)} days`}, but the spread is wide. ${fastest.label} went fastest (${pct(1 - fastest.open_after_30)} gone within 30 days); ${slowest.label} lingered longest (${pct(1 - slowest.open_after_30)}). Roles at companies with only a handful of openings closed sooner than those at firms hiring in bulk (median ${days(sizes[0].median_days)} against ${days(sizes[sizes.length - 1].median_days)}).`);
+
+  const sig = C.rows.filter(r => r.p < 0.05);
+  const faster = sig.filter(r => r.hr > 1).sort((a, b) => b.hr - a.hr);
+  const slower = sig.filter(r => r.hr < 1).sort((a, b) => a.hr - b.hr);
+  const SAY = {tier: l => `${l} prestige tier`, company_size: l => `companies with ${l}`,
+    source_family: l => `listed on ${l}`, region_group: l => `${l} roles`};
+  const say = r => `${(SAY[r.covariate] || (l => l))(r.level)} (${r.hr.toFixed(2)}×)`;
+  setText("cox-intro", `Putting every factor in one model separates them. Closing faster than the reference: ${faster.map(say).join(", ") || "none"}. Closing slower: ${slower.map(say).join(", ") || "none"}. Concordance is ${C.concordance}: these factors rank which of two roles closes first correctly ${Math.round(C.concordance * 100)}% of the time, against 50% for a coin.`);
+  const nonPH = C.rows.filter(r => r.ph_p < 0.01).map(r => r.level);
+  setText("cox-note", `Fitted on ${num(C.n)} roles, ${num(C.events)} of which closed (ridge penalty ${C.penalizer}). ${nonPH.length ? `The effect of ${nonPH.join(", ")} changes over a role's life (proportional-hazards test p < 0.01), so read those as an average.` : ""} "Where listed" is partly a measurement effect: community lists drop a role when its link dies or a curator closes it, while a company's own board can keep an evergreen advert up for months.`);
+  table("cox-table", ["Factor", "Level", "vs", "Roles", "Hazard ratio", "95% interval", "p", "PH test p"],
+    C.rows.map(r => [COVARIATE_NAME[r.covariate] || r.covariate, r.level, r.reference, num(r.n), r.hr.toFixed(2),
+      `${r.lo.toFixed(2)}–${r.hi.toFixed(2)}`, r.p < 0.001 ? "<0.001" : r.p.toFixed(3), r.ph_p < 0.001 ? "<0.001" : r.ph_p.toFixed(3)]),
+    [3, 4, 6, 7]);
+
+  const weekTotals = T.weeks.map((_, i) => T.series.reduce((a, s) => a + s.values[i], 0)).sort((a, b) => a - b);
+  const medianWeek = weekTotals[Math.floor(weekTotals.length / 2)];
+  const wd = R.timing.weekday, wdTotal = wd.reduce((a, d) => a + d.roles, 0);
+  const weekend = wd.filter(d => d.day === "Saturday" || d.day === "Sunday").reduce((a, d) => a + d.roles, 0);
+  setText("timing-intro", `The busiest week was the week of ${fmtDate(busiest[0])}, with ${num(busiest[1])} new roles — ${(busiest[1] / medianWeek).toFixed(1)}× a typical week. ${firstSector} opened first: half its 2027 roles were up by ${fmtDate(T.half_posted[firstSector].half_posted_by)}; ${lastSector} came last, on ${fmtDate(T.half_posted[lastSector].half_posted_by)}. Only ${pct(weekend / wdTotal)} of roles go up at the weekend.`);
+  setText("timing-sub", `Only sources watched since ${fmtDate(T.panel_start)}, so new boards the tracker added later do not read as new roles. ${num(T.panel_roles)} roles; complete weeks only.`);
+
+  const SP = R.sponsorship, st = SP.total;
+  setText("spons-intro", `The question everyone asks is the one the data cannot yet answer. Of ${num(st.roles)} roles, ${num(st.sponsors)} say they sponsor visas and ${num(st.no_sponsorship)} say they do not; the other ${pct(st.unknown / st.roles)} say nothing the tracker can read. ${num(st.citizenship_required)} state a citizenship requirement, mostly defence and hardware. A sector comparison on ${pct(SP.known_share)} coverage would be a comparison of who writes it down, not of who sponsors — so it is not drawn.`);
+  table("spons-table", ["Sector", "Roles", "Sponsors", "Does not sponsor", "Not stated", "Citizenship required"],
+    SP.rows.map(r => [r.category, num(r.roles), num(r.sponsors), num(r.no_sponsorship), pct(r.unknown / r.roles), num(r.citizenship_required)]),
+    [1, 2, 3, 4, 5]);
+
+  setText("fc-intro", `The forecast question is the practical one: given a role on the day it appears, will it be gone within ${F.horizon_days} days? Models were trained on roles first listed up to ${fmtDate(F.train.opened_through)}, using only what the tracker knew on ${fmtDate(F.train.labelled_as_of)} — the warehouse is rebuilt from that day's snapshots, so no later information leaks in. They were then scored on ${num(F.test.n)} roles first listed ${fmtDate(F.test.opened_from)}–${fmtDate(F.test.opened_through)}, which they never saw. Inputs are what the advert says on day one: sector, role type, region, prestige tier, where it is listed, term, whether it states a deadline, and how many roles the company had posted before.`);
+  setText("fc-title", `Will a new role close within ${F.horizon_days} days? Scored on later roles`);
+  setText("fc-sub", `${num(F.train.n)} training roles (${pct(F.train.closed_share)} closed in time) · ${num(F.test.n)} test roles (${pct(F.test.closed_share)} closed in time). Lower Brier and log loss are better; AUC 0.5 is a coin.`);
+  table("fc-table", ["Model", "AUC", "Brier score", "Log loss"],
+    F.metrics.map(m => [m.model + (m.model === F.best ? " (best)" : ""), m.auc == null ? "—" : m.auc.toFixed(3), m.brier.toFixed(3), m.log_loss.toFixed(3)]), [1, 2, 3]);
+  setText("cal-title", `Calibration of the ${F.best.toLowerCase().replace("cox", "Cox")}`);
+  const margin = gain < 0.01
+    ? `a Brier score no better than predicting the base rate for every role (${best.brier.toFixed(3)} against ${base.brier.toFixed(3)})`
+    : `a Brier score ${Math.round(gain * 100)}% better than predicting the base rate for every role`;
+  setText("fc-verdict", `The ${F.best} comes out on top, and the margin is the finding: it ranks roles only a little better than a coin (AUC ${best.auc.toFixed(2)}) and reaches ${margin}. What is on an advert the day it goes up says almost nothing about how long it will last. ${F.best === "Cox model" ? "The survival model edges the classifiers because it also learns from roles that are still open, which they have to throw away. " : ""}In practice that makes the advice simple: treat every role as one that might close in two weeks.`);
+
+  const methods = [
+    ["Data", `The tracker re-checks community internship lists (SimplifyJobs and others) and company job boards (Greenhouse, Ashby, Lever) every morning and commits tracker.csv to git. Each day's last commit is one snapshot: ${num(M.snapshot_rows)} role-days in all. The warehouse is DuckDB, built from git history by market/backfill.py and modelled in SQL (market/models.sql): a typed staging table, a role-day fact table, one row per role with its open and close dates, and a daily market table.`],
+    ["Open and close dates", `A role opens on the first morning it is listed open. It closes on the first morning it is missing, once the tracker has confirmed the absence on two healthy runs and it never came back. A role whose source was failing is never counted as closed. Roles still open, or that dropped out for other reasons, are censored: they count up to the last day they were seen and no further. When the tracker renamed a role, it was matched to its old self by URL (${num(M.stitched_ids)} renames).`],
+    ["Which roles count", `Only roles that appeared on a source already being watched, on a day the scraper code did not change. Their first-listed date is within a day of their posting date. The ${num(M.roles - M.fresh_roles)} others were already open when the tracker started looking — at launch, when a board was added, or after one of ${M.coverage_change_days.length} code changes that widened coverage — so their age is unknown and they are left out of the duration, timing and forecast analysis.`],
+    ["What it covers", `Mostly US roles, because that is what the sources list: the UK is ${num(S.by_region.curves.find(c => c.label === "UK")?.n || 0)} of the ${num(M.fresh_roles)} dated roles. A role closing on a community list means its listing went away or was marked closed, which is close to, but not always the same as, the employer closing applications.`],
+    ["Rebuild it", "python -m market.backfill && python -m market.analysis && python -m market.report"],
+  ];
+  $("methods").replaceChildren(...methods.map(([h, t]) => {
+    const p = el("p"); p.append(el("b", {}, h + ". "), h === "Rebuild it" ? el("code", {}, t) : document.createTextNode(t)); return p;
+  }));
+  const foot = $("foot");
+  foot.replaceChildren(document.createTextNode("Built from "),
+    el("a", {href: "https://github.com/abyyworld/internship-tracker/tree/main/market"}, "the market/ package"),
+    document.createTextNode(` of the internship tracker. Data ${M.first_snapshot} to ${M.last_snapshot}.`));
+}
+
+prose();
+kmControls();
+chart($("km-chart"), drawKM);
+chart($("cox-chart"), drawCox);
+chart($("weekly-chart"), drawWeekly);
+chart($("half-chart"), drawHalf);
+chart($("weekday-chart"), drawWeekday);
+chart($("cal-chart"), drawCal);
+</script>
+</body>
+</html>

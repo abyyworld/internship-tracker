@@ -1,0 +1,8 @@
+# The market analysis (python -m market.backfill / analysis / report) and its
+# tests. Kept apart from requirements-ci.txt: the tracker itself is stdlib only.
+duckdb==1.5.6
+lifelines==0.30.3
+numpy==2.3.5
+pandas==2.3.3
+scipy==1.18.1
+scikit-learn==1.9.1

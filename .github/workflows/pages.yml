@@ -17,8 +17,10 @@ on:
   # that changes the data every day, and the site served whatever was last
   # deployed by a human merge: 26 days, in the case that turned this up. The
   # deploy therefore follows the watch itself rather than its push.
+  # The market report commits after the watch, the same way, so it is followed
+  # too.
   workflow_run:
-    workflows: ["Daily internship and robotics watch"]
+    workflows: ["Daily internship and robotics watch", "Market report"]
     types: [completed]
   workflow_dispatch:
 

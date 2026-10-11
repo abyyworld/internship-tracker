@@ -384,6 +384,7 @@ footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);f
     feeds, then keeps only what is still open. Verified on __GENERATED__.
     Work authorisation is marked <em>review required</em> when the posting does not say — never
     assumed. <a href="./studio.html">Tailor your CV in the browser</a> ·
+    <a href="./market.html">How long roles stay open</a> ·
     <a href="https://github.com/abyyworld/internship-tracker">How this is built</a></p>
   </div>
 </footer>

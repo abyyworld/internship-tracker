@@ -31,3 +31,9 @@ private/
 my cv and the tool/
 *.sqlite3
 autofill.local.user.js
+
+# The market warehouse and its per-day extracts are rebuilt from git history
+# by market/backfill.py; only the results and the report are committed.
+market/.cache/
+*.duckdb
+*.duckdb.wal
