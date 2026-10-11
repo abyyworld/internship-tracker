@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-10
+# Manual Check List — 2026-10-11
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -119,7 +119,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 
 - **Greenhouse/Wayve**: HTTP Error 404: Not Found
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
-- **Greenhouse/Anduril**: The read operation timed out
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/7Shifts**: HTTP Error 404: Not Found
 - **Greenhouse/Actpowerservices**: HTTP Error 404: Not Found
@@ -128,7 +127,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/Buyersedgeplatformrecruiting**: HTTP Error 404: Not Found
 - **Greenhouse/Buzzfeed**: HTTP Error 404: Not Found
-- **Greenhouse/Calalumniassociation**: HTTP Error 404: Not Found
 - **Greenhouse/Downtownmusic**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/Hala**: HTTP Error 404: Not Found
@@ -184,7 +182,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Kingdomsupercultures**: HTTP Error 404: Not Found
 - **Ashby/Kittl**: HTTP Error 404: Not Found
 - **Ashby/Kuru Labs**: HTTP Error 404: Not Found
-- **Ashby/Leapsome**: HTTP Error 404: Not Found
 - **Ashby/Lilt**: HTTP Error 404: Not Found
 - **Ashby/Lime**: HTTP Error 404: Not Found
 - **Ashby/Lindushealth**: HTTP Error 404: Not Found
