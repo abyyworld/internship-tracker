@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-11
+# Manual Check List — 2026-10-12
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -125,16 +125,17 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Amplitude**: HTTP Error 404: Not Found
 - **Greenhouse/Anchanto**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
+- **Greenhouse/Breezeairways**: HTTP Error 404: Not Found
 - **Greenhouse/Buyersedgeplatformrecruiting**: HTTP Error 404: Not Found
 - **Greenhouse/Buzzfeed**: HTTP Error 404: Not Found
-- **Greenhouse/Downtownmusic**: HTTP Error 404: Not Found
+- **Greenhouse/Debtbook**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/Hala**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
-- **Greenhouse/Liveviewtechnologiesinc**: HTTP Error 404: Not Found
 - **Greenhouse/Radixark**: HTTP Error 404: Not Found
 - **Greenhouse/Rdccareers**: HTTP Error 404: Not Found
+- **Greenhouse/Supernal**: HTTP Error 404: Not Found
 - **Ashby/91B38662 E5A9 4Bc3 Ade7 44E29D01D343**: HTTP Error 404: Not Found
 - **Ashby/Activeloop**: HTTP Error 404: Not Found
 - **Ashby/Adtucon**: HTTP Error 404: Not Found
@@ -171,8 +172,8 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/General Counsel Ai**: HTTP Error 404: Not Found
 - **Ashby/Genesis Therapeutics**: HTTP Error 404: Not Found
 - **Ashby/Get Ivy**: HTTP Error 404: Not Found
+- **Ashby/Govworx**: HTTP Error 404: Not Found
 - **Ashby/Healnow**: HTTP Error 404: Not Found
-- **Ashby/Hiive**: HTTP Error 404: Not Found
 - **Ashby/Himsandhers**: HTTP Error 404: Not Found
 - **Ashby/Hoxtonfarms**: HTTP Error 404: Not Found
 - **Ashby/Inspiration Commerce Group**: HTTP Error 404: Not Found
@@ -209,7 +210,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Preludesecurity**: HTTP Error 404: Not Found
 - **Ashby/Privy**: HTTP Error 404: Not Found
 - **Ashby/Projectgrowth**: HTTP Error 404: Not Found
-- **Ashby/Puzzle.Io**: HTTP Error 404: Not Found
 - **Ashby/Real**: HTTP Error 404: Not Found
 - **Ashby/Righthandtalent**: HTTP Error 404: Not Found
 - **Ashby/Risczero**: HTTP Error 404: Not Found
