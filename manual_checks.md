@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-14
+# Manual Check List — 2026-10-15
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -124,6 +124,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/7Shifts**: HTTP Error 404: Not Found
 - **Greenhouse/Actpowerservices**: HTTP Error 404: Not Found
 - **Greenhouse/Amplitude**: HTTP Error 404: Not Found
+- **Greenhouse/Anchanto**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/Breezeairways**: HTTP Error 404: Not Found
 - **Greenhouse/Buyersedgeplatformrecruiting**: HTTP Error 404: Not Found
@@ -149,14 +150,17 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Pomelocare**: HTTP Error 404: Not Found
 - **Greenhouse/Postman**: HTTP Error 404: Not Found
 - **Greenhouse/Radixark**: HTTP Error 404: Not Found
-- **Greenhouse/Rdccareers**: HTTP Error 404: Not Found
+- **Greenhouse/Remotecom**: HTTP Error 404: Not Found
+- **Greenhouse/Remotereferralboardinternaluseonly**: HTTP Error 404: Not Found
 - **Greenhouse/Springhealth66**: HTTP Error 404: Not Found
 - **Greenhouse/Supernal**: HTTP Error 404: Not Found
+- **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
 - **Ashby/Alpic**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
 - **Ashby/Govworx**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
+- **Ashby/Maximor AI**: HTTP Error 404: Not Found
 - **Ashby/Paires**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
