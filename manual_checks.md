@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-15
+# Manual Check List — 2026-10-16
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -118,6 +118,7 @@ Use the local cockpit or private autoapply database to record your decision; per
 Roles previously seen only in these sources remain stale; they are not marked closed.
 
 - **Greenhouse/Wayve**: HTTP Error 404: Not Found
+- **Greenhouse/Graphcore**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
@@ -144,6 +145,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Janeasystems**: HTTP Error 404: Not Found
 - **Greenhouse/Liveviewtechnologiesinc**: HTTP Error 404: Not Found
 - **Greenhouse/Meditelecare**: HTTP Error 404: Not Found
+- **Greenhouse/Navierai**: HTTP Error 404: Not Found
 - **Greenhouse/Nerdy**: HTTP Error 404: Not Found
 - **Greenhouse/Outschool**: HTTP Error 404: Not Found
 - **Greenhouse/Philo**: HTTP Error 404: Not Found
@@ -152,6 +154,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Radixark**: HTTP Error 404: Not Found
 - **Greenhouse/Remotecom**: HTTP Error 404: Not Found
 - **Greenhouse/Remotereferralboardinternaluseonly**: HTTP Error 404: Not Found
+- **Greenhouse/Skinlaundry**: HTTP Error 404: Not Found
 - **Greenhouse/Springhealth66**: HTTP Error 404: Not Found
 - **Greenhouse/Supernal**: HTTP Error 404: Not Found
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
@@ -162,6 +165,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
 - **Ashby/Maximor AI**: HTTP Error 404: Not Found
 - **Ashby/Paires**: HTTP Error 404: Not Found
+- **Ashby/Polaranalytics**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
