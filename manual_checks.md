@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-17
+# Manual Check List — 2026-10-18
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -124,46 +124,24 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/1Uphealth**: HTTP Error 404: Not Found
 - **Greenhouse/7Shifts**: HTTP Error 404: Not Found
-- **Greenhouse/Actpowerservices**: HTTP Error 404: Not Found
-- **Greenhouse/Amplitude**: HTTP Error 404: Not Found
 - **Greenhouse/Anchanto**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
-- **Greenhouse/Buyersedgeplatformrecruiting**: HTTP Error 404: Not Found
-- **Greenhouse/Buzzfeed**: HTTP Error 404: Not Found
-- **Greenhouse/Calalumniassociation**: HTTP Error 404: Not Found
-- **Greenhouse/Cognitotherapeutics**: HTTP Error 404: Not Found
-- **Greenhouse/Downtownmusic**: HTTP Error 404: Not Found
-- **Greenhouse/Exodus54**: HTTP Error 404: Not Found
-- **Greenhouse/Forgeglobal**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/Hala**: HTTP Error 404: Not Found
 - **Greenhouse/Herewithgmbh**: HTTP Error 404: Not Found
-- **Greenhouse/Hightouch**: HTTP Error 404: Not Found
-- **Greenhouse/Hivewatch**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
-- **Greenhouse/Janeasystems**: HTTP Error 404: Not Found
-- **Greenhouse/Liveviewtechnologiesinc**: HTTP Error 404: Not Found
-- **Greenhouse/Meditelecare**: HTTP Error 404: Not Found
 - **Greenhouse/Navierai**: HTTP Error 404: Not Found
-- **Greenhouse/Nerdy**: HTTP Error 404: Not Found
-- **Greenhouse/Outschool**: HTTP Error 404: Not Found
-- **Greenhouse/Philo**: HTTP Error 404: Not Found
-- **Greenhouse/Pomelocare**: HTTP Error 404: Not Found
-- **Greenhouse/Postman**: HTTP Error 404: Not Found
-- **Greenhouse/Radixark**: HTTP Error 404: Not Found
 - **Greenhouse/Remotecom**: HTTP Error 404: Not Found
 - **Greenhouse/Remotereferralboardinternaluseonly**: HTTP Error 404: Not Found
 - **Greenhouse/Residenthome**: HTTP Error 404: Not Found
 - **Greenhouse/Skinlaundry**: HTTP Error 404: Not Found
-- **Greenhouse/Springhealth66**: HTTP Error 404: Not Found
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
 - **Ashby/Alpic**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
 - **Ashby/Maximor AI**: HTTP Error 404: Not Found
-- **Ashby/Paires**: HTTP Error 404: Not Found
 - **Ashby/Polaranalytics**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
 - **Ashby/Sybill Ai**: HTTP Error 404: Not Found
