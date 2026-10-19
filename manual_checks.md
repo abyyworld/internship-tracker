@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-18
+# Manual Check List — 2026-10-19
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -124,8 +124,10 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/1Uphealth**: HTTP Error 404: Not Found
 - **Greenhouse/7Shifts**: HTTP Error 404: Not Found
+- **Greenhouse/Abakaai**: HTTP Error 404: Not Found
 - **Greenhouse/Anchanto**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
+- **Greenhouse/Carbon**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/Hala**: HTTP Error 404: Not Found
 - **Greenhouse/Herewithgmbh**: HTTP Error 404: Not Found
