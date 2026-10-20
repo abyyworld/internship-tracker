@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-19
+# Manual Check List — 2026-10-20
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -118,14 +118,13 @@ Use the local cockpit or private autoapply database to record your decision; per
 Roles previously seen only in these sources remain stale; they are not marked closed.
 
 - **Greenhouse/Wayve**: HTTP Error 404: Not Found
-- **Greenhouse/Graphcore**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
+- **Greenhouse/Carbon Robotics**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/1Uphealth**: HTTP Error 404: Not Found
-- **Greenhouse/7Shifts**: HTTP Error 404: Not Found
 - **Greenhouse/Abakaai**: HTTP Error 404: Not Found
-- **Greenhouse/Anchanto**: HTTP Error 404: Not Found
+- **Greenhouse/Altium**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
@@ -134,9 +133,9 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
 - **Greenhouse/Navierai**: HTTP Error 404: Not Found
-- **Greenhouse/Remotecom**: HTTP Error 404: Not Found
-- **Greenhouse/Remotereferralboardinternaluseonly**: HTTP Error 404: Not Found
+- **Greenhouse/Onestudyteam**: HTTP Error 404: Not Found
 - **Greenhouse/Residenthome**: HTTP Error 404: Not Found
+- **Greenhouse/Rockbot**: HTTP Error 404: Not Found
 - **Greenhouse/Skinlaundry**: HTTP Error 404: Not Found
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
 - **Ashby/Alpic**: HTTP Error 404: Not Found
@@ -149,3 +148,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Sybill Ai**: HTTP Error 404: Not Found
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
+- **Lever/Elk Valley Resources**: The read operation timed out
+- **Lever/Meds**: The read operation timed out
+- **Lever/Viget**: The read operation timed out
+- **Lever/Wyetech**: The read operation timed out
