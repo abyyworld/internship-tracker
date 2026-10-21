@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-20
+# Manual Check List — 2026-10-21
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -127,28 +127,28 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Altium**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon**: HTTP Error 404: Not Found
+- **Greenhouse/Claros**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/Hala**: HTTP Error 404: Not Found
 - **Greenhouse/Herewithgmbh**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
-- **Greenhouse/Navierai**: HTTP Error 404: Not Found
 - **Greenhouse/Onestudyteam**: HTTP Error 404: Not Found
 - **Greenhouse/Residenthome**: HTTP Error 404: Not Found
 - **Greenhouse/Rockbot**: HTTP Error 404: Not Found
-- **Greenhouse/Skinlaundry**: HTTP Error 404: Not Found
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
 - **Ashby/Alpic**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
+- **Ashby/Hiive**: HTTP Error 404: Not Found
+- **Ashby/Keep**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
 - **Ashby/Maximor AI**: HTTP Error 404: Not Found
-- **Ashby/Polaranalytics**: HTTP Error 404: Not Found
+- **Ashby/Numo**: HTTP Error 404: Not Found
+- **Ashby/Subconscious**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
 - **Ashby/Sybill Ai**: HTTP Error 404: Not Found
+- **Ashby/Trove**: HTTP Error 404: Not Found
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
-- **Lever/Elk Valley Resources**: The read operation timed out
-- **Lever/Meds**: The read operation timed out
-- **Lever/Viget**: The read operation timed out
-- **Lever/Wyetech**: The read operation timed out
+- **Lever/Protective Life**: The read operation timed out
