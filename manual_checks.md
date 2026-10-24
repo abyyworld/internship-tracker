@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-23
+# Manual Check List — 2026-10-24
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -122,13 +122,12 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon Robotics**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/SpaceX**: The read operation timed out
-- **Greenhouse/Abakaai**: HTTP Error 404: Not Found
 - **Greenhouse/Altium**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
-- **Greenhouse/Carbon**: HTTP Error 404: Not Found
+- **Greenhouse/Bluecrestcapitalmanagement**: HTTP Error 404: Not Found
 - **Greenhouse/Claros**: HTTP Error 404: Not Found
 - **Greenhouse/Debtbook**: HTTP Error 404: Not Found
+- **Greenhouse/Gigaenergy**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/Hala**: HTTP Error 404: Not Found
 - **Greenhouse/Herewithgmbh**: HTTP Error 404: Not Found
@@ -137,7 +136,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
 - **Greenhouse/Onestudyteam**: HTTP Error 404: Not Found
 - **Greenhouse/Primerai**: HTTP Error 404: Not Found
-- **Greenhouse/Pulse**: The read operation timed out
 - **Greenhouse/Rockbot**: HTTP Error 404: Not Found
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
 - **Ashby/Alpic**: HTTP Error 404: Not Found
@@ -155,4 +153,4 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Trove**: HTTP Error 404: Not Found
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
-- **Lever/Elk Valley Resources**: The read operation timed out
+- **Lever/Simbe Robotics**: HTTP Error 404: Not Found
