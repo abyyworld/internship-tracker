@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-24
+# Manual Check List — 2026-10-25
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -122,8 +122,8 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon Robotics**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/Altium**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
+- **Greenhouse/Bitcoindepot**: HTTP Error 404: Not Found
 - **Greenhouse/Bluecrestcapitalmanagement**: HTTP Error 404: Not Found
 - **Greenhouse/Claros**: HTTP Error 404: Not Found
 - **Greenhouse/Debtbook**: HTTP Error 404: Not Found
@@ -134,9 +134,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
-- **Greenhouse/Onestudyteam**: HTTP Error 404: Not Found
 - **Greenhouse/Primerai**: HTTP Error 404: Not Found
-- **Greenhouse/Rockbot**: HTTP Error 404: Not Found
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
 - **Ashby/Alpic**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
