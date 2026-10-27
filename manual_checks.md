@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-26
+# Manual Check List — 2026-10-27
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -122,9 +122,11 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon Robotics**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
+- **Greenhouse/Abakaai**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/Bitcoindepot**: HTTP Error 404: Not Found
 - **Greenhouse/Bluecrestcapitalmanagement**: HTTP Error 404: Not Found
+- **Greenhouse/Carbon**: HTTP Error 404: Not Found
 - **Greenhouse/Debtbook**: HTTP Error 404: Not Found
 - **Greenhouse/Gigaenergy**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
@@ -133,6 +135,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
+- **Greenhouse/Onestudyteam**: HTTP Error 404: Not Found
 - **Greenhouse/Primerai**: HTTP Error 404: Not Found
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
 - **Ashby/Alpic**: HTTP Error 404: Not Found
@@ -140,11 +143,12 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
 - **Ashby/Maximor AI**: HTTP Error 404: Not Found
+- **Ashby/Mintmcp**: HTTP Error 404: Not Found
 - **Ashby/Radiant**: degraded: parsed zero roles unexpectedly
 - **Ashby/Stargate Foundation**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
-- **Lever/CesiumAstro**: HTTP Error 404: Not Found
-- **Lever/Protective Life**: The read operation timed out
+- **Lever/Waabi**: The read operation timed out
+- **Lever/CesiumAstro**: The read operation timed out
+- **Lever/Saviynt**: The read operation timed out
 - **Lever/Simbe Robotics**: HTTP Error 404: Not Found
-- **Lever/WeRide**: The read operation timed out
