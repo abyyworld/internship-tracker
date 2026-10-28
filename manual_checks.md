@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-27
+# Manual Check List — 2026-10-28
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -127,16 +127,13 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Bitcoindepot**: HTTP Error 404: Not Found
 - **Greenhouse/Bluecrestcapitalmanagement**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon**: HTTP Error 404: Not Found
-- **Greenhouse/Debtbook**: HTTP Error 404: Not Found
 - **Greenhouse/Gigaenergy**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/Hala**: HTTP Error 404: Not Found
-- **Greenhouse/Herewithgmbh**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
 - **Greenhouse/Onestudyteam**: HTTP Error 404: Not Found
-- **Greenhouse/Primerai**: HTTP Error 404: Not Found
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
 - **Ashby/Alpic**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
@@ -145,10 +142,10 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Maximor AI**: HTTP Error 404: Not Found
 - **Ashby/Mintmcp**: HTTP Error 404: Not Found
 - **Ashby/Radiant**: degraded: parsed zero roles unexpectedly
-- **Ashby/Stargate Foundation**: HTTP Error 404: Not Found
+- **Ashby/Skyband Systems**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
+- **Ashby/Xterra AI**: HTTP Error 404: Not Found
 - **Lever/Waabi**: The read operation timed out
-- **Lever/CesiumAstro**: The read operation timed out
-- **Lever/Saviynt**: The read operation timed out
+- **Lever/CesiumAstro**: HTTP Error 404: Not Found
 - **Lever/Simbe Robotics**: HTTP Error 404: Not Found
