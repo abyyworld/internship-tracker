@@ -1,4 +1,4 @@
-# Manual Check List — 2026-10-31
+# Manual Check List — 2026-11-01
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -119,13 +119,12 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 
 - **Greenhouse/Wayve**: HTTP Error 404: Not Found
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
+- **Greenhouse/Anduril**: The read operation timed out
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon Robotics**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/Abakaai**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/Bluecrestcapitalmanagement**: HTTP Error 404: Not Found
-- **Greenhouse/Carbon**: HTTP Error 404: Not Found
 - **Greenhouse/Debtbook**: HTTP Error 404: Not Found
 - **Greenhouse/Fractile**: HTTP Error 404: Not Found
 - **Greenhouse/Gigaenergy**: HTTP Error 404: Not Found
@@ -139,7 +138,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Maestroqa**: HTTP Error 404: Not Found
 - **Greenhouse/Monetserviceinc**: HTTP Error 404: Not Found
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
-- **Greenhouse/Onestudyteam**: HTTP Error 404: Not Found
 - **Greenhouse/Outpostspace**: HTTP Error 404: Not Found
 - **Greenhouse/Primerai**: HTTP Error 404: Not Found
 - **Greenhouse/Residenthome**: HTTP Error 404: Not Found
@@ -159,7 +157,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Hiive**: HTTP Error 404: Not Found
 - **Ashby/Keep**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
-- **Ashby/Mintmcp**: HTTP Error 404: Not Found
 - **Ashby/Numo**: HTTP Error 404: Not Found
 - **Ashby/Radiant**: degraded: parsed zero roles unexpectedly
 - **Ashby/Skyband Systems**: HTTP Error 404: Not Found
@@ -172,6 +169,4 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Xterra AI**: HTTP Error 404: Not Found
 - **Lever/Chef Robotics**: HTTP Error 404: Not Found
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
-- **Lever/FUTO**: The read operation timed out
-- **Lever/Planet Technologies**: The read operation timed out
 - **Lever/Simbe Robotics**: HTTP Error 404: Not Found
