@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-02
+# Manual Check List — 2026-11-03
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -123,7 +123,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Carbon Robotics**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
-- **Greenhouse/Bluecrestcapitalmanagement**: HTTP Error 404: Not Found
 - **Greenhouse/Debtbook**: HTTP Error 404: Not Found
 - **Greenhouse/Doctolib**: HTTP Error 404: Not Found
 - **Greenhouse/Fractile**: HTTP Error 404: Not Found
@@ -133,15 +132,15 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Hala**: HTTP Error 404: Not Found
 - **Greenhouse/Herewithgmbh**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
-- **Greenhouse/Immunefi**: HTTP Error 404: Not Found
 - **Greenhouse/Insightassurance**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
 - **Greenhouse/Maestroqa**: HTTP Error 404: Not Found
 - **Greenhouse/Monetserviceinc**: HTTP Error 404: Not Found
-- **Greenhouse/Natera**: degraded: parsed zero roles unexpectedly
+- **Greenhouse/Nansen**: HTTP Error 404: Not Found
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
 - **Greenhouse/Orchestra**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Outpostspace**: HTTP Error 404: Not Found
+- **Greenhouse/Overstory**: HTTP Error 404: Not Found
 - **Greenhouse/Primerai**: HTTP Error 404: Not Found
 - **Greenhouse/Residenthome**: HTTP Error 404: Not Found
 - **Greenhouse/Rockbot**: HTTP Error 404: Not Found
@@ -153,27 +152,23 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Alpic**: HTTP Error 404: Not Found
 - **Ashby/Arch**: HTTP Error 404: Not Found
 - **Ashby/Atria**: HTTP Error 404: Not Found
-- **Ashby/Aurora Innovation**: degraded: parsed zero roles unexpectedly
 - **Ashby/Beaconsoftware**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
 - **Ashby/Firetiger**: HTTP Error 404: Not Found
-- **Ashby/Hiive**: HTTP Error 404: Not Found
-- **Ashby/Keep**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
-- **Ashby/Numo**: HTTP Error 404: Not Found
 - **Ashby/Radiant**: degraded: parsed zero roles unexpectedly
 - **Ashby/Rossum.Ai**: HTTP Error 404: Not Found
 - **Ashby/Skyband Systems**: HTTP Error 404: Not Found
-- **Ashby/Subconscious**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
+- **Ashby/Tensorwave**: degraded: parsed zero roles unexpectedly
 - **Ashby/Tilderesearch**: HTTP Error 404: Not Found
 - **Ashby/Tilt**: HTTP Error 404: Not Found
-- **Ashby/Trove**: HTTP Error 404: Not Found
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
 - **Ashby/Xterra AI**: HTTP Error 404: Not Found
 - **Lever/Chef Robotics**: HTTP Error 404: Not Found
+- **Lever/Robotics & AI Institute**: The read operation timed out
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
-- **Lever/Hot Topic**: The read operation timed out
-- **Lever/Protective Life**: The read operation timed out
+- **Lever/Multiply Labs**: The read operation timed out
 - **Lever/Simbe Robotics**: HTTP Error 404: Not Found
+- **Lever/Strada Education Foundation**: The read operation timed out
