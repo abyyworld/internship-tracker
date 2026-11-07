@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-06
+# Manual Check List — 2026-11-07
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -125,8 +125,10 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Abakaai**: HTTP Error 404: Not Found
 - **Greenhouse/Allencontrolsystems**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
+- **Greenhouse/Atlassand**: HTTP Error 404: Not Found
 - **Greenhouse/Bluecrestcapitalmanagement**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon**: HTTP Error 404: Not Found
+- **Greenhouse/Cleargov**: HTTP Error 404: Not Found
 - **Greenhouse/Doctolib**: HTTP Error 404: Not Found
 - **Greenhouse/Ejaf**: HTTP Error 404: Not Found
 - **Greenhouse/Gallup**: degraded: parsed zero roles unexpectedly
@@ -141,12 +143,12 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
 - **Greenhouse/Overstory**: HTTP Error 404: Not Found
 - **Greenhouse/Parloa**: HTTP Error 404: Not Found
+- **Greenhouse/Pretium**: HTTP Error 404: Not Found
 - **Greenhouse/Tripwireinteractive**: HTTP Error 404: Not Found
 - **Greenhouse/Urbansportsclub**: HTTP Error 404: Not Found
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
 - **Ashby/Alpic**: HTTP Error 404: Not Found
 - **Ashby/Arch**: HTTP Error 404: Not Found
-- **Ashby/Atria**: HTTP Error 404: Not Found
 - **Ashby/Beaconsoftware**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
@@ -154,7 +156,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
 - **Ashby/Radiant**: degraded: parsed zero roles unexpectedly
 - **Ashby/Revic**: HTTP Error 404: Not Found
-- **Ashby/Rossum.Ai**: HTTP Error 404: Not Found
+- **Ashby/Sana Roles**: HTTP Error 404: Not Found
 - **Ashby/Skyband Systems**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
 - **Ashby/Tensorwave**: degraded: parsed zero roles unexpectedly
