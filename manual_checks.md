@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-07
+# Manual Check List — 2026-11-08
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -129,21 +129,34 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Bluecrestcapitalmanagement**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon**: HTTP Error 404: Not Found
 - **Greenhouse/Cleargov**: HTTP Error 404: Not Found
+- **Greenhouse/Debtbook**: HTTP Error 404: Not Found
 - **Greenhouse/Doctolib**: HTTP Error 404: Not Found
 - **Greenhouse/Ejaf**: HTTP Error 404: Not Found
+- **Greenhouse/Focusfinancialpartners**: HTTP Error 404: Not Found
+- **Greenhouse/Focuspartnersaustralia**: HTTP Error 404: Not Found
+- **Greenhouse/Focuspartnerswealth**: HTTP Error 404: Not Found
+- **Greenhouse/Fractile**: HTTP Error 404: Not Found
 - **Greenhouse/Gallup**: degraded: parsed zero roles unexpectedly
+- **Greenhouse/Gigaenergy**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/Gr8Tech**: HTTP Error 404: Not Found
 - **Greenhouse/Hala**: HTTP Error 404: Not Found
+- **Greenhouse/Herewithgmbh**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
+- **Greenhouse/Immunefi**: HTTP Error 404: Not Found
 - **Greenhouse/Innovid**: HTTP Error 404: Not Found
+- **Greenhouse/Insightassurance**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
 - **Greenhouse/Kayak**: HTTP Error 404: Not Found
+- **Greenhouse/Maestroqa**: HTTP Error 404: Not Found
 - **Greenhouse/Nansen**: HTTP Error 404: Not Found
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
+- **Greenhouse/Onestudyteam**: HTTP Error 404: Not Found
+- **Greenhouse/Outpostspace**: HTTP Error 404: Not Found
 - **Greenhouse/Overstory**: HTTP Error 404: Not Found
 - **Greenhouse/Parloa**: HTTP Error 404: Not Found
 - **Greenhouse/Pretium**: HTTP Error 404: Not Found
+- **Greenhouse/Primerai**: HTTP Error 404: Not Found
 - **Greenhouse/Tripwireinteractive**: HTTP Error 404: Not Found
 - **Greenhouse/Urbansportsclub**: HTTP Error 404: Not Found
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
