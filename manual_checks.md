@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-08
+# Manual Check List — 2026-11-09
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -131,20 +131,16 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Cleargov**: HTTP Error 404: Not Found
 - **Greenhouse/Debtbook**: HTTP Error 404: Not Found
 - **Greenhouse/Doctolib**: HTTP Error 404: Not Found
-- **Greenhouse/Ejaf**: HTTP Error 404: Not Found
-- **Greenhouse/Focusfinancialpartners**: HTTP Error 404: Not Found
-- **Greenhouse/Focuspartnersaustralia**: HTTP Error 404: Not Found
-- **Greenhouse/Focuspartnerswealth**: HTTP Error 404: Not Found
 - **Greenhouse/Fractile**: HTTP Error 404: Not Found
 - **Greenhouse/Gallup**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Gigaenergy**: HTTP Error 404: Not Found
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/Gr8Tech**: HTTP Error 404: Not Found
+- **Greenhouse/Greenirony**: HTTP Error 404: Not Found
 - **Greenhouse/Hala**: HTTP Error 404: Not Found
 - **Greenhouse/Herewithgmbh**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Immunefi**: HTTP Error 404: Not Found
-- **Greenhouse/Innovid**: HTTP Error 404: Not Found
 - **Greenhouse/Insightassurance**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
 - **Greenhouse/Kayak**: HTTP Error 404: Not Found
@@ -158,7 +154,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Pretium**: HTTP Error 404: Not Found
 - **Greenhouse/Primerai**: HTTP Error 404: Not Found
 - **Greenhouse/Tripwireinteractive**: HTTP Error 404: Not Found
-- **Greenhouse/Urbansportsclub**: HTTP Error 404: Not Found
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
 - **Ashby/Alpic**: HTTP Error 404: Not Found
 - **Ashby/Arch**: HTTP Error 404: Not Found
@@ -168,7 +163,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Firetiger**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
 - **Ashby/Radiant**: degraded: parsed zero roles unexpectedly
-- **Ashby/Revic**: HTTP Error 404: Not Found
 - **Ashby/Sana Roles**: HTTP Error 404: Not Found
 - **Ashby/Skyband Systems**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
