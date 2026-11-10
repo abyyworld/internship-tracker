@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-09
+# Manual Check List — 2026-11-10
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -119,23 +119,23 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 
 - **Greenhouse/Wayve**: HTTP Error 404: Not Found
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
+- **Greenhouse/Anduril**: The read operation timed out
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon Robotics**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Abakaai**: HTTP Error 404: Not Found
-- **Greenhouse/Allencontrolsystems**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/Atlassand**: HTTP Error 404: Not Found
 - **Greenhouse/Bluecrestcapitalmanagement**: HTTP Error 404: Not Found
+- **Greenhouse/Buncha**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon**: HTTP Error 404: Not Found
-- **Greenhouse/Cleargov**: HTTP Error 404: Not Found
 - **Greenhouse/Debtbook**: HTTP Error 404: Not Found
 - **Greenhouse/Doctolib**: HTTP Error 404: Not Found
 - **Greenhouse/Fractile**: HTTP Error 404: Not Found
 - **Greenhouse/Gallup**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Gigaenergy**: HTTP Error 404: Not Found
+- **Greenhouse/Gitai**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
-- **Greenhouse/Gr8Tech**: HTTP Error 404: Not Found
 - **Greenhouse/Greenirony**: HTTP Error 404: Not Found
 - **Greenhouse/Hala**: HTTP Error 404: Not Found
 - **Greenhouse/Herewithgmbh**: HTTP Error 404: Not Found
@@ -143,17 +143,14 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Immunefi**: HTTP Error 404: Not Found
 - **Greenhouse/Insightassurance**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
-- **Greenhouse/Kayak**: HTTP Error 404: Not Found
 - **Greenhouse/Maestroqa**: HTTP Error 404: Not Found
 - **Greenhouse/Nansen**: HTTP Error 404: Not Found
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
 - **Greenhouse/Onestudyteam**: HTTP Error 404: Not Found
 - **Greenhouse/Outpostspace**: HTTP Error 404: Not Found
-- **Greenhouse/Overstory**: HTTP Error 404: Not Found
 - **Greenhouse/Parloa**: HTTP Error 404: Not Found
 - **Greenhouse/Pretium**: HTTP Error 404: Not Found
 - **Greenhouse/Primerai**: HTTP Error 404: Not Found
-- **Greenhouse/Tripwireinteractive**: HTTP Error 404: Not Found
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
 - **Ashby/Alpic**: HTTP Error 404: Not Found
 - **Ashby/Arch**: HTTP Error 404: Not Found
