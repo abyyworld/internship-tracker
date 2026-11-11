@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-10
+# Manual Check List — 2026-11-11
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -119,18 +119,16 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 
 - **Greenhouse/Wayve**: HTTP Error 404: Not Found
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
-- **Greenhouse/Anduril**: The read operation timed out
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon Robotics**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/Abakaai**: HTTP Error 404: Not Found
+- **Greenhouse/Arkoselabs**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/Atlassand**: HTTP Error 404: Not Found
-- **Greenhouse/Bluecrestcapitalmanagement**: HTTP Error 404: Not Found
 - **Greenhouse/Buncha**: HTTP Error 404: Not Found
-- **Greenhouse/Carbon**: HTTP Error 404: Not Found
 - **Greenhouse/Debtbook**: HTTP Error 404: Not Found
 - **Greenhouse/Doctolib**: HTTP Error 404: Not Found
+- **Greenhouse/Forumone**: HTTP Error 404: Not Found
 - **Greenhouse/Fractile**: HTTP Error 404: Not Found
 - **Greenhouse/Gallup**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Gigaenergy**: HTTP Error 404: Not Found
@@ -148,7 +146,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
 - **Greenhouse/Onestudyteam**: HTTP Error 404: Not Found
 - **Greenhouse/Outpostspace**: HTTP Error 404: Not Found
-- **Greenhouse/Parloa**: HTTP Error 404: Not Found
 - **Greenhouse/Pretium**: HTTP Error 404: Not Found
 - **Greenhouse/Primerai**: HTTP Error 404: Not Found
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
@@ -168,6 +165,10 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
 - **Ashby/Xterra AI**: HTTP Error 404: Not Found
 - **Lever/Mistral AI**: HTTP Error 404: Not Found
+- **Lever/Waabi**: The read operation timed out
 - **Lever/Chef Robotics**: HTTP Error 404: Not Found
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
+- **Lever/CrossCountry Consulting**: The read operation timed out
+- **Lever/PlusAI**: The read operation timed out
 - **Lever/Simbe Robotics**: HTTP Error 404: Not Found
+- **Lever/Stand Together**: The read operation timed out
