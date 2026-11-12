@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-11
+# Manual Check List — 2026-11-12
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -124,7 +124,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Arkoselabs**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
-- **Greenhouse/Atlassand**: HTTP Error 404: Not Found
 - **Greenhouse/Buncha**: HTTP Error 404: Not Found
 - **Greenhouse/Debtbook**: HTTP Error 404: Not Found
 - **Greenhouse/Doctolib**: HTTP Error 404: Not Found
@@ -141,11 +140,14 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Immunefi**: HTTP Error 404: Not Found
 - **Greenhouse/Insightassurance**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
+- **Greenhouse/Geotab**: degraded: parsed zero roles unexpectedly
+- **Greenhouse/Iterable**: HTTP Error 404: Not Found
 - **Greenhouse/Maestroqa**: HTTP Error 404: Not Found
 - **Greenhouse/Nansen**: HTTP Error 404: Not Found
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
 - **Greenhouse/Onestudyteam**: HTTP Error 404: Not Found
 - **Greenhouse/Outpostspace**: HTTP Error 404: Not Found
+- **Greenhouse/Overstory**: HTTP Error 404: Not Found
 - **Greenhouse/Pretium**: HTTP Error 404: Not Found
 - **Greenhouse/Primerai**: HTTP Error 404: Not Found
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
@@ -153,11 +155,11 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Arch**: HTTP Error 404: Not Found
 - **Ashby/Beaconsoftware**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
+- **Ashby/Cleric**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
 - **Ashby/Firetiger**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
 - **Ashby/Radiant**: degraded: parsed zero roles unexpectedly
-- **Ashby/Sana Roles**: HTTP Error 404: Not Found
 - **Ashby/Skyband Systems**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
 - **Ashby/Tensorwave**: degraded: parsed zero roles unexpectedly
@@ -165,10 +167,10 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
 - **Ashby/Xterra AI**: HTTP Error 404: Not Found
 - **Lever/Mistral AI**: HTTP Error 404: Not Found
-- **Lever/Waabi**: The read operation timed out
 - **Lever/Chef Robotics**: HTTP Error 404: Not Found
+- **Lever/Dexterity**: The read operation timed out
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
 - **Lever/CrossCountry Consulting**: The read operation timed out
-- **Lever/PlusAI**: The read operation timed out
+- **Lever/Ekimetrics**: The read operation timed out
+- **Lever/PingWind**: The read operation timed out
 - **Lever/Simbe Robotics**: HTTP Error 404: Not Found
-- **Lever/Stand Together**: The read operation timed out
