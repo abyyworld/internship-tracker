@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-12
+# Manual Check List — 2026-11-13
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -122,34 +122,27 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon Robotics**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
+- **Greenhouse/SpaceX**: The read operation timed out
 - **Greenhouse/Arkoselabs**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
+- **Greenhouse/RenderATL**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Buncha**: HTTP Error 404: Not Found
-- **Greenhouse/Debtbook**: HTTP Error 404: Not Found
 - **Greenhouse/Doctolib**: HTTP Error 404: Not Found
 - **Greenhouse/Forumone**: HTTP Error 404: Not Found
-- **Greenhouse/Fractile**: HTTP Error 404: Not Found
 - **Greenhouse/Gallup**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/Gigaenergy**: HTTP Error 404: Not Found
 - **Greenhouse/Gitai**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/Greenirony**: HTTP Error 404: Not Found
 - **Greenhouse/Hala**: HTTP Error 404: Not Found
-- **Greenhouse/Herewithgmbh**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
-- **Greenhouse/Immunefi**: HTTP Error 404: Not Found
-- **Greenhouse/Insightassurance**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
 - **Greenhouse/Geotab**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Iterable**: HTTP Error 404: Not Found
-- **Greenhouse/Maestroqa**: HTTP Error 404: Not Found
-- **Greenhouse/Nansen**: HTTP Error 404: Not Found
+- **Greenhouse/K2 Space**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
-- **Greenhouse/Onestudyteam**: HTTP Error 404: Not Found
-- **Greenhouse/Outpostspace**: HTTP Error 404: Not Found
 - **Greenhouse/Overstory**: HTTP Error 404: Not Found
 - **Greenhouse/Pretium**: HTTP Error 404: Not Found
-- **Greenhouse/Primerai**: HTTP Error 404: Not Found
+- **Greenhouse/Ursamajor**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
 - **Ashby/Alpic**: HTTP Error 404: Not Found
 - **Ashby/Arch**: HTTP Error 404: Not Found
@@ -159,18 +152,23 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
 - **Ashby/Firetiger**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
+- **Ashby/Maple**: HTTP Error 404: Not Found
 - **Ashby/Radiant**: degraded: parsed zero roles unexpectedly
 - **Ashby/Skyband Systems**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
+- **Ashby/Tavily**: HTTP Error 404: Not Found
 - **Ashby/Tensorwave**: degraded: parsed zero roles unexpectedly
 - **Ashby/Tilderesearch**: HTTP Error 404: Not Found
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
 - **Ashby/Xterra AI**: HTTP Error 404: Not Found
 - **Lever/Mistral AI**: HTTP Error 404: Not Found
+- **Lever/ANYbotics**: The read operation timed out
 - **Lever/Chef Robotics**: HTTP Error 404: Not Found
-- **Lever/Dexterity**: The read operation timed out
+- **Lever/Robotics & AI Institute**: The read operation timed out
+- **Lever/Bright Machines**: The read operation timed out
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
 - **Lever/CrossCountry Consulting**: The read operation timed out
-- **Lever/Ekimetrics**: The read operation timed out
-- **Lever/PingWind**: The read operation timed out
+- **Lever/Sur La Table**: The read operation timed out
+- **Lever/Kensington**: The read operation timed out
+- **Lever/Matillion**: The read operation timed out
 - **Lever/Simbe Robotics**: HTTP Error 404: Not Found
