@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-14
+# Manual Check List — 2026-11-15
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -125,7 +125,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Arkoselabs**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/RenderATL**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/Buncha**: HTTP Error 404: Not Found
 - **Greenhouse/Doctolib**: HTTP Error 404: Not Found
 - **Greenhouse/Forumone**: HTTP Error 404: Not Found
 - **Greenhouse/Gallup**: degraded: parsed zero roles unexpectedly
@@ -165,16 +164,5 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Lever/Mistral AI**: HTTP Error 404: Not Found
 - **Lever/Shield AI**: degraded: parsed zero roles unexpectedly
 - **Lever/Chef Robotics**: HTTP Error 404: Not Found
-- **Lever/Robust AI**: The read operation timed out
-- **Lever/Zoox**: The read operation timed out
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
-- **Lever/Diversified Automation**: The read operation timed out
-- **Lever/Elk Valley Resources**: The read operation timed out
-- **Lever/GenBio AI**: The read operation timed out
-- **Lever/Hatch IT**: The read operation timed out
-- **Lever/Hermeus**: The read operation timed out
-- **Lever/Humble Robotics**: The read operation timed out
-- **Lever/Parallel Wireless**: The read operation timed out
-- **Lever/PingWind**: The read operation timed out
-- **Lever/Saviynt**: The read operation timed out
 - **Lever/Simbe Robotics**: HTTP Error 404: Not Found
