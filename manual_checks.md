@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-15
+# Manual Check List — 2026-11-16
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -122,21 +122,20 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon Robotics**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/Arkoselabs**: HTTP Error 404: Not Found
+- **Greenhouse/Aninebing**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/RenderATL**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Doctolib**: HTTP Error 404: Not Found
-- **Greenhouse/Forumone**: HTTP Error 404: Not Found
 - **Greenhouse/Gallup**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Gitai**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/GlossGenius**: HTTP Error 404: Not Found
 - **Greenhouse/Hala**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
-- **Greenhouse/Geotab**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Iterable**: HTTP Error 404: Not Found
 - **Greenhouse/K2 Space**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
+- **Greenhouse/Orchestra**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Overstory**: HTTP Error 404: Not Found
 - **Greenhouse/Pretium**: HTTP Error 404: Not Found
 - **Greenhouse/Ursamajor**: degraded: parsed zero roles unexpectedly
@@ -149,6 +148,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Cleric**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
 - **Ashby/Firetiger**: HTTP Error 404: Not Found
+- **Ashby/Hawkeyeinnovations**: degraded: parsed zero roles unexpectedly
 - **Ashby/Hilberts**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
 - **Ashby/Maple**: HTTP Error 404: Not Found
