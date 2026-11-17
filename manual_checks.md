@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-16
+# Manual Check List — 2026-11-17
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -119,12 +119,14 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 
 - **Greenhouse/Wayve**: HTTP Error 404: Not Found
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
+- **Greenhouse/Anduril**: The read operation timed out
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon Robotics**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Aninebing**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/RenderATL**: degraded: parsed zero roles unexpectedly
+- **Greenhouse/Cclfg**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Doctolib**: HTTP Error 404: Not Found
 - **Greenhouse/Gallup**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Gitai**: degraded: parsed zero roles unexpectedly
@@ -132,27 +134,28 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Hala**: HTTP Error 404: Not Found
 - **Greenhouse/iHerb**: HTTP Error 404: Not Found
 - **Greenhouse/Instabase**: HTTP Error 404: Not Found
-- **Greenhouse/Iterable**: HTTP Error 404: Not Found
 - **Greenhouse/K2 Space**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
 - **Greenhouse/Orchestra**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/Overstory**: HTTP Error 404: Not Found
 - **Greenhouse/Pretium**: HTTP Error 404: Not Found
+- **Greenhouse/Quip**: HTTP Error 404: Not Found
 - **Greenhouse/Ursamajor**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
 - **Ashby/1Password**: degraded: parsed zero roles unexpectedly
 - **Ashby/Alpic**: HTTP Error 404: Not Found
 - **Ashby/Arch**: HTTP Error 404: Not Found
 - **Ashby/Beaconsoftware**: HTTP Error 404: Not Found
+- **Ashby/Browserbase**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
-- **Ashby/Cleric**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
 - **Ashby/Firetiger**: HTTP Error 404: Not Found
 - **Ashby/Hawkeyeinnovations**: degraded: parsed zero roles unexpectedly
 - **Ashby/Hilberts**: HTTP Error 404: Not Found
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
 - **Ashby/Maple**: HTTP Error 404: Not Found
+- **Ashby/Oso**: HTTP Error 404: Not Found
 - **Ashby/Radiant**: degraded: parsed zero roles unexpectedly
+- **Ashby/Seismic Change.Com**: HTTP Error 404: Not Found
 - **Ashby/Skyband Systems**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
 - **Ashby/Tavily**: HTTP Error 404: Not Found
