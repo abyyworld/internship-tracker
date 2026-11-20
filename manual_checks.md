@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-19
+# Manual Check List — 2026-11-20
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -123,7 +123,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon Robotics**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/SpaceX**: The read operation timed out
 - **Greenhouse/Aninebing**: HTTP Error 404: Not Found
 - **Greenhouse/Apogeetherapeutics**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
@@ -150,7 +149,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
 - **Ashby/1Password**: degraded: parsed zero roles unexpectedly
 - **Ashby/Alpic**: HTTP Error 404: Not Found
-- **Ashby/Arbiter Ai**: HTTP Error 404: Not Found
 - **Ashby/Arch**: HTTP Error 404: Not Found
 - **Ashby/Beaconsoftware**: HTTP Error 404: Not Found
 - **Ashby/Browserbase**: HTTP Error 404: Not Found
@@ -161,6 +159,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Hawkeyeinnovations**: degraded: parsed zero roles unexpectedly
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
 - **Ashby/Nectar Social**: HTTP Error 404: Not Found
+- **Ashby/Cybernetic Labs**: degraded: parsed zero roles unexpectedly
 - **Ashby/Norm Ai**: HTTP Error 404: Not Found
 - **Ashby/Oso**: HTTP Error 404: Not Found
 - **Ashby/Radiant**: degraded: parsed zero roles unexpectedly
@@ -172,16 +171,16 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/WhatNot**: HTTP Error 404: Not Found
 - **Ashby/Xterra AI**: HTTP Error 404: Not Found
 - **Lever/Mistral AI**: HTTP Error 404: Not Found
-- **Lever/ANYbotics**: The read operation timed out
-- **Lever/Shield AI**: degraded: parsed zero roles unexpectedly
+- **Lever/Palantir**: The read operation timed out
+- **Lever/Shield AI**: The read operation timed out
 - **Lever/Chef Robotics**: HTTP Error 404: Not Found
 - **Lever/Robotics & AI Institute**: The read operation timed out
-- **Lever/Agile Defense**: The read operation timed out
+- **Lever/Zoox**: The read operation timed out
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
-- **Lever/Ekimetrics**: The read operation timed out
-- **Lever/Elk Valley Resources**: The read operation timed out
-- **Lever/Meds**: The read operation timed out
-- **Lever/Quest Analytics**: The read operation timed out
-- **Lever/Laminar**: The read operation timed out
+- **Lever/CrossCountry Consulting**: The read operation timed out
+- **Lever/Sur La Table**: The read operation timed out
+- **Lever/Fluxergy**: The read operation timed out
+- **Lever/Loft Orbital**: The read operation timed out
+- **Lever/Neighbor**: The read operation timed out
+- **Lever/PlusAI**: The read operation timed out
 - **Lever/Simbe Robotics**: HTTP Error 404: Not Found
-- **Lever/Wyetech**: The read operation timed out
