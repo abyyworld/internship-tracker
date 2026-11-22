@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-21
+# Manual Check List — 2026-11-22
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -140,9 +140,8 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Kunai**: HTTP Error 404: Not Found
 - **Greenhouse/Mirakllabs**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Old Mission**: HTTP Error 404: Not Found
-- **Greenhouse/Orchestra**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Pretium**: HTTP Error 404: Not Found
-- **Greenhouse/Quip**: HTTP Error 404: Not Found
+- **Greenhouse/Shein**: HTTP Error 404: Not Found
 - **Greenhouse/Tandemcare**: HTTP Error 404: Not Found
 - **Greenhouse/Ursamajor**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Visier Solutions**: HTTP Error 404: Not Found
@@ -150,7 +149,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Alpic**: HTTP Error 404: Not Found
 - **Ashby/Arch**: HTTP Error 404: Not Found
 - **Ashby/Beaconsoftware**: HTTP Error 404: Not Found
-- **Ashby/Browserbase**: HTTP Error 404: Not Found
 - **Ashby/Capimoney**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
 - **Ashby/Cylinderhealth**: HTTP Error 404: Not Found
@@ -160,9 +158,8 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Mach Industries**: HTTP Error 404: Not Found
 - **Ashby/Nectar Social**: HTTP Error 404: Not Found
 - **Ashby/Norm Ai**: HTTP Error 404: Not Found
-- **Ashby/Oso**: HTTP Error 404: Not Found
+- **Ashby/Qualified**: HTTP Error 404: Not Found
 - **Ashby/Radiant**: degraded: parsed zero roles unexpectedly
-- **Ashby/Seismic Change.Com**: HTTP Error 404: Not Found
 - **Ashby/Skyband Systems**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
 - **Ashby/Tensorwave**: degraded: parsed zero roles unexpectedly
@@ -174,4 +171,3 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Lever/Chef Robotics**: HTTP Error 404: Not Found
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
 - **Lever/Simbe Robotics**: HTTP Error 404: Not Found
-- **Lever/WisdomTree**: The read operation timed out
