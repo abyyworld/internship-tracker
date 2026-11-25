@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-24
+# Manual Check List — 2026-11-25
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -124,20 +124,19 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon Robotics**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/SpaceX**: The read operation timed out
 - **Greenhouse/Aninebing**: HTTP Error 404: Not Found
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
+- **Greenhouse/Autoscout24**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Beamtherapeutics**: degraded: parsed zero roles unexpectedly
+- **Greenhouse/Bpcs**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Cclfg**: degraded: parsed zero roles unexpectedly
+- **Greenhouse/Crfamilyofcompanies**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Doctolib**: HTTP Error 404: Not Found
-- **Greenhouse/Drsquatch**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Durable**: HTTP Error 404: Not Found
-- **Greenhouse/Elementbiosciences**: HTTP Error 429: Too Many Requests
+- **Greenhouse/Edelmanfinancialenginesllc**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Enchargeai36**: HTTP Error 429: Too Many Requests
-- **Greenhouse/Encoura**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Endorlabs**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Energage**: HTTP Error 429: Too Many Requests
-- **Greenhouse/Energycx**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Energyexemplarllc**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Energyhub**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Energysolutions**: HTTP Error 429: Too Many Requests
@@ -970,7 +969,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/mthree**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Muckrack**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Mullenlowe**: HTTP Error 429: Too Many Requests
-- **Greenhouse/Muonspace**: HTTP Error 429: Too Many Requests
+- **Greenhouse/Muon Space**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Muralhealth**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Murj**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Mw Tech Grad**: HTTP Error 429: Too Many Requests
@@ -2115,6 +2114,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Bifrost**: HTTP Error 404: Not Found
 - **Ashby/Capimoney**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
+- **Ashby/Epistemix**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
 - **Ashby/Shield AI**: HTTP Error 404: Not Found
 - **Ashby/Firetiger**: HTTP Error 404: Not Found
@@ -2129,6 +2129,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/P2P.Org**: HTTP Error 404: Not Found
 - **Ashby/Qualified**: HTTP Error 404: Not Found
 - **Ashby/Radiant**: degraded: parsed zero roles unexpectedly
+- **Ashby/Revel**: degraded: parsed zero roles unexpectedly
 - **Ashby/Skyband Systems**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
 - **Ashby/Tensorwave**: degraded: parsed zero roles unexpectedly
@@ -2140,3 +2141,4 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Lever/Chef Robotics**: HTTP Error 404: Not Found
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
 - **Lever/Simbe Robotics**: HTTP Error 404: Not Found
+- **Lever/Veeva Systems**: The read operation timed out
