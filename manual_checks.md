@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-25
+# Manual Check List — 2026-11-26
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -120,23 +120,22 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Wayve**: HTTP Error 404: Not Found
 - **Greenhouse/DeepMind**: HTTP Error 404: Not Found
 - **Greenhouse/Kodiak**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/Anduril**: The read operation timed out
 - **Greenhouse/Aurora Innovation**: HTTP Error 404: Not Found
 - **Greenhouse/Carbon Robotics**: HTTP Error 404: Not Found
 - **Greenhouse/Robinhood**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Aninebing**: HTTP Error 404: Not Found
+- **Greenhouse/Apera AI**: HTTP Error 404: Not Found
+- **Greenhouse/Artefact**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
-- **Greenhouse/Autoscout24**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Beamtherapeutics**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/Bpcs**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Cclfg**: degraded: parsed zero roles unexpectedly
-- **Greenhouse/Crfamilyofcompanies**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Doctolib**: HTTP Error 404: Not Found
-- **Greenhouse/Durable**: HTTP Error 404: Not Found
-- **Greenhouse/Edelmanfinancialenginesllc**: HTTP Error 429: Too Many Requests
+- **Greenhouse/Eleoshealth**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Enchargeai36**: HTTP Error 429: Too Many Requests
+- **Greenhouse/Encora10**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Endorlabs**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Energage**: HTTP Error 429: Too Many Requests
+- **Greenhouse/Energycx**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Energyexemplarllc**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Energyhub**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Energysolutions**: HTTP Error 429: Too Many Requests
@@ -2112,7 +2111,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Arch**: HTTP Error 404: Not Found
 - **Ashby/Beaconsoftware**: HTTP Error 404: Not Found
 - **Ashby/Bifrost**: HTTP Error 404: Not Found
-- **Ashby/Capimoney**: HTTP Error 404: Not Found
 - **Ashby/Chainlink Labs**: HTTP Error 404: Not Found
 - **Ashby/Epistemix**: HTTP Error 404: Not Found
 - **Ashby/EvenUp**: HTTP Error 404: Not Found
@@ -2131,6 +2129,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Radiant**: degraded: parsed zero roles unexpectedly
 - **Ashby/Revel**: degraded: parsed zero roles unexpectedly
 - **Ashby/Skyband Systems**: HTTP Error 404: Not Found
+- **Ashby/Sunnydata**: HTTP Error 404: Not Found
 - **Ashby/Superhuman**: HTTP Error 404: Not Found
 - **Ashby/Tensorwave**: degraded: parsed zero roles unexpectedly
 - **Ashby/Tilderesearch**: HTTP Error 404: Not Found
@@ -2141,4 +2140,3 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Lever/Chef Robotics**: HTTP Error 404: Not Found
 - **Lever/CesiumAstro**: HTTP Error 404: Not Found
 - **Lever/Simbe Robotics**: HTTP Error 404: Not Found
-- **Lever/Veeva Systems**: The read operation timed out
