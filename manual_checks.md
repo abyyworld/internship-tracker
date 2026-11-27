@@ -1,4 +1,4 @@
-# Manual Check List — 2026-11-26
+# Manual Check List — 2026-11-27
 These are career hubs, not confirmed open jobs. Check the official page directly.
 Use the local cockpit or private autoapply database to record your decision; personal application history is not written to tracker.csv.
 
@@ -129,16 +129,16 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Artefact**: HTTP Error 404: Not Found
 - **Greenhouse/Beamtherapeutics**: degraded: parsed zero roles unexpectedly
 - **Greenhouse/Cclfg**: degraded: parsed zero roles unexpectedly
+- **Greenhouse/Definitivehc**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Doctolib**: HTTP Error 404: Not Found
-- **Greenhouse/Eleoshealth**: HTTP Error 429: Too Many Requests
+- **Greenhouse/Emplifimonster**: HTTP Error 429: Too Many Requests
+- **Greenhouse/Emporiarevolutionizinghomeenergy**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Enchargeai36**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Encora10**: HTTP Error 429: Too Many Requests
+- **Greenhouse/Encoura**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Endorlabs**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Energage**: HTTP Error 429: Too Many Requests
-- **Greenhouse/Energycx**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Energyexemplarllc**: HTTP Error 429: Too Many Requests
-- **Greenhouse/Energyhub**: HTTP Error 429: Too Many Requests
-- **Greenhouse/Energysolutions**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Energysolutionsinternships**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Enforce**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Engageseniortherapy**: HTTP Error 429: Too Many Requests
@@ -562,6 +562,7 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/iCapital Network**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Icarus**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Iconcareers**: HTTP Error 429: Too Many Requests
+- **Greenhouse/ICONIQ Capital**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Idahotitleloansinc**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Ideo**: HTTP Error 429: Too Many Requests
 - **Greenhouse/ID.me**: HTTP Error 429: Too Many Requests
@@ -1596,7 +1597,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Greenhouse/Sharebite**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Sharegateen**: HTTP Error 429: Too Many Requests
 - **Greenhouse/SharkNinja**: HTTP Error 429: Too Many Requests
-- **Greenhouse/Shein**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Shieldshealthsolutions**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Shift5**: HTTP Error 429: Too Many Requests
 - **Greenhouse/Shifttechnology**: HTTP Error 429: Too Many Requests
@@ -2125,7 +2125,6 @@ Roles previously seen only in these sources remain stale; they are not marked cl
 - **Ashby/Norm Ai**: HTTP Error 404: Not Found
 - **Ashby/Oso**: HTTP Error 404: Not Found
 - **Ashby/P2P.Org**: HTTP Error 404: Not Found
-- **Ashby/Qualified**: HTTP Error 404: Not Found
 - **Ashby/Radiant**: degraded: parsed zero roles unexpectedly
 - **Ashby/Revel**: degraded: parsed zero roles unexpectedly
 - **Ashby/Skyband Systems**: HTTP Error 404: Not Found
